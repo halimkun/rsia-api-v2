@@ -41,6 +41,12 @@ return [
             'provider' => 'users',
         ],
 
+        'user-aes' => [
+            'driver' => 'passport',
+            'provider' => 'user-aes',
+        ],
+
+
     /*
     |--------------------------------------------------------------------------
     | User Providers
@@ -63,6 +69,13 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
         ],
+
+        'user-aes' => [
+            'driver' => 'aes_user_provider',
+            'model' => App\Models\User::class,  
+            'column' => ['id_user', 'password'],
+        ],
+
     ],
 
     /*

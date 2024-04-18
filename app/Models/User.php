@@ -13,10 +13,6 @@ class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    private static $password_key = 'windi';
-    
-    private static $username_key = 'nur';
-
     protected $table = 'user';
 
     protected $primaryKey = 'id_user';
@@ -53,21 +49,4 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime'
     ];
-
-    public function getAuthPassword()
-    {
-        $password = DB::select("SELECT AES_ENCRYPT(?, ?) as password", [$this->password, self::$password_key])[0]->password;
-        dd($password);
-        
-        return $password;
-    }
-
-    public function validateForPassportPasswordGrant(string $password)
-    {
-        // mariadb aes_decrypt function
-        $password = DB::select("SELECT AES_DECRYPT(?, ?) as password", [$password, self::$password_key])[0]->password;
-        dd($password);
-        
-        return $password === $this->password;
-    }
 }

@@ -27,5 +27,14 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
+        \Illuminate\Support\Facades\Auth::provider('aes_user_provider', function ($app, array $config) {
+            return new AesUserProvider(new AesHasher(), $config['model']);
+        });
+
+        Passport::routes();
+
+        Passport::tokensExpireIn(now()->addDays(15));
+        Passport::refreshTokensExpireIn(now()->addDays(30));
+        Passport::personalAccessTokensExpireIn(now()->addDay(7));
     }
 }
