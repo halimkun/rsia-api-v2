@@ -18,3 +18,11 @@ Route::get('/', function (Request $request) {
     return response()->json(['message' => 'Hello World!']);
 });
 
+$files = scandir(__DIR__ . '/partials');
+foreach ($files as $file) {
+    // if file is not a directory
+    if (!is_dir(__DIR__ . '/partials/' . $file)) {
+        // require_once the file
+        require_once __DIR__ . '/partials/' . $file;
+    }
+}
