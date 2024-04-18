@@ -46,6 +46,11 @@ return [
             'provider' => 'user-aes',
         ],
 
+        'pasien' => [
+            'driver' => 'passport',
+            'provider' => 'pasien',
+        ]
+    ],
 
     /*
     |--------------------------------------------------------------------------
@@ -76,6 +81,11 @@ return [
             'column' => ['id_user', 'password'],
         ],
 
+        'pasien' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Pasien::class,
+            'column' => ['no_rkm_medis', 'tgl_lahir'],
+        ],
     ],
 
     /*
