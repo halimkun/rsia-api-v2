@@ -11,4 +11,47 @@ use App\Http\Controllers\Controller;
 
 class UserAuthController extends Controller
 {
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'username' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+
+        $user = User::select(
+                DB::raw('AES_DECRYPT(id_user, "' . env('MYSQL_AES_KEY_IDUSER') . '") as id_user'), 
+                DB::raw('AES_DECRYPT(id_user, "' . env('MYSQL_AES_KEY_IDUSER') . '") as username'),
+                DB::raw('AES_DECRYPT(password, "' . env('MYSQL_AES_KEY_PASSWORD') . '") as password')
+            )
+            ->where('id_user', DB::raw('AES_ENCRYPT("' . $credentials['username'] . '", "' . env('MYSQL_AES_KEY_IDUSER') . '")'))
+            ->where('password', DB::raw('AES_ENCRYPT("' . $credentials['password'] . '", "' . env('MYSQL_AES_KEY_PASSWORD') . '")'))
+            ->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'User not found'
+            ], 404);
+        }
+
+        // // user found in database loggin in the user
+        \Illuminate\Support\Facades\Auth::guard('user-aes')->setUser($user);
+
+        $token = $user->createToken($credentials['username'])->accessToken;
+        $token_type = 'Bearer';
+        $token_expires_at = $user->tokens->first()->expires_at;
+        $token_expores_in = $user->tokens->first()->expires_at->diffForHumans();
+
+        return \App\Helpers\ApiResponse::withToken(true, $token, [
+            'token_type'    => $token_type,
+            'expires_at'    => $token_expires_at,
+            'expires_in'    => $token_expores_in,
+        ]);
+    }
+
+    public function detail()
+    {
+        $user = \Illuminate\Support\Facades\Auth::guard('user-aes')->user();
+        return new \App\Http\Resources\User\Auth\DetailResource($user);
+    }
 }
