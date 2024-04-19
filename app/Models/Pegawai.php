@@ -18,4 +18,11 @@ class Pegawai extends Model
     ];
 
     protected $guarded = ['id'];
+
+    
+    // departemen on pegawai to dep_id on departemen
+    public function dep()
+    {
+        return $this->belongsTo(Departemen::class, 'departemen', 'dep_id');
+    }
 }
