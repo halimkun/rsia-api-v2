@@ -12,4 +12,5 @@ Dengan perubahan mayor format ```response``` yang dihasilkan berbeda dengan sebe
 > - ```git checkout <nama-branch>```
 > - ```git push -u origin <nama-branch>```
 > - lalu lakukan ***pull request*** dari branch baru yang dibuat ke branch utama (```master``` atau ```main```)
+>
 > ubah ```<nama-branch>``` dengan nama branch yang akan dibuat.
