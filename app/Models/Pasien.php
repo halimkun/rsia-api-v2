@@ -19,10 +19,12 @@ class Pasien extends Authenticatable
 
     protected $guarded = [];
 
-    public $timestamps = false;
-
     protected $casts = [
         'no_rkm_medis' => 'string',
         'kd_pj' => 'string',
     ];
+    
+    public $timestamps = false;
+
+    public $incrementing = false;
 }

@@ -17,11 +17,11 @@ class User extends Authenticatable
 
     protected $primaryKey = 'id_user';
 
+    protected $keyType = 'string';
+    
     public $timestamps = false;
 
     public $incrementing = false;
-
-    protected $keyType = 'string';
 
 
     /**

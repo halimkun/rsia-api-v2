@@ -13,13 +13,15 @@ class Dokter extends Model
 
     protected $primaryKey = 'kd_dokter';
 
-    public $incrementing = false;
-
     protected $keyType = 'string';
-
+    
     protected $casts = [
         'kd_dokter' => 'string',
     ];
-
+    
     protected $guarded = [];
+
+    public $incrementing = false;
+
+    public $timestamps = false;
 }

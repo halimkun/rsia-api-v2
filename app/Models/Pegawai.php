@@ -11,7 +11,13 @@ class Pegawai extends Model
 
     protected $table = 'pegawai';
 
-    protected $primaryKey = 'id';
+    protected $primaryKey = 'nik';
+
+    public $incrementing = false;
+
+    public $timestamps = false;
+
+    protected $keyType = 'string';
 
     protected $casts = [
         'nik' => 'string',
@@ -19,10 +25,17 @@ class Pegawai extends Model
 
     protected $guarded = ['id'];
 
-    
+    protected $hidden = ['id'];
+
+
     // departemen on pegawai to dep_id on departemen
     public function dep()
     {
         return $this->belongsTo(Departemen::class, 'departemen', 'dep_id');
+    }
+
+    public function berkas()
+    {
+        return $this->hasMany(BerkasPegawai::class, 'nik', 'nik');
     }
 }

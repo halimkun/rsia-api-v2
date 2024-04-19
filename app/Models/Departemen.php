@@ -19,6 +19,7 @@ class Departemen extends Model
 
     public $incrementing = false;
 
+    public $timestamps = false;
     
     public function pegawai()
     {
