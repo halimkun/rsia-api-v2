@@ -5,7 +5,7 @@ namespace App\Http\Controllers\v2;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class BerkasPegawai extends Controller
+class BerkasPegawaiController  extends Controller
 {
     /**
      * Menampilkan daftar berkas pegawai.

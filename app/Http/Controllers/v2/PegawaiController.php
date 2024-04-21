@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Pegawai\CompleteResource;
 use Illuminate\Http\Request;
 
-class Pegawai extends Controller
+class PegawaiController extends Controller
 {
     /**
      * Menampilkan daftar pegawai.
