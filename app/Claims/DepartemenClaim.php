@@ -4,7 +4,7 @@ namespace App\Claims;
 
 use CorBosman\Passport\AccessToken;
 
-class Departemen
+class DepartemenClaim
 {
     public function handle(AccessToken $token, $next)
     {

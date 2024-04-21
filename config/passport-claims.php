@@ -12,7 +12,7 @@ return [
     |
     */
     'claims' => [
-        \App\Claims\Role::class,
-        \App\Claims\Departemen::class,
+        \App\Claims\RoleClaim::class,
+        \App\Claims\DepartemenClaim::class,
     ]
 ];

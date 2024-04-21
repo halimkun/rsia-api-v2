@@ -4,7 +4,7 @@ namespace App\Claims;
 
 use CorBosman\Passport\AccessToken;
 
-class Role
+class RoleClaim
 {
     public function handle(AccessToken $token, $next)
     {
