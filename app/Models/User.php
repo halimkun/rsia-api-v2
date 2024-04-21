@@ -9,6 +9,21 @@ use Laravel\Passport\HasApiTokens;
 
 use Illuminate\Support\Facades\DB;
 
+/**
+ * App\Models\User
+ *
+ * @property string $id_user
+ * @property string $password
+
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Passport\Client> $clients
+ * @property-read int|null $clients_count
+ * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
+ * @property-read int|null $notifications_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Passport\Token> $tokens
+ * @property-read int|null $tokens_count
+ * 
+ * @mixin \Eloquent
+ */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
@@ -18,7 +33,7 @@ class User extends Authenticatable
     protected $primaryKey = 'id_user';
 
     protected $keyType = 'string';
-    
+
     public $timestamps = false;
 
     public $incrementing = false;

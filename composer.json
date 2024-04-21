@@ -15,6 +15,7 @@
         "tailflow/laravel-orion": "^2.22"
     },
     "require-dev": {
+        "barryvdh/laravel-ide-helper": "^2.14",
         "facade/ignition": "^2.5",
         "fakerphp/faker": "^1.9.1",
         "laravel/sail": "^1.0.1",

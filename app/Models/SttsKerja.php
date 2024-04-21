@@ -5,6 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * App\Models\SttsKerja
+ *
+ * @property string $stts
+ * @property string $ktg
+ * @property int $indek
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Pegawai> $pegawai
+ * @property-read int|null $pegawai_count
+ * @method static \Illuminate\Database\Eloquent\Builder|SttsKerja newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|SttsKerja newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|SttsKerja query()
+ * @method static \Illuminate\Database\Eloquent\Builder|SttsKerja whereIndek($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SttsKerja whereKtg($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|SttsKerja whereStts($value)
+ * @mixin \Eloquent
+ */
 class SttsKerja extends Model
 {
     use HasFactory;
