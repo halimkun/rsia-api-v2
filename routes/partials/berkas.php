@@ -8,8 +8,10 @@ Route::group(['prefix' => 'surat'], function () {
     ->except(['create', 'edit'])
     ->parameters(['internal' => 'base64_nomor_surat'])
     ->middleware('auth:user-aes');
-    
+
   // ==================== SURAT EKSTERNAL
+  Route::post('eksternal/search', [\App\Http\Controllers\v2\RsiaSuratEksternalController::class, 'search'])
+    ->middleware('auth:user-aes');
   Route::resource('eksternal', \App\Http\Controllers\v2\RsiaSuratEksternalController::class, [])
     ->except(['create', 'edit'])
     ->parameters(['eksternal' => 'base64_nomor_surat'])
