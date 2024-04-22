@@ -4,7 +4,9 @@ namespace App\Http\Controllers\v2;
 
 use App\Http\Controllers\Controller;
 use App\Models\RsiaSuratEksternal;
+use App\Services\GetFilterData;
 use Illuminate\Http\Request;
+use Orion\Http\Requests\Request as OrionRequest;
 
 class RsiaSuratEksternalController extends Controller
 {
@@ -20,12 +22,32 @@ class RsiaSuratEksternalController extends Controller
         $page = $request->input('page', 1);
         $select = $request->input('select', '*');
 
-        $data = RsiaSuratEksternal::select($select)
+        $data = RsiaSuratEksternal::select(array_map('trim', explode(',', $select)))
             ->with(['penanggung_jawab' => function ($query) {
                 $query->select('nik', 'nama');
             }])
             ->orderBy('created_at', 'desc')
-            ->paginate(10, explode(',', $select), 'page', $page);
+            ->paginate(10, array_map('trim', explode(',', $select)), 'page', $page);
+
+        return new \App\Http\Resources\Berkas\CompleteCollection($data);
+    }
+
+    public function search(Request $request)
+    {
+        $page = $request->input('page', 1);
+        $select = $request->input('select', '*');
+
+        $orion_request = new OrionRequest($request->all());
+        $actionMethod = $request->route()->getActionMethod();
+
+        $fd = new GetFilterData(new RsiaSuratEksternal(), $orion_request, $actionMethod);
+        $query = $fd->apply();
+
+        $data = $query->select(array_map('trim', explode(',', $select)))
+            ->with(['penanggung_jawab' => function ($query) {
+                $query->select('nik', 'nama');
+            }])
+            ->paginate(10, array_map('trim', explode(',', $select)), 'page', $page);
 
         return new \App\Http\Resources\Berkas\CompleteCollection($data);
     }
@@ -88,7 +110,7 @@ class RsiaSuratEksternalController extends Controller
         $decoded_no_surat = base64_decode($no_surat);
         $select = $request->input('select', '*');
 
-        $data = RsiaSuratEksternal::select(explode(',', $select))
+        $data = RsiaSuratEksternal::select(array_map('trim', explode(',', $select)))
             ->with(['penanggung_jawab' => function ($query) {
                 $query->select('nik', 'nama');
             }])
