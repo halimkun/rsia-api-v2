@@ -16,4 +16,11 @@ Route::group(['prefix' => 'surat'], function () {
     ->except(['create', 'edit'])
     ->parameters(['eksternal' => 'base64_nomor_surat'])
     ->middleware('auth:user-aes');
+
+  // ==================== SURAT MASUK
+  Route::post('masuk/search', [\App\Http\Controllers\v2\RsiaSuratMasukController::class, 'search'])
+    ->middleware('auth:user-aes');
+  Route::apiResource('masuk', \App\Http\Controllers\v2\RsiaSuratMasukController::class)
+    ->parameters(['id'])
+    ->middleware('auth:user-aes');
 });
