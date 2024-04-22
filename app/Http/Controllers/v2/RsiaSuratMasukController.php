@@ -64,10 +64,13 @@ class RsiaSuratMasukController extends Controller
             'berkas' => $file_name ?? '',
         ]);
 
-        // db transaction
-        \DB::transaction(function () use ($request) {
-            \App\Models\RsiaSuratMasuk::create($request->all());
-        });
+        try {
+            \DB::transaction(function () use ($request) {
+                \App\Models\RsiaSuratMasuk::create($request->all());
+            });
+        } catch (\Exception $e) {
+            return \App\Helpers\ApiResponse::error('Failed to save data', $e->getMessage(), 500);
+        }
 
         if ($file) {
             $st::disk('sftp')->put(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $file_name, file_get_contents($file));
@@ -153,10 +156,13 @@ class RsiaSuratMasukController extends Controller
             'berkas' => $file ? $file_name : $data->berkas,
         ]);
 
-        // db transaction
-        \DB::transaction(function () use ($request, $data) {
-            $data->update($request->all());
-        });
+        try {
+            \DB::transaction(function () use ($request, $data) {
+                $data->update($request->all());
+            });
+        } catch (\Exception $e) {
+            return \App\Helpers\ApiResponse::error('Failed to update data', $e->getMessage(), 500);
+        }
 
         if ($file && $data && $st::disk('sftp')->exists(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $oldBerkas)) {
             $st::disk('sftp')->delete(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $oldBerkas);
@@ -183,9 +189,13 @@ class RsiaSuratMasukController extends Controller
             return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
-        \DB::transaction(function () use ($data) {
-            $data->delete();
-        });
+        try {
+            \DB::transaction(function () use ($data) {
+                $data->delete();
+            });
+        } catch (\Exception $e) {
+            return \App\Helpers\ApiResponse::error('Failed to delete data', $e->getMessage(), 500);
+        }
 
         $st = new \Illuminate\Support\Facades\Storage();
         if ($data && $st::disk('sftp')->exists(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $data->berkas)) {
