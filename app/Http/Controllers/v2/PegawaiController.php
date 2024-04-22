@@ -48,6 +48,7 @@ class PegawaiController extends Controller
      */
     public function store(Request $request)
     {
+        $file = $request->file('photo');
         $request->validate(self::validationRule());
         $file = $request->file('photo');
 
@@ -67,15 +68,13 @@ class PegawaiController extends Controller
                 \App\Models\Pegawai::create($request->all());
             });
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to create pegawai: ' . $e->getMessage()
-            ], 500);
+            return \App\Helpers\ApiResponse::error('Failed to save data', $e->getMessage(), 500);
         }
 
         if ($file) {
             $st::disk('sftp')->put(env('FOTO_PEGAWAI_SAVE_LOCATION') . $file_name, file_get_contents($file));
         }
-
+      
         return \App\Helpers\ApiResponse::success('Data saved successfully');
     }
 
@@ -93,9 +92,7 @@ class PegawaiController extends Controller
 
         $pegawai = \App\Models\Pegawai::select(explode(',', $select))->find($id);
         if (!$pegawai) {
-            return response()->json([
-                'message' => 'Data pegawai tidak ditemukan'
-            ], 404);
+            return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
         return \App\Http\Resources\Pegawai\CompleteResource::make($pegawai);
@@ -127,13 +124,11 @@ class PegawaiController extends Controller
     {
         $file = $request->file('photo');
         $request->validate(self::validationRule(false));
-        
+
         $pegawai = \App\Models\Pegawai::find($id);
         $oldPhoto = $pegawai->photo;
         if (!$pegawai) {
-            return response()->json([
-                'message' => 'Data pegawai tidak ditemukan'
-            ], 404);
+            return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
         if ($file) {
@@ -152,9 +147,7 @@ class PegawaiController extends Controller
                 $pegawai->update($request->all());
             });
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to update pegawai: ' . $e->getMessage()
-            ], 500);
+            return \App\Helpers\ApiResponse::error('Failed to update data', $e->getMessage(), 500);
         }
 
         if ($request->delete_old_photo) {
@@ -166,8 +159,6 @@ class PegawaiController extends Controller
         if ($file) {
             $st::disk('sftp')->put(env('FOTO_PEGAWAI_SAVE_LOCATION') . $file_name, file_get_contents($file));
         }
-
-        return \App\Helpers\ApiResponse::success('Data updated successfully');
     }
 
     /**
@@ -183,22 +174,16 @@ class PegawaiController extends Controller
     {
         $pegawai = \App\Models\Pegawai::find($id);
         if (!$pegawai) {
-            return response()->json([
-                'message' => 'Data pegawai tidak ditemukan'
-            ], 404);
+            return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
         try {
             $pegawai->delete();
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to delete pegawai: ' . $e->getMessage()
-            ], 500);
+            return \App\Helpers\ApiResponse::error('Failed to delete data', $e->getMessage(), 500);
         }
 
-        return response()->json([
-            'message' => 'Data pegawai berhasil dihapus'
-        ]);
+        return \App\Helpers\ApiResponse::success('Data deleted successfully');
     }
 
     private static function validationRule($withRequired = true)

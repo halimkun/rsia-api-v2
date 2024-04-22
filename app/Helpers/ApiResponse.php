@@ -4,115 +4,76 @@ namespace App\Helpers;
 
 class ApiResponse
 {
-  public static function success($data, $message = null)
+  public static function success($message = null)
   {
     return response()->json([
-      'status'  => 'success',
-      'message' => $message,
-      'data'    => $data,
-    ], 200);
-  }
-
-  public static function ok($message = 'OK')
-  {
-    return response()->json([
-      'status'  => 'success',
       'message' => $message,
     ], 200);
   }
 
-  public static function error($message, $status = 400)
+  public static function error($message, $error, $status = 400)
   {
     return response()->json([
-      'status'  => 'error',
       'message' => $message,
+      'error'   => $error,
     ], $status);
   }
 
-  public static function errorWithData($data, $message, $status = 400)
+  public static function errorWithData($data, $message, $error, $status = 400)
   {
     return response()->json([
-      'status'  => 'error',
       'message' => $message,
+      'error'   => $error,
       'data'    => $data,
     ], $status);
   }
 
-  public static function notFound($message = 'Data tidak ditemukan')
+  public static function notFound($message = "")
   {
     return response()->json([
-      'status'  => 'error',
-      'message' => $message,
+      'message'   => $message,
+      'error' => "Cannot find data or resource",
     ], 404);
   }
 
-  public static function unauthorized($message = 'Unauthorized')
+  public static function unauthorized($message = '')
   {
     return response()->json([
-      'status'  => 'error',
       'message' => $message,
+      'error'   => 'Unauthorized',
     ], 401);
   }
 
-  public static function forbidden($message = 'Forbidden')
+  public static function forbidden($message = '')
   {
     return response()->json([
-      'status'  => 'error',
       'message' => $message,
+      'error'   => 'Forbidden',
     ], 403);
   }
 
-  public static function validationError($message = 'Validation Error')
+  public static function validationError($message = '')
   {
     return response()->json([
-      'status'  => 'error',
       'message' => $message,
+      'error'   => 'Validation Error',
     ], 422);
   }
 
-  public static function internalServerError($message = 'Internal Server Error')
+  public static function internalServerError($message = '')
   {
     return response()->json([
-      'status'  => 'error',
       'message' => $message,
+      'error'   => 'Internal Server Error',
     ], 500);
   }
 
-  public static function badGateway($message = 'Bad Gateway')
+  public static function badGateway($message = '')
   {
     return response()->json([
-      'status'  => 'error',
       'message' => $message,
+      'error'   => 'Bad Gateway',
     ], 502);
-  }
-
-  // custom 
-  public static function customSuccess($isSuccess, $status, $message, $data = null)
-  {
-    return response()->json([
-      'status'  => $status,
-      'message' => $message,
-      'data'    => $data,
-    ], 200);
-  }
-
-  public static function customError($isSuccess, $status, $message, $data = null)
-  {
-    return response()->json([
-      'status'  => $status,
-      'message' => $message,
-      'data'    => $data,
-    ], 400);
-  }
-
-  // custom 
-  public static function custom($isSuccess, $status, $message, $data = null, $code = 200)
-  {
-    return response()->json([
-      'status'  => $status,
-      'message' => $message,
-      'data'    => $data,
-    ], $code);
   }
 
   public static function withToken($isSuccess, $token, $others = [])

@@ -91,14 +91,10 @@ class RsiaSuratInternalController extends Controller
         try {
             RsiaSuratInternal::create($request->all());
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to create surat internal: ' . $e->getMessage()
-            ], 500);
+            return \App\Helpers\ApiResponse::error('Failed to save data', $e->getMessage(), 500);
         }
 
-        return response()->json([
-            'message' => 'Data surat internal berhasil ditambahkan'
-        ]);
+        return \App\Helpers\ApiResponse::success('Data saved successfully');
     }
 
     /**
@@ -126,9 +122,7 @@ class RsiaSuratInternalController extends Controller
             ->first();
 
         if (!$data) {
-            return response()->json([
-                'message' => 'Data surat internal tidak ditemukan'
-            ], 404);
+            return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
         return new \App\Http\Resources\Berkas\CompleteResource($data);
@@ -172,22 +166,16 @@ class RsiaSuratInternalController extends Controller
 
         $data = RsiaSuratInternal::where('no_surat', $decoded_no_surat)->first();
         if (!$data) {
-            return response()->json([
-                'message' => 'Data surat internal tidak ditemukan'
-            ], 404);
+            return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
         try {
             $data->update($request->all());
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to update surat internal: ' . $e->getMessage()
-            ], 500);
+            return \App\Helpers\ApiResponse::error('Failed to update data', $e->getMessage(), 500);
         }
 
-        return response()->json([
-            'message' => 'Data surat internal berhasil diupdate'
-        ]);
+        return \App\Helpers\ApiResponse::success('Data updated successfully');
     }
 
     /**
@@ -202,22 +190,16 @@ class RsiaSuratInternalController extends Controller
 
         $data = RsiaSuratInternal::where('no_surat', $decoded_no_surat)->first();
         if (!$data) {
-            return response()->json([
-                'message' => 'Data surat internal tidak ditemukan'
-            ], 404);
+            return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
         try {
             $data->delete();
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to delete surat internal: ' . $e->getMessage()
-            ], 500);
+            return \App\Helpers\ApiResponse::error('Failed to delete data', $e->getMessage(), 500);
         }
 
-        return response()->json([
-            'message' => 'Data surat internal berhasil dihapus'
-        ]);
+        return \App\Helpers\ApiResponse::success('Data deleted successfully');
     }
 
     /**

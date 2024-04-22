@@ -64,18 +64,19 @@ class RsiaSuratMasukController extends Controller
             'berkas' => $file_name ?? '',
         ]);
 
-        // db transaction
-        \DB::transaction(function () use ($request) {
-            \App\Models\RsiaSuratMasuk::create($request->all());
-        });
+        try {
+            \DB::transaction(function () use ($request) {
+                \App\Models\RsiaSuratMasuk::create($request->all());
+            });
+        } catch (\Exception $e) {
+            return \App\Helpers\ApiResponse::error('Failed to save data', $e->getMessage(), 500);
+        }
 
         if ($file) {
             $st::disk('sftp')->put(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $file_name, file_get_contents($file));
         }
 
-        return response()->json([
-            'message' => 'Data berhasil disimpan',
-        ]);
+        return \App\Helpers\ApiResponse::success('Data saved successfully');
     }
 
     /**
@@ -90,9 +91,7 @@ class RsiaSuratMasukController extends Controller
 
         $data = RsiaSuratMasuk::select(array_map('trim', explode(',', $select)))->where('no', $no)->first();
         if (!$data) {
-            return response()->json([
-                'message' => 'Data surat masuk tidak ditemukan'
-            ], 404);
+            return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
         return new \App\Http\Resources\Berkas\CompleteResource($data);
@@ -140,9 +139,7 @@ class RsiaSuratMasukController extends Controller
 
         $data = RsiaSuratMasuk::where('no', $no)->first();
         if (!$data) {
-            return response()->json([
-                'message' => 'Data surat masuk tidak ditemukan'
-            ], 404);
+            return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
         if ($file) {
@@ -159,10 +156,13 @@ class RsiaSuratMasukController extends Controller
             'berkas' => $file ? $file_name : $data->berkas,
         ]);
 
-        // db transaction
-        \DB::transaction(function () use ($request, $data) {
-            $data->update($request->all());
-        });
+        try {
+            \DB::transaction(function () use ($request, $data) {
+                $data->update($request->all());
+            });
+        } catch (\Exception $e) {
+            return \App\Helpers\ApiResponse::error('Failed to update data', $e->getMessage(), 500);
+        }
 
         if ($file && $data && $st::disk('sftp')->exists(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $oldBerkas)) {
             $st::disk('sftp')->delete(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $oldBerkas);
@@ -173,9 +173,7 @@ class RsiaSuratMasukController extends Controller
             $st::disk('sftp')->put(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $file_name, file_get_contents($file));
         }
 
-        return response()->json([
-            'message' => 'Data berhasil diupdate',
-        ]);
+        return \App\Helpers\ApiResponse::success('Data updated successfully');
     }
 
     /**
@@ -188,23 +186,23 @@ class RsiaSuratMasukController extends Controller
     {
         $data = RsiaSuratMasuk::where('no', $no)->first();
         if (!$data) {
-            return response()->json([
-                'message' => 'Data surat masuk tidak ditemukan'
-            ], 404);
+            return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
-        \DB::transaction(function () use ($data) {
-            $data->delete();
-        });
+        try {
+            \DB::transaction(function () use ($data) {
+                $data->delete();
+            });
+        } catch (\Exception $e) {
+            return \App\Helpers\ApiResponse::error('Failed to delete data', $e->getMessage(), 500);
+        }
 
         $st = new \Illuminate\Support\Facades\Storage();
         if ($data && $st::disk('sftp')->exists(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $data->berkas)) {
             $st::disk('sftp')->delete(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $data->berkas);
         }
 
-        return response()->json([
-            'message' => 'Data berhasil dihapus',
-        ]);
+        return \App\Helpers\ApiResponse::success('Data deleted successfully');
     }
 
     private static function validationRule($withRequired = true)

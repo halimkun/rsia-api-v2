@@ -50,14 +50,10 @@ class BerkasPegawaiController  extends Controller
             // TODO : tambahkan upload file, jika file gagak diupload maka berkas tidak disimpan
             \App\Models\BerkasPegawai::create($request->all());
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to create berkas: ' . $e->getMessage()
-            ], 500);
+            return \App\Helpers\ApiResponse::error('Failed to save data', $e->getMessage(), 500);
         }
 
-        return response()->json([
-            'message' => 'Berkas created'
-        ]);
+        return \App\Helpers\ApiResponse::success('Data saved successfully');
     }
 
     /**
@@ -73,9 +69,7 @@ class BerkasPegawaiController  extends Controller
 
         $berkas = \App\Models\BerkasPegawai::select(explode(',', $select))->where('nik', $nik)->where('kode_berkas', $kode_berkas)->first();
         if (!$berkas) {
-            return response()->json([
-                'message' => 'Berkas not found'
-            ], 404);
+            return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
         return \App\Http\Resources\Berkas\CompleteResource::make($berkas);
@@ -108,23 +102,17 @@ class BerkasPegawaiController  extends Controller
 
         $berkas = \App\Models\BerkasPegawai::where('nik', $nik)->where('kode_berkas', $kode_berkas)->exists();
         if (!$berkas) {
-            return response()->json([
-                'message' => 'Berkas not found'
-            ], 404);
+            return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
         try {
             // TODO : tambahkan upload file, jika file gagak diupload maka berkas tidak disimpan
             \App\Models\BerkasPegawai::where('nik', $nik)->where('kode_berkas', $kode_berkas)->update($request->all());
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to update berkas: ' . $e->getMessage()
-            ], 500);
+            return \App\Helpers\ApiResponse::error('Failed to update data', $e->getMessage(), 500);
         }
 
-        return response()->json([
-            'message' => 'Berkas updated'
-        ]);
+        return \App\Helpers\ApiResponse::success('Data updated successfully');
     }
 
     /**
@@ -137,29 +125,23 @@ class BerkasPegawaiController  extends Controller
     {
         $berkas = \App\Models\BerkasPegawai::where('nik', $nik)->where('kode_berkas', $kode_berkas)->exists();
         if (!$berkas) {
-            return response()->json([
-                'message' => 'Berkas not found'
-            ], 404);
+            return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
         try {
             // TODO : tambahkan delete file, jika file gagal dihapus maka berkas tidak dihapus
             \App\Models\BerkasPegawai::where('nik', $nik)->where('kode_berkas', $kode_berkas)->delete();
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to delete berkas: ' . $e->getMessage()
-            ], 500);
+            return \App\Helpers\ApiResponse::error('Failed to delete data', $e->getMessage(), 500);
         }
 
-        return response()->json([
-            'message' => 'Berkas deleted'
-        ]);
+        return \App\Helpers\ApiResponse::success('Data deleted successfully');
     }
 
     private static function validationRule($withRequired = true)
     {
         return [
-            
+
             "nik"         => "required|string|exists:pegawai,nik",
             "tgl_uploud"  => "required|date",
             "kode_berkas" => "required|string|exists:master_berkas_pegawai,kode",
