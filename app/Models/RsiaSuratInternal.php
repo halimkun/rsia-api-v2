@@ -53,6 +53,40 @@ class RsiaSuratInternal extends Model
     public $timestamps = false;
 
 
+    public function exposedScopes()
+    {
+        return [];
+    }
+
+    public function searchableBy()
+    {
+        return [
+            'no_surat', 'perihal', 'tempat', 'tgl_terbit', 
+            'pj', 'tanggal', 'status', 'created_at'
+        ];
+    }
+
+    public function filterableBy()
+    {
+        return ['no_surat', 'tgl_terbit', 'pj', 'tanggal', 'status'];
+    }
+
+    public function sortableBy()
+    {
+        return ['no_surat', 'perihal', 'tgl_terbit', 'status', 'created_at',];
+    }
+
+    public function aggregatableBy()
+    {
+        return [];
+    }
+
+    public function includableBy()
+    {
+        return ['penanggung_jawab'];
+    }
+    
+
     public function penanggung_jawab()
     {
         return $this->belongsTo(Pegawai::class, 'pj', 'nik');

@@ -4,6 +4,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'surat'], function () {
   // ==================== SURAT INTERNAL
+  Route::post('internal/search', [\App\Http\Controllers\v2\RsiaSuratInternalController::class, 'search'])
+    ->middleware('auth:user-aes');
   Route::resource('internal', \App\Http\Controllers\v2\RsiaSuratInternalController::class, [])
     ->except(['create', 'edit'])
     ->parameters(['internal' => 'base64_nomor_surat'])
