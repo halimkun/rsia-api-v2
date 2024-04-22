@@ -48,20 +48,16 @@ class PegawaiController extends Controller
      */
     public function store(Request $request)
     {
+        $file = $request->file('photo');
         $request->validate(self::validationRule());
-        
+
         try {
-            // TODO : upload photo pegawai
             \App\Models\Pegawai::create($request->all());
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to create pegawai: ' . $e->getMessage()
-            ], 500);
+            return \App\Helpers\ApiResponse::error('Failed to save data', $e->getMessage(), 500);
         }
 
-        return response()->json([
-            'message' => 'Data pegawai berhasil ditambahkan'
-        ]);
+        return \App\Helpers\ApiResponse::success('Data saved successfully');
     }
 
     /**
@@ -78,9 +74,7 @@ class PegawaiController extends Controller
 
         $pegawai = \App\Models\Pegawai::select(explode(',', $select))->find($id);
         if (!$pegawai) {
-            return response()->json([
-                'message' => 'Data pegawai tidak ditemukan'
-            ], 404);
+            return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
         return \App\Http\Resources\Pegawai\CompleteResource::make($pegawai);
@@ -111,26 +105,20 @@ class PegawaiController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate(self::validationRule(false));
-        
+
         $pegawai = \App\Models\Pegawai::find($id);
         if (!$pegawai) {
-            return response()->json([
-                'message' => 'Data pegawai tidak ditemukan'
-            ], 404);
+            return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
         try {
             // TODO : upload photo pegawai
             $pegawai->update($request->all());
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to update pegawai: ' . $e->getMessage()
-            ], 500);
+            return \App\Helpers\ApiResponse::error('Failed to update data', $e->getMessage(), 500);
         }
 
-        return response()->json([
-            'message' => 'Data pegawai berhasil diupdate'
-        ]);
+        return \App\Helpers\ApiResponse::success('Data updated successfully');
     }
 
     /**
@@ -146,22 +134,16 @@ class PegawaiController extends Controller
     {
         $pegawai = \App\Models\Pegawai::find($id);
         if (!$pegawai) {
-            return response()->json([
-                'message' => 'Data pegawai tidak ditemukan'
-            ], 404);
+            return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
         try {
             $pegawai->delete();
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Failed to delete pegawai: ' . $e->getMessage()
-            ], 500);
+            return \App\Helpers\ApiResponse::error('Failed to delete data', $e->getMessage(), 500);
         }
 
-        return response()->json([
-            'message' => 'Data pegawai berhasil dihapus'
-        ]);
+        return \App\Helpers\ApiResponse::success('Data deleted successfully');
     }
 
     private static function validationRule($withRequired = true)

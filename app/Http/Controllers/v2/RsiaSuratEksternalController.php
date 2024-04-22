@@ -88,15 +88,10 @@ class RsiaSuratEksternalController extends Controller
         try {
             RsiaSuratEksternal::create($request->all());
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Gagal menyimpan data surat eksternal',
-                'error' => $e->getMessage(),
-            ], 500);
+            return \App\Helpers\ApiResponse::error('Gagal menyimpan data surat eksternal', $e->getMessage(), 500);
         }
 
-        return response()->json([
-            'message' => 'Berhasil menyimpan data surat eksternal',
-        ]);
+        return \App\Helpers\ApiResponse::success('Berhasil menyimpan data surat eksternal');
     }
 
     /**
@@ -118,9 +113,7 @@ class RsiaSuratEksternalController extends Controller
             ->first();
 
         if (!$data) {
-            return response()->json([
-                'message' => 'Data surat eksternal tidak ditemukan',
-            ], 404);
+            return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
         return new \App\Http\Resources\Berkas\CompleteResource($data);
@@ -158,23 +151,16 @@ class RsiaSuratEksternalController extends Controller
 
         $data = RsiaSuratEksternal::where('no_surat', $decoded_no_surat)->first();
         if (!$data) {
-            return response()->json([
-                'message' => 'Data surat eksternal tidak ditemukan',
-            ], 404);
+            return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
         try {
             $data->update($request->all());
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Gagal mengupdate data surat eksternal',
-                'error' => $e->getMessage(),
-            ], 500);
+            return \App\Helpers\ApiResponse::error('Gagal mengupdate data surat eksternal', $e->getMessage(), 500);
         }
 
-        return response()->json([
-            'message' => 'Berhasil mengupdate data surat eksternal',
-        ]);
+        return \App\Helpers\ApiResponse::success('Berhasil mengupdate data surat eksternal');
     }
 
     /**
@@ -189,23 +175,16 @@ class RsiaSuratEksternalController extends Controller
 
         $data = RsiaSuratEksternal::where('no_surat', $decoded_no_surat)->first();
         if (!$data) {
-            return response()->json([
-                'message' => 'Data surat eksternal tidak ditemukan',
-            ], 404);
+            return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
         try {
             $data->delete();
         } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Gagal menghapus data surat eksternal',
-                'error' => $e->getMessage(),
-            ], 500);
+            return \App\Helpers\ApiResponse::error('Gagal menghapus data surat eksternal', $e->getMessage(), 500);
         }
 
-        return response()->json([
-            'message' => 'Berhasil menghapus data surat eksternal',
-        ]);
+        return \App\Helpers\ApiResponse::success('Berhasil menghapus data surat eksternal');
     }
 
     private static function validationRule($withRequired = true)

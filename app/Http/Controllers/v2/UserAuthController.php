@@ -29,9 +29,7 @@ class UserAuthController extends Controller
             ->first();
 
         if (!$user) {
-            return response()->json([
-                'message' => 'User not found'
-            ], 404);
+            return \App\Helpers\ApiResponse::error('User not found', 'Unauthorized', 401);
         }
 
         // // user found in database loggin in the user
