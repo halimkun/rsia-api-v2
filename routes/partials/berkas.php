@@ -26,3 +26,14 @@ Route::group(['prefix' => 'surat'], function () {
     ->parameters(['id'])
     ->middleware('auth:user-aes');
 });
+
+
+// ==================== BERKAS KOMITE
+Route::group(['prefix' => 'berkas'], function () {
+  Route::group(['prefix' => 'komite'], function () {
+    // ==================== BERKAS KOMITE PMKP
+    Route::apiResource('pmkp', \App\Http\Controllers\v2\RsiaBerkasKomitePmkpController::class)
+      ->parameters(['pmkp' => 'base64_nomor_tgl_terbit'])
+      ->middleware('auth:user-aes');
+  });
+});
