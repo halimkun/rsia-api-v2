@@ -142,7 +142,6 @@ class RsiaPenerimaUndanganController extends Controller
      */
     public function update(Request $request, $encodedNoSurat)
     {
-        // TODO : Implement update method
         return \App\Helpers\ApiResponse::error('Action not allowed', 'anda dapat menggunakan endpoint store untuk mengupdate data penerima undangan', 405);
     }
 

@@ -37,6 +37,7 @@ class RsiaKehadiranRapatController extends Controller
      */
     public function store(Request $request)
     {
+        // TODO : make nik can use multiple nik
         $request->validate([
             'no_surat' => 'required|string',
             'tipe' => 'required|string|in:internal,notulen,komite',
