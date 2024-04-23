@@ -4,6 +4,7 @@ namespace App\Http\Controllers\v2;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Orion\Http\Requests\Request as OrionRequest;
 
 class RsiaBerkasKomitePmkpController extends Controller
 {
@@ -26,6 +27,34 @@ class RsiaBerkasKomitePmkpController extends Controller
             ->paginate(10, array_map('trim', explode(',', $select)), 'page', $page);
 
         return new \App\Http\Resources\Berkas\Komite\CompleteCollection($data);
+    }
+
+    /**
+     * Pencarian data
+     * 
+     * Fitur pencarian data ini memanfaatkan basis kode laravel orion, dimana parameter yang bisa digunakan seusai dengan yang ada didalam dokumentasi orion.
+     * https://tailflow.github.io/laravel-orion-docs/v2.x/guide/search.html
+     * 
+     * @return \App\Http\Resources\Berkas\Komite\CompleteCollection
+    */
+    public function search(Request $request)
+    {
+        $page = $request->input('page', 1);
+        $select = $request->input('select', '*');
+
+        $orion_request = new OrionRequest($request->all());
+        $actionMethod = $request->route()->getActionMethod();
+
+        $fd = new \App\Services\GetFilterData(new \App\Models\RsiaBerkasKomitePmkp(), $orion_request, $actionMethod);
+        $query = $fd->apply();
+
+        $data = $query->select(array_map('trim', explode(',', $select)))
+            ->with(['penanggung_jawab' => function ($query) {
+                $query->select('nik', 'nama');
+            }])
+            ->paginate(10, array_map('trim', explode(',', $select)), 'page', $page);
+
+        return new \App\Http\Resources\Berkas\CompleteCollection($data);
     }
 
     /**
