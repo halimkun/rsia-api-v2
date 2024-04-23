@@ -125,6 +125,8 @@ class RsiaSuratInternalController extends Controller
             return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
 
+        $data->model = RsiaSuratInternal::class;
+
         return new \App\Http\Resources\Berkas\CompleteResource($data);
     }
 
