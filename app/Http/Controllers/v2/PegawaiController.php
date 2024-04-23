@@ -48,9 +48,8 @@ class PegawaiController extends Controller
      */
     public function store(Request $request)
     {
-        $file = $request->file('photo');
         $request->validate(self::validationRule());
-        $file = $request->file('photo');
+        $file = $request->file('file');
 
         if ($file) {
             $file_name = time() . $file->getClientOriginalName() . '.' . $file->extension();
@@ -122,7 +121,7 @@ class PegawaiController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $file = $request->file('photo');
+        $file = $request->file('file');
         $request->validate(self::validationRule(false));
 
         $pegawai = \App\Models\Pegawai::find($id);
@@ -159,6 +158,8 @@ class PegawaiController extends Controller
         if ($file) {
             $st::disk('sftp')->put(env('FOTO_PEGAWAI_SAVE_LOCATION') . $file_name, file_get_contents($file));
         }
+
+        return \App\Helpers\ApiResponse::success('Data updated successfully');
     }
 
     /**
@@ -189,9 +190,9 @@ class PegawaiController extends Controller
     private static function validationRule($withRequired = true)
     {
         return [
-            "photo"          => "string|nullable|mimes:jpeg,jpg,png|max:20480",
+            "file"          => "nullable|mimes:jpeg,jpg,png|max:20480",
 
-            "nik"            => "required|string|regex:/^\d{1,3}\.\d{1,3}\.\d{1,4}$/",
+            "nik"            => ($withRequired ? 'required|' : '') . "string|regex:/^\d{1,3}\.\d{1,3}\.\d{1,4}$/",
             "nama"           => "required|string",
             "jk"             => "required|string|in:Wanita,Pria",
             "jbtn"           => "required|string",
