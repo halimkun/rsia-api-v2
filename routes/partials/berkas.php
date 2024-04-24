@@ -72,5 +72,13 @@ Route::group(['prefix' => 'berkas'], function () {
       ->parameters(['keperawatan' => 'base64_nomor_tgl_terbit'])
       ->middleware('auth:user-aes');
 
+
+    // ==================== BERKAS KOMITE KESEHATAN
+    Orion::resource('kesehatan', \App\Http\Controllers\Orion\RsiaBerkasKomiteKesehatanController::class)->only('search')
+      ->middleware('auth:user-aes');
+      
+    Route::apiResource('kesehatan', \App\Http\Controllers\v2\RsiaBerkasKomiteKesehatanController::class)
+      ->parameters(['kesehatan' => 'base64_nomor_tgl_terbit'])
+      ->middleware('auth:user-aes');
   });
 });
