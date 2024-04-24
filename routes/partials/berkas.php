@@ -43,5 +43,14 @@ Route::group(['prefix' => 'berkas'], function () {
     Route::apiResource('pmkp', \App\Http\Controllers\v2\RsiaBerkasKomitePmkpController::class)
       ->parameters(['pmkp' => 'base64_nomor_tgl_terbit'])
       ->middleware('auth:user-aes');
+
+
+    // ==================== BERKAS PPI
+    Route::post('ppi/search', [\App\Http\Controllers\v2\RsiaBerkasKomitePpiController::class, 'search'])
+      ->middleware('auth:user-aes');
+
+    Route::apiResource('ppi', \App\Http\Controllers\v2\RsiaBerkasKomitePpiController::class)
+      ->parameters(['ppi' => 'base64_nomor_tgl_terbit'])
+      ->middleware('auth:user-aes');
   });
 });
