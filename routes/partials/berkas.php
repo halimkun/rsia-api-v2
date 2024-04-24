@@ -1,5 +1,6 @@
 <?php
 
+use Orion\Facades\Orion;
 use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => 'surat'], function () {
@@ -46,14 +47,16 @@ Route::group(['prefix' => 'berkas'], function () {
     
     
     // ==================== BERKAS KOMITE MEDIS
-    Route::post('medis/search', [\App\Http\Controllers\v2\RsiaBerkasKomiteMedisController::class, 'search'])
+    Orion::resource('medis', \App\Http\Controllers\Orion\RsiaBerkasKomiteMedisController::class)
+      ->only('search')
       ->middleware('auth:user-aes');
-
+      
     Route::apiResource('medis', \App\Http\Controllers\v2\RsiaBerkasKomiteMedisController::class)
       ->parameters(['medis' => 'base64_nomor_tgl_terbit'])
+      ->middleware('auth:user-aes');
 
 
-    // ==================== BERKAS PPI
+    // ==================== BERKAS KOMITE PPI
     Route::post('ppi/search', [\App\Http\Controllers\v2\RsiaBerkasKomitePpiController::class, 'search'])
       ->middleware('auth:user-aes');
 
