@@ -47,8 +47,7 @@ Route::group(['prefix' => 'berkas'], function () {
     
     
     // ==================== BERKAS KOMITE MEDIS
-    Orion::resource('medis', \App\Http\Controllers\Orion\RsiaBerkasKomiteMedisController::class)
-      ->only('search')
+    Orion::resource('medis', \App\Http\Controllers\Orion\RsiaBerkasKomiteMedisController::class)->only('search')
       ->middleware('auth:user-aes');
       
     Route::apiResource('medis', \App\Http\Controllers\v2\RsiaBerkasKomiteMedisController::class)
@@ -63,5 +62,15 @@ Route::group(['prefix' => 'berkas'], function () {
     Route::apiResource('ppi', \App\Http\Controllers\v2\RsiaBerkasKomitePpiController::class)
       ->parameters(['ppi' => 'base64_nomor_tgl_terbit'])
       ->middleware('auth:user-aes');
+
+
+    // ==================== BERKAS KOMITE KEPERAWATAN
+    Orion::resource('keperawatan', \App\Http\Controllers\Orion\RsiaBerkasKomiteKeperawatanController::class)->only('search')
+      ->middleware('auth:user-aes');
+      
+    Route::apiResource('keperawatan', \App\Http\Controllers\v2\RsiaBerkasKomiteKeperawatanController::class)
+      ->parameters(['keperawatan' => 'base64_nomor_tgl_terbit'])
+      ->middleware('auth:user-aes');
+
   });
 });
