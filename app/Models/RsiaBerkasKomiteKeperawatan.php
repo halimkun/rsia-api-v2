@@ -6,11 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 use Thiagoprz\CompositeKey\HasCompositeKey;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class RsiaBerkasKomiteMedis extends Model
+class RsiaBerkasKomiteKeperawatan extends Model
 {
     use HasFactory, HasCompositeKey;
 
-    protected $table = 'rsia_berkas_komite_medis';
+    protected $table = 'rsia_berkas_komite_keperawatan';
 
     protected $primaryKey = ['nomor', 'tgl_terbit'];
 
