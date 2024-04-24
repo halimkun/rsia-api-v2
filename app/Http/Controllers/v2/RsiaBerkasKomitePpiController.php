@@ -113,6 +113,10 @@ class RsiaBerkasKomitePpiController extends Controller
      */
     public function show($base64NomorTglTerbit)
     {
+        if (!base64_decode($base64NomorTglTerbit, true)) {
+            return \App\Helpers\ApiResponse::error("Invalid parameter", "Parameter tidak valid, pastikan parameter adalah base64 encoded dari nomor dan tanggal misal : 53.2024-03-28", 400);
+        }
+
         $identifier = explode('.', base64_decode($base64NomorTglTerbit));
 
         if (!\Carbon\Carbon::createFromFormat('Y-m-d', $identifier[1])) {
@@ -158,6 +162,10 @@ class RsiaBerkasKomitePpiController extends Controller
      */
     public function update(Request $request, $base64NomorTglTerbit)
     {
+        if (!base64_decode($base64NomorTglTerbit, true)) {
+            return \App\Helpers\ApiResponse::error("Invalid parameter", "Parameter tidak valid, pastikan parameter adalah base64 encoded dari nomor dan tanggal misal : 53.2024-03-28", 400);
+        }
+
         $identifier = explode('.', base64_decode($base64NomorTglTerbit));
         $request->validate([
             'nomor'      => 'required',
@@ -213,6 +221,10 @@ class RsiaBerkasKomitePpiController extends Controller
      */
     public function destroy($base64NomorTglTerbit)
     {
+        if (!base64_decode($base64NomorTglTerbit, true)) {
+            return \App\Helpers\ApiResponse::error("Invalid parameter", "Parameter tidak valid, pastikan parameter adalah base64 encoded dari nomor dan tanggal misal : 53.2024-03-28", 400);
+        }
+        
         $identifier = explode('.', base64_decode($base64NomorTglTerbit));
 
         if (!\Carbon\Carbon::createFromFormat('Y-m-d', $identifier[1])) {
