@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Http\Resources\Pasien\Ranap;
+namespace App\Http\Resources\Pasien;
 
-use Illuminate\Http\Resources\Json\ResourceCollection;
+use Illuminate\Http\Resources\Json\JsonResource;
 
-class PasieCollection extends ResourceCollection
+class PasienResource extends JsonResource
 {
     /**
-     * Transform the resource collection into an array.
+     * Transform the resource into an array.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
