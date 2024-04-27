@@ -3,82 +3,66 @@
 use Orion\Facades\Orion;
 use Illuminate\Support\Facades\Route;
 
-Route::group(['prefix' => 'surat'], function () {
+Route::middleware(['auth:user-aes', 'claim:role,pegawai'])->prefix('surat')->group(function () {
   // ==================== SURAT INTERNAL
-  Route::post('internal/search', [\App\Http\Controllers\v2\RsiaSuratInternalController::class, 'search'])
-    ->middleware('auth:user-aes');
+  Route::post('internal/search', [\App\Http\Controllers\v2\RsiaSuratInternalController::class, 'search']);
 
   Route::resource('internal', \App\Http\Controllers\v2\RsiaSuratInternalController::class, [])
     ->except(['create', 'edit'])
-    ->parameters(['internal' => 'base64_nomor_surat'])
-    ->middleware('auth:user-aes');
+    ->parameters(['internal' => 'base64_nomor_surat']);
 
 
   // ==================== SURAT EKSTERNAL
-  Route::post('eksternal/search', [\App\Http\Controllers\v2\RsiaSuratEksternalController::class, 'search'])
-    ->middleware('auth:user-aes');
+  Route::post('eksternal/search', [\App\Http\Controllers\v2\RsiaSuratEksternalController::class, 'search']);
 
   Route::resource('eksternal', \App\Http\Controllers\v2\RsiaSuratEksternalController::class, [])
     ->except(['create', 'edit'])
-    ->parameters(['eksternal' => 'base64_nomor_surat'])
-    ->middleware('auth:user-aes');
+    ->parameters(['eksternal' => 'base64_nomor_surat']);
 
-    
+
   // ==================== SURAT MASUK
-  Route::post('masuk/search', [\App\Http\Controllers\v2\RsiaSuratMasukController::class, 'search'])
-    ->middleware('auth:user-aes');
+  Route::post('masuk/search', [\App\Http\Controllers\v2\RsiaSuratMasukController::class, 'search']);
 
   Route::apiResource('masuk', \App\Http\Controllers\v2\RsiaSuratMasukController::class)
-    ->parameters(['id'])
-    ->middleware('auth:user-aes');
+    ->parameters(['id']);
 });
 
 
 // ==================== BERKAS KOMITE
-Route::group(['prefix' => 'berkas'], function () {
-  Route::group(['prefix' => 'komite'], function () {
+Route::middleware(['auth:user-aes', 'claim:role,pegawai'])->prefix('berkas')->group(function () {
+  Route::middleware(['auth:user-aes', 'claim:role,pegawai'])->prefix('komite')->group(function () {
     // ==================== BERKAS KOMITE PMKP
-    Route::post('pmkp/search', [\App\Http\Controllers\v2\RsiaBerkasKomitePmkpController::class, 'search'])
-      ->middleware('auth:user-aes');
+    Route::post('pmkp/search', [\App\Http\Controllers\v2\RsiaBerkasKomitePmkpController::class, 'search']);
 
     Route::apiResource('pmkp', \App\Http\Controllers\v2\RsiaBerkasKomitePmkpController::class)
-      ->parameters(['pmkp' => 'base64_nomor_tgl_terbit'])
-      ->middleware('auth:user-aes');
-    
-    
+      ->parameters(['pmkp' => 'base64_nomor_tgl_terbit']);
+
+
     // ==================== BERKAS KOMITE MEDIS
-    Orion::resource('medis', \App\Http\Controllers\Orion\RsiaBerkasKomiteMedisController::class)->only('search')
-      ->middleware('auth:user-aes');
-      
+    Orion::resource('medis', \App\Http\Controllers\Orion\RsiaBerkasKomiteMedisController::class)->only('search');
+
     Route::apiResource('medis', \App\Http\Controllers\v2\RsiaBerkasKomiteMedisController::class)
-      ->parameters(['medis' => 'base64_nomor_tgl_terbit'])
-      ->middleware('auth:user-aes');
+      ->parameters(['medis' => 'base64_nomor_tgl_terbit']);
 
 
     // ==================== BERKAS KOMITE PPI
-    Route::post('ppi/search', [\App\Http\Controllers\v2\RsiaBerkasKomitePpiController::class, 'search'])
-      ->middleware('auth:user-aes');
+    Route::post('ppi/search', [\App\Http\Controllers\v2\RsiaBerkasKomitePpiController::class, 'search']);
 
     Route::apiResource('ppi', \App\Http\Controllers\v2\RsiaBerkasKomitePpiController::class)
-      ->parameters(['ppi' => 'base64_nomor_tgl_terbit'])
-      ->middleware('auth:user-aes');
+      ->parameters(['ppi' => 'base64_nomor_tgl_terbit']);
 
 
     // ==================== BERKAS KOMITE KEPERAWATAN
-    Orion::resource('keperawatan', \App\Http\Controllers\Orion\RsiaBerkasKomiteKeperawatanController::class)->only('search')
-      ->middleware('auth:user-aes');
-      
+    Orion::resource('keperawatan', \App\Http\Controllers\Orion\RsiaBerkasKomiteKeperawatanController::class)->only('search');
+
     Route::apiResource('keperawatan', \App\Http\Controllers\v2\RsiaBerkasKomiteKeperawatanController::class)
-      ->parameters(['keperawatan' => 'base64_nomor_tgl_terbit'])
-      ->middleware('auth:user-aes');
+      ->parameters(['keperawatan' => 'base64_nomor_tgl_terbit']);
 
 
     // ==================== BERKAS KOMITE KESEHATAN
-    Orion::resource('kesehatan', \App\Http\Controllers\Orion\RsiaBerkasKomiteKesehatanController::class)->only('search')
-      ->middleware('auth:user-aes');
-      
+    Orion::resource('kesehatan', \App\Http\Controllers\Orion\RsiaBerkasKomiteKesehatanController::class)->only('search');
+
     Route::apiResource('kesehatan', \App\Http\Controllers\v2\RsiaBerkasKomiteKesehatanController::class)
-      ->parameters(['kesehatan' => 'base64_nomor_tgl_terbit'])
-      ->middleware('auth:user-aes');
+      ->parameters(['kesehatan' => 'base64_nomor_tgl_terbit']);
   });
 });

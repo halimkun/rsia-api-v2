@@ -14,5 +14,6 @@ return [
     'claims' => [
         \App\Claims\RoleClaim::class,
         \App\Claims\DepartemenClaim::class,
+        \App\Claims\JabatanClaim::class,
     ]
 ];
