@@ -16,8 +16,13 @@ Route::apiResource('pasien', \App\Http\Controllers\v2\PasienController::class)
 Route::middleware(['auth:user-aes', 'claim:role,pegawai|dokter'])->prefix('pasien')->group(function () {
     // ==================== PASIEN RAWAT INAP
     Orion::resource('ranap', \App\Http\Controllers\Orion\PasienRawatInapController::class)->only('search')
-        ->parameters(['ranap' => 'id']);
+        ->parameters(['ranap' => 'base64_no_rawat']);
 
     Route::apiResource('ranap', \App\Http\Controllers\v2\PasienRawatInapController::class)->only('index')
-        ->parameters(['ranap' => 'id']);
+        ->parameters(['ranap' => 'base64_no_rawat']);
+
+    // ==================== TARIF PASIEN RAWAT INAP
+    Route::apiResource('ranap.tarif', \App\Http\Controllers\v2\TarifPasienRawatInap::class)->only('index')
+        ->parameters(['ranap' => 'base64_no_rawat']);
+
 });
