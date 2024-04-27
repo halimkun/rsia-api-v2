@@ -4,7 +4,7 @@ namespace App\Claims;
 
 use CorBosman\Passport\AccessToken;
 
-class DepartemenClaim
+class JabatanClaim
 {
     public function handle(AccessToken $token, $next)
     {
@@ -14,11 +14,7 @@ class DepartemenClaim
         if (preg_match("/^\d{1}\.\d{3}\.\d{4}$/", $user_identifier)) {
             $pegawai = self::getPegawaiDetail($user_identifier);
 
-            $token->addClaim('dep', $pegawai->departemen);
-
-            // if ($pegawai->dep) {
-            //     $token->addClaim('dep_name', $pegawai->dep->nama);
-            // }
+            $token->addClaim('jbtn', $pegawai->jbtn);
         }
 
         return $next($token);
@@ -27,7 +23,6 @@ class DepartemenClaim
     private static function getPegawaiDetail($nik)
     {
         return \App\Models\Pegawai::select('nik', 'nama', 'alamat', 'jk', 'jbtn', 'departemen')
-            // ->with('dep')
             ->where('nik', $nik)
             ->first();
     }
