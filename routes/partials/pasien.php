@@ -13,7 +13,7 @@ Route::apiResource('pasien', \App\Http\Controllers\v2\PasienController::class)
 
 
 
-Route::middleware(['auth:user-aes', 'claim:role,pegawai|dokter'])->prefix('pasien')->group(function () {
+Route::middleware(['user-aes', 'claim:role,pegawai|dokter'])->prefix('pasien')->group(function () {
     // ==================== PASIEN RAWAT INAP
     Orion::resource('ranap', \App\Http\Controllers\Orion\PasienRawatInapController::class)->only('search')
         ->parameters(['ranap' => 'base64_no_rawat']);
