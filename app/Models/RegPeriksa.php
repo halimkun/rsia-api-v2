@@ -25,4 +25,10 @@ class RegPeriksa extends Model
     {
         return $this->belongsTo(Pasien::class, 'no_rkm_medis', 'no_rkm_medis');
     }
+
+    public function pasienSomeData()
+    {
+        return $this->belongsTo(Pasien::class, 'no_rkm_medis', 'no_rkm_medis')
+            ->select('no_rkm_medis', 'nm_pasien', 'jk', 'tmp_lahir', 'tgl_lahir');
+    }
 }
