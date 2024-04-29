@@ -3,7 +3,7 @@
 use Orion\Facades\Orion;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:user-aes', 'claim:role,pegawai'])->prefix('surat')->group(function () {
+Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('surat')->group(function () {
   // ==================== SURAT INTERNAL
   Route::post('internal/search', [\App\Http\Controllers\v2\RsiaSuratInternalController::class, 'search']);
 
@@ -29,8 +29,8 @@ Route::middleware(['auth:user-aes', 'claim:role,pegawai'])->prefix('surat')->gro
 
 
 // ==================== BERKAS KOMITE
-Route::middleware(['auth:user-aes', 'claim:role,pegawai'])->prefix('berkas')->group(function () {
-  Route::middleware(['auth:user-aes', 'claim:role,pegawai'])->prefix('komite')->group(function () {
+Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('berkas')->group(function () {
+  Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('komite')->group(function () {
     // ==================== BERKAS KOMITE PMKP
     Route::post('pmkp/search', [\App\Http\Controllers\v2\RsiaBerkasKomitePmkpController::class, 'search']);
 

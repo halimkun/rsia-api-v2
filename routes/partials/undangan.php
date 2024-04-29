@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:user-aes', 'claim:role,pegawai'])->prefix('undangan')->group(function () {
+Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('undangan')->group(function () {
     // ==================== PENERIMA UNDANGAN 
     Route::apiResource('penerima', \App\Http\Controllers\v2\RsiaPenerimaUndanganController::class)
         ->parameters(['penerima' => 'base64_no_surat']);
