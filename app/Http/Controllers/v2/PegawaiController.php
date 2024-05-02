@@ -21,7 +21,10 @@ class PegawaiController extends Controller
         $page = $request->query('page', 1);
         $select = $request->query('select', '*');
 
-        $pegawai = \App\Models\Pegawai::paginate(10, explode(',', $select), 'page', $page);
+        $pegawai = \App\Models\Pegawai::select(explode(',', $select))
+            ->orderBy('nama', 'asc')
+            ->where('stts_aktif', 'AKTIF')
+            ->paginate(10, explode(',', $select), 'page', $page);
 
         return new \App\Http\Resources\Pegawai\CompleteCollection($pegawai);
     }
