@@ -22,7 +22,7 @@ class RsiaSuratInternalController extends Controller
         $select = $request->input('select', '*');
 
         $data = RsiaSuratInternal::select(array_map('trim', explode(',', $select)))
-            ->with(['penanggung_jawab' => function ($query) {
+            ->with(['penanggungJawab' => function ($query) {
                 $query->select('nik', 'nama');
             }])
             ->orderBy('created_at', 'desc')
@@ -43,7 +43,7 @@ class RsiaSuratInternalController extends Controller
         $query = $fd->apply();
 
         $data = $query->select(array_map('trim', explode(',', $select)))
-            ->with(['penanggung_jawab' => function ($query) {
+            ->with(['penanggungJawab' => function ($query) {
                 $query->select('nik', 'nama');
             }])
             ->paginate(10, array_map('trim', explode(',', $select)), 'page', $page);
@@ -115,7 +115,7 @@ class RsiaSuratInternalController extends Controller
         $select = $request->input('select', '*');
 
         $data = RsiaSuratInternal::select(array_map('trim', explode(',', $select)))
-            ->with(['penanggung_jawab' => function ($query) {
+            ->with(['penanggungJawab' => function ($query) {
                 $query->select('nik', 'nama');
             }])
             ->where('no_surat', $decoded_no_surat)
