@@ -89,7 +89,7 @@ class RsiaSuratInternalController extends Controller
         ]);
 
         try {
-            RsiaSuratInternal::create($request->all());
+            RsiaSuratInternal::create($request->except('user'));
         } catch (\Exception $e) {
             return \App\Helpers\ApiResponse::error('Failed to save data', $e->getMessage(), 500);
         }
@@ -172,7 +172,7 @@ class RsiaSuratInternalController extends Controller
         }
 
         try {
-            $data->update($request->all());
+            $data->update($request->except('user'));
         } catch (\Exception $e) {
             return \App\Helpers\ApiResponse::error('Failed to update data', $e->getMessage(), 500);
         }
