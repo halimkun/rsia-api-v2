@@ -16,6 +16,16 @@ class PegawaiController extends Controller
     protected $model = \App\Models\Pegawai::class;
 
     /**
+     * @var string $resource
+     */
+    protected $resource = \App\Http\Resources\Pegawai\PegawaiResource::class;
+
+    /**
+     * @var string $collectionResource
+     */
+    protected $collectionResource = \App\Http\Resources\Pegawai\PegawaiCollection::class;
+
+    /**
      * Retrieves currently authenticated user based on the guard.
      *
      * @return \Illuminate\Contracts\Auth\Authenticatable|null
