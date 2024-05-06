@@ -11,10 +11,10 @@ Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('surat')->group(fu
     ->except(['create', 'edit'])
     ->parameters(['internal' => 'base64_nomor_surat']);
 
-
+  
   // ==================== SURAT EKSTERNAL
-  Route::post('eksternal/search', [\App\Http\Controllers\v2\RsiaSuratEksternalController::class, 'search']);
-
+  Orion::resource('eksternal', \App\Http\Controllers\Orion\RsiaSuratEksternalController::class)->only('search');
+  
   Route::resource('eksternal', \App\Http\Controllers\v2\RsiaSuratEksternalController::class, [])
     ->except(['create', 'edit'])
     ->parameters(['eksternal' => 'base64_nomor_surat']);
