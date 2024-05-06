@@ -15,9 +15,9 @@ class RsiaMasterMenuFiletrackController extends Controller
      */
     public function index(Request $request)
     {
-        $nik = $request->user;
-        $menu = \App\Models\RsiaMasterMenuFiletrack::whereHas('setMenu', function ($query) use ($nik) {
-            $query->where('nik', $nik);
+        $user = Auth::guard('user-aes')->user();
+        $menu = \App\Models\RsiaMasterMenuFiletrack::whereHas('setMenu', function ($query) use ($user) {
+            $query->where('nik', $user->id_user);
         })->orderBy('urutan', 'asc')->get()->groupBy('group');
 
         return new \App\Http\Resources\User\Menu\MenuCollection($menu);

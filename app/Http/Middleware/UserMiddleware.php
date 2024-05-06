@@ -17,10 +17,7 @@ class UserMiddleware
      */
     public function handle(Request $request, Closure $next)
     {
-        if (Auth::guard('user-aes')->check()) {
-            $user = Auth::guard('user-aes')->user();
-            $request->merge(['user' => $user->id_user]);
-            
+        if (Auth::guard('user-aes')->check()) {            
             return $next($request);
         }
 

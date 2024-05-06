@@ -45,6 +45,9 @@ class RsiaKehadiranRapatController extends Controller
             'nik' => 'string|exists:pegawai,nik',
         ]);
 
+        // auth user
+        $user = \Illuminate\Support\Facades\Auth::guard('user-aes')->user();
+
         // check apakah no_surat ada didalam table penerima undangan
         $penerimaUndangan = \App\Models\RsiaPenerimaUndangan::where('no_surat', $request->no_surat)->get();
         if (!$penerimaUndangan) {
@@ -83,11 +86,11 @@ class RsiaKehadiranRapatController extends Controller
             ]);
         } else { // request dari client (mobile)
 
-            if (!$penerimaUndangan->contains('penerima', null, $request->user()->id_user)) {
+            if (!$penerimaUndangan->contains('penerima', null, $user->id_user)) {
                 return ApiResponse::error('user not permitted', 'Anda tidak terdaftar dalam undangan ini', 403);
             }
 
-            $absen = RsiaKehadiranRapat::where('nik', $request->user()->id_user)
+            $absen = RsiaKehadiranRapat::where('nik', $user->id_user)
                 ->where('no_surat', $request->no_surat)
                 ->first();
 
@@ -97,7 +100,7 @@ class RsiaKehadiranRapatController extends Controller
 
             // insert kehadiran rapat
             RsiaKehadiranRapat::create([
-                'nik' => $request->user()->id_user,
+                'nik' => $user->id_user,
                 'no_surat' => $request->no_surat,
             ]);
         }
