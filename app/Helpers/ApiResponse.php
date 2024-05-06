@@ -82,10 +82,12 @@ class ApiResponse
       'access_token' => $token,
     ];
 
-    //  if others is not array
-    throw_if(!is_array($others), new \Exception('Others must be array'));
+    // Check if $others is not an array
+    if (!is_array($others)) {
+      throw new \InvalidArgumentException('Others must be an array');
+    }
 
-    //  loop others
+    // Loop through $others and add to $data
     foreach ($others as $key => $value) {
       $data[$key] = $value;
     }
