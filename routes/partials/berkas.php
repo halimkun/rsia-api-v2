@@ -33,7 +33,7 @@ Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('surat')->group(fu
 Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('berkas')->group(function () {
   Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('komite')->group(function () {
     // ==================== BERKAS KOMITE PMKP
-    Route::post('pmkp/search', [\App\Http\Controllers\v2\RsiaBerkasKomitePmkpController::class, 'search']);
+    Route::post('pmkp/search', [\App\Http\Controllers\Orion\RsiaBerkasKomitePmkpController::class, 'search']);
 
     Route::apiResource('pmkp', \App\Http\Controllers\v2\RsiaBerkasKomitePmkpController::class)
       ->parameters(['pmkp' => 'base64_nomor_tgl_terbit']);
@@ -47,7 +47,7 @@ Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('berkas')->group(f
 
 
     // ==================== BERKAS KOMITE PPI
-    Route::post('ppi/search', [\App\Http\Controllers\v2\RsiaBerkasKomitePpiController::class, 'search']);
+    Route::post('ppi/search', [\App\Http\Controllers\Orion\RsiaBerkasKomitePpiController::class, 'search']);
 
     Route::apiResource('ppi', \App\Http\Controllers\v2\RsiaBerkasKomitePpiController::class)
       ->parameters(['ppi' => 'base64_nomor_tgl_terbit']);
