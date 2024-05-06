@@ -4,33 +4,47 @@ namespace App\Http\Controllers\v2;
 
 use App\Models\User;
 
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
-
+use Illuminate\Support\Facades\RateLimiter;
+use App\Traits\ThrottlesAttempts;
 
 class UserAuthController extends Controller
 {
+    use ThrottlesAttempts;
+
     public function login(Request $request)
     {
+        // Memeriksa apakah terlalu banyak percobaan login
+        if ($this->hasTooManyAttempts($request)) {
+            $this->fireLockoutEvent($request);
+            return $this->sendLockoutResponse($request);
+        }
+
+        // validasi input
         $credentials = $request->validate([
             'username' => 'required|string',
             'password' => 'required|string',
         ]);
 
-
         $user = User::select(
-                DB::raw('AES_DECRYPT(id_user, "' . env('MYSQL_AES_KEY_IDUSER') . '") as id_user'), 
-                DB::raw('AES_DECRYPT(id_user, "' . env('MYSQL_AES_KEY_IDUSER') . '") as username'),
-                DB::raw('AES_DECRYPT(password, "' . env('MYSQL_AES_KEY_PASSWORD') . '") as password')
-            )
+            DB::raw('AES_DECRYPT(id_user, "' . env('MYSQL_AES_KEY_IDUSER') . '") as id_user'),
+            DB::raw('AES_DECRYPT(id_user, "' . env('MYSQL_AES_KEY_IDUSER') . '") as username'),
+            DB::raw('AES_DECRYPT(password, "' . env('MYSQL_AES_KEY_PASSWORD') . '") as password')
+        )
             ->where('id_user', DB::raw('AES_ENCRYPT("' . $credentials['username'] . '", "' . env('MYSQL_AES_KEY_IDUSER') . '")'))
             ->where('password', DB::raw('AES_ENCRYPT("' . $credentials['password'] . '", "' . env('MYSQL_AES_KEY_PASSWORD') . '")'))
             ->first();
 
         if (!$user) {
+            $this->incrementAttempts($request);
             return \App\Helpers\ApiResponse::error('User not found', 'Unauthorized', 401);
         }
+
+        // Auth berhasil, bersihkan percobaan login
+        $this->clearAttempts($request);
 
         // // user found in database loggin in the user
         \Illuminate\Support\Facades\Auth::guard('user-aes')->setUser($user);
@@ -52,7 +66,7 @@ class UserAuthController extends Controller
         // laravel passport revokes the token
         $user = \Illuminate\Support\Facades\Auth::guard('user-aes')->user();
         $user->token()->revoke();
-        
+
         return \App\Helpers\ApiResponse::success('User logged out successfully');
     }
 
