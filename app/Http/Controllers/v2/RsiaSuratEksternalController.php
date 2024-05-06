@@ -56,11 +56,17 @@ class RsiaSuratEksternalController extends Controller
 
         $last_nomor = RsiaSuratEksternal::select('no_surat')
             ->orderBy('created_at', 'desc')
+            ->whereYear('tgl_terbit', \Carbon\Carbon::parse($request->tgl_terbit)->year)
             ->first();
-        $last_nomor = explode('/', $last_nomor->no_surat);
-        $last_nomor[0] = str_pad($last_nomor[0] + 1, 3, '0', STR_PAD_LEFT);
-        $last_nomor[3] = \Carbon\Carbon::now()->format('dmy');
-        $last_nomor = implode('/', $last_nomor);
+        
+        if ($last_nomor) {
+            $last_nomor = explode('/', $last_nomor->no_surat);
+            $last_nomor[0] = str_pad($last_nomor[0] + 1, 3, '0', STR_PAD_LEFT);
+            $last_nomor[3] = \Carbon\Carbon::parse($request->tgl_terbit)->format('dmy');
+            $last_nomor = implode('/', $last_nomor);
+        } else {
+            $last_nomor = '001/B/S-RSIA/' . \Carbon\Carbon::parse($request->tgl_terbit)->format('dmy');
+        }
 
         $request->merge([
             'no_surat' => $last_nomor,
