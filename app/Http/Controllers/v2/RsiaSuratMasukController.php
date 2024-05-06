@@ -44,6 +44,10 @@ class RsiaSuratMasukController extends Controller
      */
     public function store(Request $request)
     {
+        if (!$request->hasFile('file')) {
+            $request->request->remove('file');
+        }
+
         $file = $request->file("file");
         $request->merge([
             'status' => '1',
@@ -63,6 +67,18 @@ class RsiaSuratMasukController extends Controller
         $request->merge([
             'berkas' => $file_name ?? '',
         ]);
+
+        if ($request->pelaksanaan == 'null') {
+            $request->merge([
+                'pelaksanaan' => null,
+            ]);
+        }
+
+        if ($request->pelaksanaan_end == 'null') {
+            $request->merge([
+                'pelaksanaan_end' => null,
+            ]);
+        }
 
         try {
             \DB::transaction(function () use ($request) {
@@ -97,23 +113,6 @@ class RsiaSuratMasukController extends Controller
         return new \App\Http\Resources\Berkas\CompleteResource($data);
     }
 
-    public function search(Request $request)
-    {
-        $page = $request->input('page', 1);
-        $select = $request->input('select', '*');
-
-        $orion_request = new OrionRequest($request->all());
-        $actionMethod = $request->route()->getActionMethod();
-
-        $fd = new \App\Services\GetFilterData(new \App\Models\RsiaSuratMasuk(), $orion_request, $actionMethod);
-        $query = $fd->apply();
-
-        $data = $query->select(array_map('trim', explode(',', $select)))
-            ->paginate(10, array_map('trim', explode(',', $select)), 'page', $page);
-
-        return new \App\Http\Resources\Berkas\CompleteCollection($data);
-    }
-
     /**
      * Show the form for editing the specified resource.
      *
@@ -134,6 +133,10 @@ class RsiaSuratMasukController extends Controller
      */
     public function update(Request $request, $no)
     {
+        if (!$request->hasFile('file')) {
+            $request->request->remove('file');
+        }
+
         $file = $request->file("file");
         $request->validate(self::validationRule());
 
@@ -155,6 +158,18 @@ class RsiaSuratMasukController extends Controller
         $request->merge([
             'berkas' => $file ? $file_name : $data->berkas,
         ]);
+
+        if ($request->pelaksanaan == 'null') {
+            $request->merge([
+                'pelaksanaan' => null,
+            ]);
+        }
+
+        if ($request->pelaksanaan_end == 'null') {
+            $request->merge([
+                'pelaksanaan_end' => null,
+            ]);
+        }
 
         try {
             \DB::transaction(function () use ($request, $data) {
@@ -215,12 +230,12 @@ class RsiaSuratMasukController extends Controller
             "pengirim"        => "required|string",
             "tgl_surat"       => "date|nullable",
             "perihal"         => "required|string",
-            "pelaksanaan"     => "date|nullable",
-            "pelaksanaan_end" => "date|nullable",
+            "pelaksanaan"     => "nullable",
+            "pelaksanaan_end" => "nullable",
             "tempat"          => "string|nullable",
             "ket"             => "required|string|in:-,fisik,email,wa,larsi",
             "berkas"          => "string||nullable",
-            "status"          => "required|string|in:0,1",
+            "status"          => "string|in:0,1",
         ];
     }
 }

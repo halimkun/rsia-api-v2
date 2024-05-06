@@ -21,35 +21,4 @@ class RsiaSuratMasuk extends Model
         'nosimrs' => 'date',
         'no_surat' => 'string',
     ];
-
-
-    public function exposedScopes()
-    {
-        return [];
-    }
-
-    public function searchableBy()
-    {
-        return ['no_surat', 'pengirim', 'perihal', 'pelaksanaan', 'tempat'];
-    }
-
-    public function filterableBy()
-    {
-        return ['no_surat', 'tgl_surat', 'pelaksanaan', 'ket',];
-    }
-
-    public function sortableBy()
-    {
-        return ['no', 'no_simrs', 'perihal', 'pengirim', 'tgl_surat', 'pelaksanaan'];
-    }
-
-    public function aggregatableBy()
-    {
-        return [];
-    }
-
-    public function includableBy()
-    {
-        return [];
-    }
 }

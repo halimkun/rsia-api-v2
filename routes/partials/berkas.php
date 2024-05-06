@@ -4,7 +4,7 @@ use Orion\Facades\Orion;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('surat')->group(function () {
-  // ==================== SURAT INTERNAL
+
   
   Orion::resource('internal', \App\Http\Controllers\Orion\RsiaSuratInternalController::class)->only('search');
   Route::resource('internal', \App\Http\Controllers\v2\RsiaSuratInternalController::class, [])
@@ -21,8 +21,8 @@ Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('surat')->group(fu
 
 
   // ==================== SURAT MASUK
-  Route::post('masuk/search', [\App\Http\Controllers\v2\RsiaSuratMasukController::class, 'search']);
-
+  Orion::resource('masuk', \App\Http\Controllers\Orion\RsiaSuratMasukController::class)->only('search');
+  
   Route::apiResource('masuk', \App\Http\Controllers\v2\RsiaSuratMasukController::class)
     ->parameters(['id']);
 });
