@@ -5,12 +5,13 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('surat')->group(function () {
 
-  
+  // ==================== SURAT INTERNAL  
   Orion::resource('internal', \App\Http\Controllers\Orion\RsiaSuratInternalController::class)->only('search');
+  
   Route::resource('internal', \App\Http\Controllers\v2\RsiaSuratInternalController::class, [])
-    ->except(['create', 'edit'])
-    ->parameters(['internal' => 'base64_nomor_surat']);
-
+  ->except(['create', 'edit'])
+  ->parameters(['internal' => 'base64_nomor_surat']);
+  
   
   // ==================== SURAT EKSTERNAL
   Orion::resource('eksternal', \App\Http\Controllers\Orion\RsiaSuratEksternalController::class)->only('search');

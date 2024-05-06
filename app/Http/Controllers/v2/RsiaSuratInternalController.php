@@ -31,26 +31,6 @@ class RsiaSuratInternalController extends Controller
         return new \App\Http\Resources\Berkas\CompleteCollection($data);
     }
 
-    public function search(Request $request)
-    {
-        $page = $request->input('page', 1);
-        $select = $request->input('select', '*');
-
-        $orion_request = new OrionRequest($request->all());
-        $actionMethod = $request->route()->getActionMethod();
-
-        $fd = new \App\Services\GetFilterData(new \App\Models\RsiaSuratEksternal(), $orion_request, $actionMethod);
-        $query = $fd->apply();
-
-        $data = $query->select(array_map('trim', explode(',', $select)))
-            ->with(['penanggungJawab' => function ($query) {
-                $query->select('nik', 'nama');
-            }])
-            ->paginate(10, array_map('trim', explode(',', $select)), 'page', $page);
-
-        return new \App\Http\Resources\Berkas\CompleteCollection($data);
-    }
-
     /**
      * Menampilkan form untuk membuat surat internal baru
      * 
@@ -81,6 +61,7 @@ class RsiaSuratInternalController extends Controller
             ->first();
         $last_nomor = explode('/', $last_nomor->no_surat);
         $last_nomor[0] = str_pad($last_nomor[0] + 1, 3, '0', STR_PAD_LEFT);
+        $last_nomor[3] = \Carbon\Carbon::now()->format('dmy');
         $last_nomor = implode('/', $last_nomor);
 
         $request->merge([
