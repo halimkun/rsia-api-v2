@@ -4,25 +4,26 @@ use Orion\Facades\Orion;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('surat')->group(function () {
-  // ==================== SURAT INTERNAL
-  
+
+  // ==================== SURAT INTERNAL  
   Orion::resource('internal', \App\Http\Controllers\Orion\RsiaSuratInternalController::class)->only('search');
+  
   Route::resource('internal', \App\Http\Controllers\v2\RsiaSuratInternalController::class, [])
-    ->except(['create', 'edit'])
-    ->parameters(['internal' => 'base64_nomor_surat']);
-
-
+  ->except(['create', 'edit'])
+  ->parameters(['internal' => 'base64_nomor_surat']);
+  
+  
   // ==================== SURAT EKSTERNAL
-  Route::post('eksternal/search', [\App\Http\Controllers\v2\RsiaSuratEksternalController::class, 'search']);
-
+  Orion::resource('eksternal', \App\Http\Controllers\Orion\RsiaSuratEksternalController::class)->only('search');
+  
   Route::resource('eksternal', \App\Http\Controllers\v2\RsiaSuratEksternalController::class, [])
     ->except(['create', 'edit'])
     ->parameters(['eksternal' => 'base64_nomor_surat']);
 
 
   // ==================== SURAT MASUK
-  Route::post('masuk/search', [\App\Http\Controllers\v2\RsiaSuratMasukController::class, 'search']);
-
+  Orion::resource('masuk', \App\Http\Controllers\Orion\RsiaSuratMasukController::class)->only('search');
+  
   Route::apiResource('masuk', \App\Http\Controllers\v2\RsiaSuratMasukController::class)
     ->parameters(['id']);
 });
