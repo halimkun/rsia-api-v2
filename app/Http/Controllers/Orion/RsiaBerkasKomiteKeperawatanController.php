@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\orion;
 
 use Illuminate\Http\Request;
-use App\Http\Controllers\Controller;
+use Orion\Http\Controllers\Controller;
 use Orion\Concerns\DisableAuthorization;
 
 class RsiaBerkasKomiteKeperawatanController extends Controller
