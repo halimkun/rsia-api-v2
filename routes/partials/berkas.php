@@ -31,6 +31,16 @@ Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('surat')->group(fu
 
 // ==================== BERKAS KOMITE
 Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('berkas')->group(function () {
+  // ==================== BERKAS IHT
+  Orion::resource('iht', \App\Http\Controllers\Orion\RsiaBerkasIhtController::class)->only('search');
+  Route::apiResource('iht', \App\Http\Controllers\v2\RsiaBerkasIhtController::class)
+    ->parameters(['iht' => 'base64_nomor_tgl_terbit']);
+
+  // ==================== BERKAS RADIOLOGI
+  Orion::resource('radiologi', \App\Http\Controllers\Orion\RsiaBerkasRadiologiController::class)->only('search');
+  Route::apiResource('radiologi', \App\Http\Controllers\v2\RsiaBerkasRadiologiController::class)
+    ->parameters(['radiologi' => 'base64_nomor_tgl_terbit']);
+
   Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('komite')->group(function () {
     // ==================== BERKAS KOMITE PMKP
     Route::post('pmkp/search', [\App\Http\Controllers\Orion\RsiaBerkasKomitePmkpController::class, 'search']);
