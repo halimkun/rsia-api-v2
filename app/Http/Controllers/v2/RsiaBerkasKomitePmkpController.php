@@ -2,8 +2,9 @@
 
 namespace App\Http\Controllers\v2;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
 use Orion\Http\Requests\Request as OrionRequest;
 
 class RsiaBerkasKomitePmkpController extends Controller
@@ -87,13 +88,19 @@ class RsiaBerkasKomitePmkpController extends Controller
         ]);
 
         $nomor = \App\Helpers\komite\LastNomor::get(new \App\Models\RsiaBerkasKomitePmkp(), $request->tgl_terbit);
+        $buildedNomor = [
+            str_pad($nomor, 3, '0', STR_PAD_LEFT),
+            'PMKP-RSIA',
+            \Carbon\Carbon::createFromFormat('Y-m-d', $request->tgl_terbit)->format('dmy'),
+        ];
 
         $request->merge([
             'nomor' => $nomor,
+            'no_surat' => implode('/', $buildedNomor),
         ]);
 
         try {
-            \DB::transaction(function () use ($request) {
+            DB::transaction(function () use ($request) {
                 \App\Models\RsiaBerkasKomitePmkp::create($request->all());
             });
         } catch (\Exception $e) {
@@ -187,7 +194,7 @@ class RsiaBerkasKomitePmkpController extends Controller
         }
 
         try {
-            \DB::transaction(function () use ($request, $data) {
+            DB::transaction(function () use ($request, $data) {
                 $data->update($request->except(['nomor', 'tgl_terbit']));
             });
         } catch (\Exception $e) {
@@ -228,7 +235,7 @@ class RsiaBerkasKomitePmkpController extends Controller
         }
 
         try {
-            \DB::transaction(function () use ($data) {
+            DB::transaction(function () use ($data) {
                 $data->delete();
             });
         } catch (\Exception $e) {
