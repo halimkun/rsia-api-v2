@@ -2,16 +2,17 @@
 
 namespace App\Http\Controllers\v2;
 
+use App\Http\Controllers\Controller;
+use App\Models\RsiaBerkasRadiologi;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\Controller;
 
-class RsiaBerkasKomiteKeperawatanController extends Controller
+class RsiaBerkasRadiologiController extends Controller
 {
     /**
      * Menampilkan semua data
      * 
-     * Menampilkan semua data yang ada pada tabel berkas komite keperawatan. data akan diurutkan berdasarkan tanggal terbit data secara descending. dan diformat dalam bentuk paginasi.
+     * Menampilkan semua data yang ada pada tabel berkas komite ppi. data akan diurutkan berdasarkan tanggal terbit data secara descending. dan diformat dalam bentuk paginasi.
      * 
      * @return \App\Http\Resources\Berkas\Komite\CompleteCollection
      */
@@ -20,7 +21,7 @@ class RsiaBerkasKomiteKeperawatanController extends Controller
         $page = $request->input('page', 1);
         $select = $request->input('select', '*');
 
-        $data = \App\Models\RsiaBerkasKomiteKeperawatan::select(array_map('trim', explode(',', $select)))
+        $data = RsiaBerkasRadiologi::select(array_map('trim', explode(',', $select)))
             ->with('penanggungjawab')
             ->where('status', 1)
             ->orderBy('created_at', 'desc')
@@ -58,10 +59,10 @@ class RsiaBerkasKomiteKeperawatanController extends Controller
             'tgl_terbit' => 'required|date',
         ]);
 
-        $nomor = \App\Helpers\komite\LastNomor::get(new \App\Models\RsiaBerkasKomiteKeperawatan(), $request->tgl_terbit);
+        $nomor = \App\Helpers\komite\LastNomor::get(new RsiaBerkasRadiologi(), $request->tgl_terbit);
         $buildedNomor = [
             str_pad($nomor, 3, '0', STR_PAD_LEFT),
-            'KPRT-RSIA',
+            'RAD-RSIA',
             \Carbon\Carbon::createFromFormat('Y-m-d', $request->tgl_terbit)->format('dmy'),
         ];
 
@@ -72,7 +73,7 @@ class RsiaBerkasKomiteKeperawatanController extends Controller
 
         try {
             DB::transaction(function () use ($request) {
-                \App\Models\RsiaBerkasKomiteKeperawatan::create($request->all());
+                RsiaBerkasRadiologi::create($request->all());
             });
         } catch (\Exception $e) {
             return \App\Helpers\ApiResponse::error("failed to save data", $e->getMessage(), 500);
@@ -101,7 +102,7 @@ class RsiaBerkasKomiteKeperawatanController extends Controller
             return \App\Helpers\ApiResponse::error("Invalid date format", "Format tanggal tidak valid (YYYY-MM-DD)", 400);
         }
 
-        $data = \App\Models\RsiaBerkasKomiteKeperawatan::where('nomor', $identifier[0])
+        $data = RsiaBerkasRadiologi::where('nomor', $identifier[0])
             ->where('tgl_terbit', $identifier[1])
             ->with('penanggungjawab')
             ->first();
@@ -164,7 +165,7 @@ class RsiaBerkasKomiteKeperawatanController extends Controller
             return \App\Helpers\ApiResponse::error("Invalid request", "Nomor atau tanggal terbit tidak valid", 400);
         }
 
-        $data = \App\Models\RsiaBerkasKomiteKeperawatan::where('nomor', $request->nomor)
+        $data = RsiaBerkasRadiologi::where('nomor', $request->nomor)
             ->where('tgl_terbit', $request->tgl_terbit)
             ->first();
 
@@ -202,14 +203,14 @@ class RsiaBerkasKomiteKeperawatanController extends Controller
         if (!base64_decode($base64NomorTglTerbit, true)) {
             return \App\Helpers\ApiResponse::error("Invalid parameter", "Parameter tidak valid, pastikan parameter adalah base64 encoded dari nomor dan tanggal misal : 53.2024-03-28", 400);
         }
-
+        
         $identifier = explode('.', base64_decode($base64NomorTglTerbit));
 
         if (!\Carbon\Carbon::createFromFormat('Y-m-d', $identifier[1])) {
             return \App\Helpers\ApiResponse::error("Invalid date format", "Format tanggal tidak valid (YYYY-MM-DD)", 400);
         }
 
-        $data = \App\Models\RsiaBerkasKomiteKeperawatan::where('nomor', $identifier[0])
+        $data = RsiaBerkasRadiologi::where('nomor', $identifier[0])
             ->where('tgl_terbit', $identifier[1])
             ->first();
 
