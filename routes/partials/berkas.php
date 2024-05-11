@@ -29,6 +29,13 @@ Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('surat')->group(fu
 // ==================== BERKAS
 Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('berkas')->group(function () {
 
+  
+    // ==================== BERKAS SK
+  Orion::resource('sk', \App\Http\Controllers\Orion\RsiaSkController::class)->only('search');
+  Route::apiResource('sk', \App\Http\Controllers\v2\RsiaSkController::class)
+    ->parameters(['sk' => 'base64_nomor_tgl_terbit']);
+  
+  
   // ==================== BERKAS IHT
   Orion::resource('iht', \App\Http\Controllers\Orion\RsiaBerkasIhtController::class)->only('search');
   Route::apiResource('iht', \App\Http\Controllers\v2\RsiaBerkasIhtController::class)
