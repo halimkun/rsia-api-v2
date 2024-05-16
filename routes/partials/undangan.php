@@ -1,6 +1,11 @@
 <?php
 
+use Orion\Facades\Orion;
 use Illuminate\Support\Facades\Route;
+
+Orion::resource('undangan', \App\Http\Controllers\Orion\RsiaUndangan::class)
+    // ->middleware(['user-aes', 'claim:role,pegawai'])
+    ->only('search');
 
 Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('undangan')->group(function () {
     // ==================== PENERIMA UNDANGAN 
