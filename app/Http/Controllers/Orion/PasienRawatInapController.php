@@ -16,6 +16,16 @@ class PasienRawatInapController extends Controller
     protected $model = \App\Models\KamarInap::class;
 
     /**
+     * @var string $resource
+     */
+    protected $resource = \App\Http\Resources\Pasien\Ranap\PasienRanapResource::class;
+
+    /**
+     * @var string $collectionResource
+     */
+    protected $collectionResource = \App\Http\Resources\Pasien\Ranap\PasienRanapCollection::class;
+
+    /**
      * Retrieves currently authenticated user based on the guard.
      *
      * @return \Illuminate\Contracts\Auth\Authenticatable|null
@@ -32,7 +42,7 @@ class PasienRawatInapController extends Controller
      */
     public function filterableBy(): array
     {
-        return ['no_rawat', 'kd_kamar', 'tgl_masuk', 'tgl_keluar', 'lama', 'stts_pulang'];
+        return ['no_rawat', 'kd_kamar', 'tgl_masuk', 'tgl_keluar', 'jam_masuk', 'jam_keluar', 'stts_pulang'];
     }
 
     /**
@@ -42,17 +52,17 @@ class PasienRawatInapController extends Controller
      */
     public function sortableBy(): array
     {
-        return ['no_rawat', 'kd_kamar', 'tgl_masuk', 'tgl_keluar', 'lama', 'stts_pulang'];
+        return ['no_rawat', 'kd_kamar', 'tgl_masuk', 'tgl_keluar', 'stts_pulang'];
     }
 
     /**
-    * The relations and fields that are allowed to be aggregated on a resource.
-    *
-    * @return array
-    */
-    public function aggregates() : array
+     * The relations and fields that are allowed to be aggregated on a resource.
+     *
+     * @return array
+     */
+    public function aggregates(): array
     {
-        return ['pasien.nm_pasien', 'pasien.no_rkm_medis', 'pasien.jk', 'pasien.tmp_lahir', 'pasien.tgl_lahir'];
+        return ['pasien.nm_pasien', 'lama', 'lamaInap', 'lamaInap.lama', 'pasien.no_rkm_medis', 'pasien.jk', 'pasien.tmp_lahir', 'pasien.tgl_lahir'];
     }
 
     /**
@@ -72,7 +82,7 @@ class PasienRawatInapController extends Controller
      */
     public function includes(): array
     {
-        return ['regPeriksa', 'pasien'];
+        return ['regPeriksa', 'pasien', 'lamaInap', 'sep', 'sepSimple', 'regPeriksaSimple'];
     }
 
     /**

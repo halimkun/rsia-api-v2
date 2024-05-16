@@ -30,9 +30,27 @@ class KamarInap extends Model
         return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat');
     }
 
+    public function lamaInap()
+    {
+        return $this->hasMany(KamarInap::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'lama');
+    }
+
+    public function regPeriksaSimple()
+    {
+        return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'no_rkm_medis', 'tgl_registrasi', 'jam_reg');
+    }
+
     public function pasien()
     {
         return $this->hasOneThrough(Pasien::class, RegPeriksa::class, 'no_rawat', 'no_rkm_medis', 'no_rawat', 'no_rkm_medis')
             ->select('pasien.no_rkm_medis', 'pasien.nm_pasien', 'pasien.jk', 'pasien.tmp_lahir', 'pasien.tgl_lahir');
+    }
+
+    public function sep() {
+        return $this->hasOne(BridgingSep::class, 'no_rawat', 'no_rawat');
+    }
+
+    public function sepSimple() {
+        return $this->hasOne(BridgingSep::class, 'no_rawat', 'no_rawat')->select('no_sep', 'no_rawat', 'diagawal', 'klsrawat');
     }
 }
