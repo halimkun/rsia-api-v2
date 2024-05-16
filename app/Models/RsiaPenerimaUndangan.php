@@ -12,7 +12,7 @@ class RsiaPenerimaUndangan extends Model
     protected $table = 'rsia_penerima_undangan';
 
     protected $primaryKey = ['no_surat', 'penerima', 'tipe'];
-    
+
     public $incrementing = false;
 
     public $timestamps = false;
@@ -25,4 +25,10 @@ class RsiaPenerimaUndangan extends Model
         'tipe' => 'string',
         'model' => 'string',
     ];
+
+    // detail penerima
+    public function detail()
+    {
+        return $this->belongsTo(Pegawai::class, 'penerima', 'nik')->select('nik', 'nama', 'jbtn', 'departemen');
+    }
 }

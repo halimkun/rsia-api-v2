@@ -52,6 +52,11 @@ class RsiaSuratInternal extends Model
 
     public $timestamps = false;
     
+    
+    public function penerimaUndangan()
+    {
+        return $this->morphMany(RsiaPenerimaUndangan::class, 'undangan');
+    }
 
     public function penanggungJawab()
     {
