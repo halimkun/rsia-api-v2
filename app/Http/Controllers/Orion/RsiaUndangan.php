@@ -52,7 +52,7 @@ class RsiaUndangan extends Controller
      */
     public function filterableBy(): array
     {
-        return [];
+        return ['tipe'];
     }
 
     /**

@@ -22,8 +22,17 @@ class CompleteCollection extends ResourceCollection
         return [
             'undangan' => $undangan,
             'penerima' => $this->collection->map(function ($item) {
-                $item['nama'] = \App\Models\Pegawai::where('nik', $item['penerima'])->first()->nama;
+                $pegawai = \App\Models\Pegawai::where('nik', $item['penerima'])->first();
+                $dep = \App\Models\Departemen::where('dep_id', $pegawai->departemen)->first();
+
+                $item['nama'] = $pegawai->nama;
                 $item['nik'] = $item['penerima'];
+                $item['bidang'] = $pegawai->bidang;
+                $item['jk'] = $pegawai->jk;
+                $item['departemen'] = $pegawai->departemen;
+                $item['dep'] = $dep;
+
+
                 unset($item['penerima']);
                 
                 return collect($item)->except(['model', 'tipe']);

@@ -40,7 +40,7 @@ class RsiaKehadiranRapatController extends Controller
         // TODO : make nik can use multiple nik
         $request->validate([
             'no_surat' => 'required|string',
-            'tipe' => 'required|string|in:internal,notulen,komite',
+            'tipe' => 'required|string|in:surat/internal,komite/ppi,komite/pmkp,komite/medis,komite/keperawatan,komite/kesehatan,berkas/notulen',
             'model' => 'required|string|regex:/App\\\\Models\\\\[A-Za-z]+/',
             'nik' => 'string|exists:pegawai,nik',
         ]);

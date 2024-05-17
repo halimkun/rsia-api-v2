@@ -40,13 +40,18 @@ class RsiaPenerimaUndanganController extends Controller
     {
         $request->validate([
             'no_surat' => 'required|string',
-            'tipe' => 'required|string|in:internal,notulen,komite',
-            'model' => 'required|string|regex:/App\\\\Models\\\\[A-Za-z]+/',
+            'tipe' => 'required|string|in:surat/internal,komite/ppi,komite/pmkp,komite/medis,komite/keperawatan,komite/kesehatan,berkas/notulen',
+            'model' => 'required|string',
+        ]);
+
+        // App\\\\Models\\\\RsiaSuratInternal to App\Models\RsiaSuratInternal
+        $request->merge([
+            'model' => str_replace('\\\\', '\\', $request->model),
         ]);
 
         // check if model file exists model from request is App\Models\RsiaSuratInternal
         if (!file_exists(app_path('Models/' . str_replace('App\Models\\', '', $request->model) . '.php'))) {
-            return ApiResponse::error('Model not found', 'Model ' . $request->model . ' not found', 404);
+            return ApiResponse::error('Model not found', 'Model ' . $request->model . ' not found -- ' . str_replace('App\Models\\', '', $request->model), 404);
         }
 
         // check if no_surat is base64 encoded or not if base 64 decode it if not return as is
@@ -83,7 +88,7 @@ class RsiaPenerimaUndanganController extends Controller
 
         // inset penerima undangan to database
         try {
-            \DB::transaction(function () use ($request, $penerima, $no_surat) {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($request, $penerima, $no_surat) {
                 \App\Models\RsiaPenerimaUndangan::where('no_surat', $no_surat)->delete();
 
                 foreach ($penerima as $nik) {
