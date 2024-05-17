@@ -62,7 +62,7 @@ class PasienRawatJalanController extends Controller
      */
     public function alwaysIncludes(): array
     {
-        return ['pasienSomeData']; // TODO : fix only select fields that are needed
+        return ['pasienSomeData'];
     }
 
     /**

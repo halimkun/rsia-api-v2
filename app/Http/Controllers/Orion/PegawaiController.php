@@ -36,6 +36,16 @@ class PegawaiController extends Controller
     }
 
     /**
+     * The attributes that are used for sorting.
+     *
+     * @return array
+     */
+    public function sortableBy(): array
+    {
+        return ['nama', 'nik'];
+    }
+
+    /**
      * The attributes that are used for searching.
      *
      * @return array
@@ -46,12 +56,22 @@ class PegawaiController extends Controller
     }
 
     /**
+     * The relations that are allowed to be included together with a resource.
+     *
+     * @return array
+     */
+    public function includes(): array
+    {
+        return ['dep'];
+    }
+
+    /**
      * The attributes that are used for filtering.
      *
      * @return array
      */
     public function filterableBy(): array
     {
-        return ['stts_aktif'];
+        return ['stts_aktif', 'departemen', 'nik', 'departemen'];
     }
 }

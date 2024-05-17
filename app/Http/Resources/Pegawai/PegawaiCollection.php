@@ -15,9 +15,20 @@ class PegawaiCollection extends ResourceCollection
     public function toArray($request)
     {
         $select = $request->input('select', '*');
-        $data = $this->collection->transform(function ($pegawai) use ($select) {
-            $pegawai = $pegawai->only(explode(',', $select));
-            return $pegawai;
+        $data = $this->collection->transform(function ($item) use ($select, $request) {
+
+            if ($select == "*") {
+                $modifieditem = $item;
+            } else {
+                $modifieditem = $item->only(explode(',', $select));
+            }
+
+            // add dep to item
+            if ($request->has('include') && in_array('dep', explode(',', $request->input('include')))) {
+                $modifieditem['dep'] = $item->dep;
+            }
+
+            return $modifieditem;
         });
 
         return $data;

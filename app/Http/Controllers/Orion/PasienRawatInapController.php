@@ -72,7 +72,7 @@ class PasienRawatInapController extends Controller
      */
     public function alwaysIncludes(): array
     {
-        return ['pasien']; // TODO : fix only select fields that are needed
+        return ['pasien'];
     }
 
     /**
