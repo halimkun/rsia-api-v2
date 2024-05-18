@@ -26,6 +26,16 @@ class PasienRawatInapController extends Controller
     protected $collectionResource = \App\Http\Resources\Pasien\Ranap\PasienRanapCollection::class;
 
     /**
+     * Default pagination limit.
+     *
+     * @return int
+     */
+    public function limit(): int
+    {
+        return 10;
+    }
+
+    /**
      * Retrieves currently authenticated user based on the guard.
      *
      * @return \Illuminate\Contracts\Auth\Authenticatable|null
@@ -42,7 +52,7 @@ class PasienRawatInapController extends Controller
      */
     public function filterableBy(): array
     {
-        return ['no_rawat', 'kd_kamar', 'tgl_masuk', 'tgl_keluar', 'jam_masuk', 'jam_keluar', 'stts_pulang'];
+        return ['no_rawat', 'kd_kamar', 'tgl_masuk', 'tgl_keluar', 'jam_masuk', 'jam_keluar', 'stts_pulang', 'regPeriksa.tgl_registrasi'];
     }
 
     /**
@@ -92,6 +102,6 @@ class PasienRawatInapController extends Controller
      */
     public function searchableBy(): array
     {
-        return ['no_rawat', 'pasien.nm_pasien', 'pasien.no_rkm_medis'];
+        return ['no_rawat', 'pasien.nm_pasien', 'pasien.no_rkm_medis', 'sep.no_sep'];
     }
 }
