@@ -9,11 +9,15 @@ Route::middleware(['user-aes', 'claim:role,pegawai|dokter'])->prefix('pasien')->
         ->parameters(['ranap' => 'base64_no_rawat']);
     Route::apiResource('ranap', \App\Http\Controllers\v2\PasienRawatInapController::class)->only('index')
         ->parameters(['ranap' => 'base64_no_rawat']);
-    Route::post('ranap/tarif', [\App\Http\Controllers\v2\PasienRawatInapController::class, 'tarif'])
-        ->name('ranap.tarif');
+
+    // ==================== PASIEN RAWAT INAP CUSTOM ROUTE
+    Route::post('ranap/real-cost', [\App\Http\Controllers\v2\RealCostController::class, 'ranap'])
+        ->name('ranap.real-cost');
+    Route::post('ranap/grouping-cost', [\App\Http\Controllers\v2\GroupingCostController::class, 'ranap'])
+        ->name('ranap.grouping-cost');
 
     // ==================== TARIF PASIEN RAWAT INAP
-    Route::apiResource('ranap.tarif', \App\Http\Controllers\v2\TarifPasienRawatInap::class)->only('index')
+    Route::apiResource('ranap.real-cost', \App\Http\Controllers\v2\RealCostPasienRawatInap::class)->only('index')
         ->parameters(['ranap' => 'base64_no_rawat']);
 
 

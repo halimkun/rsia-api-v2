@@ -6,7 +6,7 @@ use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class TarifPasienRawatInap extends Controller
+class RealCostPasienRawatInap extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -27,7 +27,7 @@ class TarifPasienRawatInap extends Controller
             return ApiResponse::error('Data not found', 'Data not found', 404);
         }
 
-        return new \App\Http\Resources\Pasien\Tarif\RunningTarif($data);
+        return new \App\Http\Resources\Pasien\Tarif\RealCostResource($data);
     }
 
     /**

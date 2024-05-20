@@ -52,7 +52,7 @@ class PasienRawatInapController extends Controller
      */
     public function filterableBy(): array
     {
-        return ['no_rawat', 'kd_kamar', 'tgl_masuk', 'tgl_keluar', 'jam_masuk', 'jam_keluar', 'stts_pulang', 'regPeriksa.tgl_registrasi'];
+        return ['no_rawat', 'kd_kamar', 'tgl_masuk', 'tgl_keluar', 'jam_masuk', 'jam_keluar', 'stts_pulang', 'regPeriksa.tgl_registrasi', "regPeriksa.kd_pj"];
     }
 
     /**
@@ -102,6 +102,6 @@ class PasienRawatInapController extends Controller
      */
     public function searchableBy(): array
     {
-        return ['no_rawat', 'pasien.nm_pasien', 'pasien.no_rkm_medis', 'sep.no_sep'];
+        return ['no_rawat', 'pasien.nm_pasien', 'pasien.no_rkm_medis', 'sep.no_sep', 'regPeriksa.kd_pj'];
     }
 }

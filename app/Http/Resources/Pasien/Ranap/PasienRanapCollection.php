@@ -16,7 +16,6 @@ class PasienRanapCollection extends ResourceCollection
     public function toArray($request)
     {
         // return parent::toArray($request);
-        // sleep(50);
 
         $data = $this->collection->map(function ($item) {
 
