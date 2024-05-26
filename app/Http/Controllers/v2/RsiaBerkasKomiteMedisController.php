@@ -31,34 +31,6 @@ class RsiaBerkasKomiteMedisController extends Controller
     }
 
     /**
-     * Pencarian data
-     * 
-     * Fitur pencarian data ini memanfaatkan basis kode laravel orion, dimana parameter yang bisa digunakan seusai dengan yang ada didalam dokumentasi orion.
-     * https://tailflow.github.io/laravel-orion-docs/v2.x/guide/search.html
-     * 
-     * @return \App\Http\Resources\Berkas\Komite\CompleteCollection
-     */
-    public function search(Request $request)
-    {
-        $page = $request->input('page', 1);
-        $select = $request->input('select', '*');
-
-        $orion_request = new OrionRequest($request->all());
-        $actionMethod = $request->route()->getActionMethod();
-
-        $fd = new \App\Services\GetFilterData(new \App\Models\RsiaBerkasKomiteMedis(), $orion_request, $actionMethod);
-        $query = $fd->apply();
-
-        $data = $query->select(array_map('trim', explode(',', $select)))
-            ->with(['penanggung_jawab' => function ($query) {
-                $query->select('nik', 'nama');
-            }])
-            ->paginate(10, array_map('trim', explode(',', $select)), 'page', $page);
-
-        return new \App\Http\Resources\Berkas\CompleteCollection($data);
-    }
-
-    /**
      * Menampilkan formulir untuk membuat sumber daya baru.
      * 
      * > Catatan : Endpoint ini tidak digunakan dalam API.
@@ -102,8 +74,10 @@ class RsiaBerkasKomiteMedisController extends Controller
         try {
             DB::transaction(function () use ($request) {
                 \App\Models\RsiaBerkasKomiteMedis::create($request->all());
+                \App\Helpers\Logger\BerkasLogger::make("data saved successfully", 'info', ['data' => $request->all()]);
             });
         } catch (\Exception $e) {
+            \App\Helpers\Logger\BerkasLogger::make("failed to save data", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
             return \App\Helpers\ApiResponse::error("failed to save data", $e->getMessage(), 500);
         }
 
@@ -204,8 +178,10 @@ class RsiaBerkasKomiteMedisController extends Controller
         try {
             DB::transaction(function () use ($request, $data) {
                 $data->update($request->except(['nomor', 'tgl_terbit']));
+                \App\Helpers\Logger\BerkasLogger::make("data updated successfully", 'info', ['data' => $request->all()]);
             });
         } catch (\Exception $e) {
+            \App\Helpers\Logger\BerkasLogger::make("failed to update data", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
             return \App\Helpers\ApiResponse::error("failed to update data", $e->getMessage(), 500);
         }
 
@@ -249,8 +225,10 @@ class RsiaBerkasKomiteMedisController extends Controller
         try {
             DB::transaction(function () use ($data) {
                 $data->delete();
+                \App\Helpers\Logger\BerkasLogger::make("data deleted successfully", 'info', ['data' => $data]);
             });
         } catch (\Exception $e) {
+            \App\Helpers\Logger\BerkasLogger::make("failed to delete data", 'error', ['data' => $data, 'error' => $e->getMessage()]);
             return \App\Helpers\ApiResponse::error("failed to delete data", $e->getMessage(), 500);
         }
 
