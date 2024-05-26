@@ -113,6 +113,14 @@ return [
         'emergency' => [
             'path' => storage_path('logs/laravel.log'),
         ],
+
+        // =============== CISTOM CHANNELS
+        'berkas' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/berkas.log'),
+            'level' => env('LOG_LEVEL_BERKAS', 'debug'),
+            'days' => 14,
+        ],
     ],
 
 ];

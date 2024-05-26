@@ -74,8 +74,10 @@ class RsiaBerkasIhtController extends Controller
         try {
             DB::transaction(function () use ($request) {
                 RsiaBerkasIht::create($request->all());
+                \App\Helpers\Logger\BerkasLogger::make("data saved successfully", 'info', ['data' => $request->all()]);
             });
         } catch (\Exception $e) {
+            \App\Helpers\Logger\BerkasLogger::make("failed to save data", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
             return \App\Helpers\ApiResponse::error("failed to save data", $e->getMessage(), 500);
         }
 
@@ -176,8 +178,10 @@ class RsiaBerkasIhtController extends Controller
         try {
             DB::transaction(function () use ($request, $data) {
                 $data->update($request->except(['nomor', 'tgl_terbit']));
+                \App\Helpers\Logger\BerkasLogger::make("data updated successfully", 'info', ['data' => $request->all()]);
             });
         } catch (\Exception $e) {
+            \App\Helpers\Logger\BerkasLogger::make("failed to update data", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
             return \App\Helpers\ApiResponse::error("failed to update data", $e->getMessage(), 500);
         }
 
@@ -203,7 +207,7 @@ class RsiaBerkasIhtController extends Controller
         if (!base64_decode($base64NomorTglTerbit, true)) {
             return \App\Helpers\ApiResponse::error("Invalid parameter", "Parameter tidak valid, pastikan parameter adalah base64 encoded dari nomor dan tanggal misal : 53.2024-03-28", 400);
         }
-        
+
         $identifier = explode('.', base64_decode($base64NomorTglTerbit));
 
         if (!\Carbon\Carbon::createFromFormat('Y-m-d', $identifier[1])) {
@@ -221,8 +225,10 @@ class RsiaBerkasIhtController extends Controller
         try {
             DB::transaction(function () use ($data) {
                 $data->delete();
+                \App\Helpers\Logger\BerkasLogger::make("data deleted successfully", 'info', ['data' => $data->toArray()]);
             });
         } catch (\Exception $e) {
+            \App\Helpers\Logger\BerkasLogger::make("failed to delete data", 'error', ['data' => $data->toArray(), 'error' => $e->getMessage()]);
             return \App\Helpers\ApiResponse::error("failed to delete data", $e->getMessage(), 500);
         }
 
