@@ -28,6 +28,9 @@ class AppServiceProvider extends ServiceProvider
             return new \League\Flysystem\Filesystem(new \League\Flysystem\Sftp\SftpAdapter($config));
         });
 
+        // ========== CONFIG LOCALE
+        config(['app.locale' => 'id']);
+
         // ========== CARBON LOCALE
         \Carbon\Carbon::setLocale('id');
 
