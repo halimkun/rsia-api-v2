@@ -95,7 +95,7 @@ class RsiaSuratMasukController extends Controller
                 }
             });
         } catch (\Exception $e) {
-            \App\Helpers\Logger\BerkasLogger::make("data failed to save", 'error', ['data' => $request->all()]);
+            \App\Helpers\Logger\BerkasLogger::make("data failed to save", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
             return \App\Helpers\ApiResponse::error('Failed to save data', $e->getMessage(), 500);
         }
 
