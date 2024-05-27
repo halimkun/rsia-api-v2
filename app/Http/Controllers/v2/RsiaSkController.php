@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 
+// TODO : Add Logging to all method
+
 class RsiaSkController extends Controller
 {
     /**
@@ -82,16 +84,20 @@ class RsiaSkController extends Controller
                     $st = new Storage();
 
                     if (!$st::disk('sftp')->exists(env('DOCUMENT_SK_SAVE_LOCATION'))) {
+                        \App\Helpers\Logger\BerkasLogger::make("directory not found, creating directory : " . env('DOCUMENT_SK_SAVE_LOCATION'), 'info');
                         $st::disk('sftp')->makeDirectory(env('DOCUMENT_SK_SAVE_LOCATION'));
                     }
 
+                    \App\Helpers\Logger\BerkasLogger::make("file uploaded successfully", 'info', ['file_name' => $file_name, 'file_size' => $file->getSize(), 'data' => $request->all()]);
                     $st::disk('sftp')->put(env('DOCUMENT_SK_SAVE_LOCATION') . $file_name, file_get_contents($file));
                 }
             });
         } catch (\Exception $e) {
+            \App\Helpers\Logger\BerkasLogger::make("failed to save data", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
             return ApiResponse::error('failed to save data', $e->getMessage(), 500);
         }
 
+        \App\Helpers\Logger\BerkasLogger::make("data saved successfully", 'info', ['data' => $request->all()]);
         return ApiResponse::success('data saved successfully');
     }
 
@@ -187,12 +193,14 @@ class RsiaSkController extends Controller
                     $st = new Storage();
 
                     if (!$st::disk('sftp')->exists(env('DOCUMENT_SK_SAVE_LOCATION'))) {
+                        \App\Helpers\Logger\BerkasLogger::make("directory not found, creating directory : " . env('DOCUMENT_SK_SAVE_LOCATION'), 'info');
                         $st::disk('sftp')->makeDirectory(env('DOCUMENT_SK_SAVE_LOCATION'));
                     }
 
                     $st::disk('sftp')->put(env('DOCUMENT_SK_SAVE_LOCATION') . $file_name, file_get_contents($file));
 
                     if ($oldFile && $st::disk('sftp')->exists(env('DOCUMENT_SK_SAVE_LOCATION') . $oldFile)) {
+                        \App\Helpers\Logger\BerkasLogger::make("deleting old file", 'info', ['file_name' => $oldFile]);
                         $st::disk('sftp')->delete(env('DOCUMENT_SK_SAVE_LOCATION') . $oldFile);
                     }
                     
@@ -201,9 +209,11 @@ class RsiaSkController extends Controller
                 
             });
         } catch (\Exception $e) {
+            \App\Helpers\Logger\BerkasLogger::make("failed to save data", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
             return ApiResponse::error('failed to save data', $e->getMessage(), 500);
         }
 
+        \App\Helpers\Logger\BerkasLogger::make("data updated successfully", 'info', ['data' => $request->all()]);
         return ApiResponse::success('data updated successfully');
     }
 
@@ -236,14 +246,17 @@ class RsiaSkController extends Controller
                $data->delete();
             });
         } catch (\Exception $e) {
+            \App\Helpers\Logger\BerkasLogger::make("failed to delete data", 'error', ['data' => $data, 'error' => $e->getMessage()]);
             return ApiResponse::error('failed to delete data', $e->getMessage(), 500);
         }
-
+        
         $st = new Storage();
         if ($data->berkas && $st::disk('sftp')->exists(env('DOCUMENT_SK_SAVE_LOCATION') . $data->berkas)) {
+            \App\Helpers\Logger\BerkasLogger::make("deleting file", 'info', ['file_name' => $data->berkas]);
             $st::disk('sftp')->delete(env('DOCUMENT_SK_SAVE_LOCATION') . $data->berkas);
         }
-
+        
+        \App\Helpers\Logger\BerkasLogger::make("data deleted successfully", 'info', ['data' => $data]);
         return ApiResponse::success('data deleted successfully');
     }
 }
