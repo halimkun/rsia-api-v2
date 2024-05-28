@@ -9,6 +9,8 @@ class BridgingSep extends Model
 {
     protected $table = 'bridging_sep';
 
+    protected $primaryKey = 'no_sep';
+
     public $incrementing = false;
 
     public $timestamps = false;
