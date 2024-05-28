@@ -20,6 +20,9 @@ Route::middleware(['user-aes', 'claim:role,pegawai|dokter'])->prefix('pasien')->
     Route::apiResource('ranap.real-cost', \App\Http\Controllers\v2\RealCostPasienRawatInap::class)->only('index')
         ->parameters(['ranap' => 'base64_no_rawat']);
 
+    // ==================== BILLING PASIEN RAWAT INAP
+    Route::apiResource('ranap.billing', \App\Http\Controllers\v2\BillingPasienController::class)->only('index')
+        ->parameters(['ranap' => 'base64_no_rawat']);
 
 
     // ==================== PASIEN RAWAT JALAN
