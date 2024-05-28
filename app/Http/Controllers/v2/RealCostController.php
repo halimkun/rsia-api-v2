@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\v2;
 
+use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
@@ -14,39 +15,52 @@ class RealCostController extends Controller
      * 
      * @param \Illuminate\Http\Request $request
      * @return \App\Http\Resources\Pasien\Tarif\DefaultTarifResource
-     * */ 
+     * */
     public function ranap(Request $request)
     {
-        $data = \App\Models\RegPeriksa::select("no_rawat");
-        if ($request->has('filters')) {
-            foreach ($request->filters as $filter) {
-                if ($filter['operator'] == 'in') {
-                    $data->whereIn($filter['field'], $filter['value']);
-                    continue;
-                }
+        if (!$request->has('filters')) {
+            return ApiResponse::error('Failed to get data', 'Filters not found', 400);
+        }
 
+        $filters = $request->filters;
+
+        if (!is_array($filters)) {
+            return ApiResponse::error('Failed to get data', 'Filters must be an array', 400);
+        }
+
+        if (empty($filters)) {
+            return ApiResponse::error('Failed to get data', 'Filters cannot be empty', 400);
+        }
+
+        foreach ($filters as $filter) {
+            if (!isset($filter['field'], $filter['operator'], $filter['value']) && $filter['operator'] != 'in') {
+                return ApiResponse::error('Failed to get data', 'Filters must have field, operator, and value', 400);
+            }
+        }
+
+        $data = \App\Models\RegPeriksa::select("no_rawat");
+
+        foreach ($filters as $filter) {
+            if ($filter['operator'] == 'in') {
+                $data->whereIn($filter['field'], $filter['value']);
+            } else {
                 $data->where($filter['field'], $filter['operator'], $filter['value']);
             }
         }
 
         $data = $data->get()->pluck('no_rawat');
-
         $runningTarif = [];
+
         foreach ($data as $no_rawat) {
-            // check gabung
             $gabung = \App\Models\RanapGabung::select('no_rawat2')->where('no_rawat', $no_rawat)->first();
 
+            $tarif = $this->getTarif($no_rawat, $request);
             if ($gabung) {
-                $runningTarif[$no_rawat] = $this->getTarif($no_rawat, $request);
-                $runningTarif[$no_rawat]['gabung'] = $this->getTarif($gabung->no_rawat2, $request);
-            } else {
-                $runningTarif[$no_rawat] = $this->getTarif($no_rawat, $request);
+                $tarif['gabung'] = $this->getTarif($gabung->no_rawat2, $request);
             }
 
-            // jumlah total without gabung
-            $runningTarif[$no_rawat]['total'] = collect($runningTarif[$no_rawat])->sum(function ($item) {
-                return $item ? collect($item)->sum() : 0;
-            });
+            $tarif['total'] = collect($tarif)->sum(fn ($item) => $item ? collect($item)->sum() : 0);
+            $runningTarif[$no_rawat] = $tarif;
         }
 
         sleep(1.2);
