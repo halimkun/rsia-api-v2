@@ -60,4 +60,10 @@ class Dokter extends Model
     public $incrementing = false;
 
     public $timestamps = false;
+
+
+    public function jadwal()
+    {
+        return $this->hasMany(JadwalPoli::class, 'kd_dokter', 'kd_dokter');
+    }
 }
