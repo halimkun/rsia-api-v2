@@ -23,7 +23,10 @@ class CheckForClaim
 
         /* check if token parses properly */
         try {
-            $jwt = (\Lcobucci\JWT\Configuration::forUnsecuredSigner()->parser()->parse($token));
+            $jwt = (\Lcobucci\JWT\Configuration::forSymmetricSigner(
+                new \Lcobucci\JWT\Signer\Rsa\Sha256(),
+                \Lcobucci\JWT\Signer\Key\InMemory::plainText('empty', 'empty')
+            )->parser()->parse($token));
         } catch (\Exception $e) {
             throw new \Illuminate\Auth\AuthenticationException;
         }
