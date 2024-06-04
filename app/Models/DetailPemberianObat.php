@@ -29,4 +29,14 @@ class DetailPemberianObat extends Model
     {
         return $this->total ?? 0;
     }
+
+    public function regPeriksa()
+    {
+        return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat');
+    }
+
+    public function obat()
+    {
+        return $this->belongsTo(DataBarang::class, 'kode_brng', 'kode_brng')->select('kode_brng', 'nama_brng');
+    }
 }
