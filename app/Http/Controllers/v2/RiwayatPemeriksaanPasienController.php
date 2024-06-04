@@ -23,8 +23,9 @@ class RiwayatPemeriksaanPasienController extends Controller
             return ApiResponse::notFound("Pasien dengan no_rkm_medis: $no_rkm_medis tidak ditemukan");
         }
 
-        $riwayatPemeriksaan = \App\Models\RegPeriksa::with('pasienSomeData')
+        $riwayatPemeriksaan = \App\Models\RegPeriksa::with('dokter', 'caraBayar', 'poliklinik')
             ->where('no_rkm_medis', $no_rkm_medis)
+            ->orderBy('tgl_registrasi', 'desc')
             ->paginate();
 
         return new RealDataCollection($riwayatPemeriksaan);

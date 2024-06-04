@@ -70,6 +70,37 @@ class RegPeriksa extends Model
     }
 
     /**
+     * Get the dokter that owns the registrasi.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+    */
+    public function dokter()
+    {
+        return $this->belongsTo(Dokter::class, 'kd_dokter', 'kd_dokter')->select('kd_dokter', 'nm_dokter');
+    }
+
+    /**
+     * Get the poliklinik that owns the registrasi.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * 
+    */
+    public function poliklinik()
+    {
+        return $this->belongsTo(Poliklinik::class, 'kd_poli', 'kd_poli');
+    }
+
+    /**
+     * Get the poliklinik that owns the registrasi.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function caraBayar()
+    {
+        return $this->belongsTo(Penjab::class, 'kd_pj', 'kd_pj');
+    }
+
+    /**
      * Get the resep obat that owns the registrasi.
      * 
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
