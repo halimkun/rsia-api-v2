@@ -89,7 +89,7 @@ class PasienController extends Controller
         }
 
         try {
-            \DB::transaction(function () use ($request, $data) {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($request, $data) {
                 $data->update($request->all());
             });
         } catch (\Exception $e) {
