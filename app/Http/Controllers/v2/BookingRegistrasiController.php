@@ -60,23 +60,23 @@ class BookingRegistrasiController extends Controller
             return ApiResponse::error('already_booked', 'Pasien sudah memiliki booking pada tanggal tersebut');
         }
 
-        // get the last no_reg for the date of tanggal_periksa
-        $lastNoReg = $booking->where('tanggal_periksa', $request->tanggal_periksa)
-            ->max('no_reg');
-
-        // lastNoReg example 002 + 1 = 003
-        $noReg = str_pad($lastNoReg + 1, 3, '0', STR_PAD_LEFT);
-
-        // append the no_reg to the request
-        $request->merge([
-            // tanggal booking format Y-m-d
-            'tanggal_booking' => \Carbon\Carbon::now()->format('Y-m-d'),
-            'jam_booking' => \Carbon\Carbon::now()->format('H:i:s'),
-            'status' => 'Terdaftar',
-            'no_reg' => $noReg,
-        ]);
-
         \Illuminate\Support\Facades\DB::transaction(function () use ($request, $booking) {
+            // get the last no_reg for the date of tanggal_periksa
+            $lastNoReg = $booking->where('tanggal_periksa', $request->tanggal_periksa)
+                ->max('no_reg');
+            
+                // lastNoReg example 002 + 1 = 003
+            $noReg = str_pad($lastNoReg + 1, 3, '0', STR_PAD_LEFT);
+
+            // append the no_reg to the request
+            $request->merge([
+                // tanggal booking format Y-m-d
+                'tanggal_booking' => \Carbon\Carbon::now()->format('Y-m-d'),
+                'jam_booking' => \Carbon\Carbon::now()->format('H:i:s'),
+                'status' => 'Terdaftar',
+                'no_reg' => $noReg,
+            ]);
+
             // create the booking data
             $booking->create($request->all());
 
