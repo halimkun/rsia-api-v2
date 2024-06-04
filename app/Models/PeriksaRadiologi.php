@@ -23,4 +23,55 @@ class PeriksaRadiologi extends Model
     public $incrementing = false;
 
     public $timestamps = false;
+
+
+    /**
+     * Get the registrasi that owns the periksa radiologi.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * */ 
+    public function regPeriksa()
+    {
+        return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat');
+    }
+
+    /**
+     * Get the petugas that owns the periksa radiologi.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * */ 
+    public function petugas()
+    {
+        return $this->belongsTo(Petugas::class, 'nip', 'nip')->select('nip', 'nama');
+    }
+
+    /**
+     * Get the jenis perawatan radiologi that owns the periksa radiologi.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * */ 
+    public function jenisPerawatan()
+    {
+        return $this->belongsTo(JenisPerawatanRadiologi::class, 'kd_jenis_prw', 'kd_jenis_prw');
+    }
+
+    /**
+     * Get the dokter perujuk that owns the periksa radiologi.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * */ 
+    public function dokterPerujuk()
+    {
+        return $this->belongsTo(Dokter::class, 'kd_dokter', 'kd_dokter')->select('kd_dokter', 'nm_dokter');
+    }
+
+    /**
+     * Get the dokter that owns the periksa radiologi.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * */ 
+    public function dokter()
+    {
+        return $this->belongsTo(Dokter::class, 'kd_dokter', 'kd_dokter')->select('kd_dokter', 'nm_dokter');
+    }
 }
