@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\orion;
+namespace App\Http\Controllers\Orion;
 
 use Illuminate\Http\Request;
 use Orion\Http\Controllers\Controller;
