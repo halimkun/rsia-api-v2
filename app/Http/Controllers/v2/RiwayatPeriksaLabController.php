@@ -29,7 +29,9 @@ class RiwayatPeriksaLabController extends Controller
             return \App\Helpers\ApiResponse::notFound("Riwayat pemeriksaan dengan no_rawat: $noRawat tidak ditemukan");
         }
 
-        $riwayat = \App\Models\PeriksaLab::with('petugas', 'dokter', 'jenisPerawatan')->where('no_rawat', $noRawat)->paginate(10);
+        $riwayat = \App\Models\PeriksaLab::select(["no_rawat", "nip", "kd_jenis_prw", "tgl_periksa", "jam", "dokter_perujuk", "kd_dokter", "status", "kategori"])
+            ->with('petugas', 'dokter', 'jenisPerawatan', 'detailPeriksaLab.template')
+            ->where('no_rawat', $noRawat)->paginate(10);
 
         return new \App\Http\Resources\RealDataCollection($riwayat);
     }
