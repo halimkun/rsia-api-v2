@@ -52,6 +52,10 @@ Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('berkas')->group(f
     ->parameters(['radiologi' => 'base64_nomor_tgl_terbit']);
 
 
+  // ==================== SPO
+  Orion::resource('spo', \App\Http\Controllers\Orion\RsiaSpoController::class)->parameters(['spo' => 'nomor']);
+
+
   
   // ==================== BERKAS KOMITE
   Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('komite')->group(function () {
