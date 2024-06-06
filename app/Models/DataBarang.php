@@ -78,4 +78,10 @@ class DataBarang extends Model
     public $incrementing = false;
 
     public $timestamps = false;
+
+
+    public function satuan()
+    {
+        return $this->belongsTo(KodeSatuan::class, 'kode_sat', 'kode_sat');
+    }
 }

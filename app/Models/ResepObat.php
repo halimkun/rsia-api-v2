@@ -50,7 +50,7 @@ class ResepObat extends Model
         'no_rawat' => 'string',
         'no_resep' => 'string',
     ];
-    
+
     public $timestamps = false;
 
     public $incrementing = false;
@@ -69,10 +69,9 @@ class ResepObat extends Model
     public function detail()
     {
         return $this->hasMany(
-            DetailPemberianObat::class, 
+            DetailPemberianObat::class,
             ["tgl_perawatan", "jam", "no_rawat"],
             ["tgl_perawatan", "jam", "no_rawat"]
-        )->select(["tgl_perawatan","jam","no_rawat","jml","kode_brng","status","kd_bangsal"]);
+        )->select(["tgl_perawatan", "jam", "no_rawat", "jml", "kode_brng", "status", "kd_bangsal"]);
     }
 }
-
