@@ -29,7 +29,7 @@ class RiwayatPemberianObatController extends Controller
             return \App\Helpers\ApiResponse::notFound("Riwayat pemeriksaan dengan no_rawat: $noRawat tidak ditemukan");
         }
 
-        $riwayat = \App\Models\DetailPemberianObat::with('obat')->where('no_rawat', $noRawat)->paginate(10);
+        $riwayat = \App\Models\ResepObat::with('detail.obat')->where('no_rawat', $noRawat)->paginate(10);
 
         return new \App\Http\Resources\RealDataCollection($riwayat);
     }
