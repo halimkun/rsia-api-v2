@@ -78,4 +78,9 @@ class DetailPemberianObat extends Model
     {
         return $this->belongsTo(DataBarang::class, 'kode_brng', 'kode_brng')->select('kode_brng', 'nama_brng');
     }
+
+    public function aturanPakai()
+    {
+        return $this->hasOne(AturanPakai::class, ['tgl_perawatan', 'jam', 'no_rawat', 'kode_brng'], ['tgl_perawatan', 'jam', 'no_rawat', 'kode_brng']);
+    }
 }
