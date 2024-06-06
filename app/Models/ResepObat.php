@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Awobaz\Compoships\Compoships;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * App\Models\ResepObat
@@ -37,7 +38,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class ResepObat extends Model
 {
-    use HasFactory;
+    use HasFactory, Compoships;
 
     protected $table = 'resep_obat';
 
@@ -64,4 +65,14 @@ class ResepObat extends Model
     {
         return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat');
     }
+
+    public function detail()
+    {
+        return $this->hasMany(
+            DetailPemberianObat::class, 
+            ["tgl_perawatan", "jam", "no_rawat"],
+            ["tgl_perawatan", "jam", "no_rawat"]
+        )->select(["tgl_perawatan","jam","no_rawat","jml","kode_brng","status","kd_bangsal"]);
+    }
 }
+

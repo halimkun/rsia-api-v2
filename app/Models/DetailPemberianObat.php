@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Awobaz\Compoships\Compoships;
 use Illuminate\Database\Eloquent\Model;
 use Thiagoprz\CompositeKey\HasCompositeKey;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -46,7 +47,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class DetailPemberianObat extends Model
 {
-    use HasFactory, HasCompositeKey;
+    use HasFactory, HasCompositeKey, Compoships;
 
     protected $table = 'detail_pemberian_obat';
 
