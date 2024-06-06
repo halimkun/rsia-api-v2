@@ -6,6 +6,40 @@ use Illuminate\Database\Eloquent\Model;
 use Thiagoprz\CompositeKey\HasCompositeKey;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * App\Models\BookingRegistrasi
+ *
+ * @property string|null $tanggal_booking
+ * @property string|null $jam_booking
+ * @property string $no_rkm_medis
+ * @property string $tanggal_periksa
+ * @property string|null $kd_dokter
+ * @property string|null $kd_poli
+ * @property string|null $no_reg
+ * @property string|null $kd_pj
+ * @property int|null $limit_reg
+ * @property \Illuminate\Support\Carbon|null $waktu_kunjungan
+ * @property string|null $status
+ * @property-read \App\Models\Dokter|null $dokter
+ * @property-read \App\Models\Pasien $pasien
+ * @property-read \App\Models\Penjab|null $penjab
+ * @property-read \App\Models\Poliklinik|null $poli
+ * @method static \Illuminate\Database\Eloquent\Builder|BookingRegistrasi newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|BookingRegistrasi newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|BookingRegistrasi query()
+ * @method static \Illuminate\Database\Eloquent\Builder|BookingRegistrasi whereJamBooking($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|BookingRegistrasi whereKdDokter($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|BookingRegistrasi whereKdPj($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|BookingRegistrasi whereKdPoli($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|BookingRegistrasi whereLimitReg($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|BookingRegistrasi whereNoReg($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|BookingRegistrasi whereNoRkmMedis($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|BookingRegistrasi whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|BookingRegistrasi whereTanggalBooking($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|BookingRegistrasi whereTanggalPeriksa($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|BookingRegistrasi whereWaktuKunjungan($value)
+ * @mixin \Eloquent
+ */
 class BookingRegistrasi extends Model
 {
     use HasFactory, HasCompositeKey;

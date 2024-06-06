@@ -6,6 +6,45 @@ use Illuminate\Database\Eloquent\Model;
 use Thiagoprz\CompositeKey\HasCompositeKey;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * App\Models\KamarInap
+ *
+ * @property string $no_rawat
+ * @property string $kd_kamar
+ * @property float|null $trf_kamar
+ * @property string|null $diagnosa_awal
+ * @property string|null $diagnosa_akhir
+ * @property string $tgl_masuk
+ * @property string $jam_masuk
+ * @property string|null $tgl_keluar
+ * @property string|null $jam_keluar
+ * @property float|null $lama
+ * @property float|null $ttl_biaya
+ * @property string $stts_pulang
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, KamarInap> $lamaInap
+ * @property-read int|null $lama_inap_count
+ * @property-read \App\Models\Pasien|null $pasien
+ * @property-read \App\Models\RegPeriksa $regPeriksa
+ * @property-read \App\Models\RegPeriksa $regPeriksaSimple
+ * @property-read \App\Models\BridgingSep|null $sep
+ * @property-read \App\Models\BridgingSep|null $sepSimple
+ * @method static \Illuminate\Database\Eloquent\Builder|KamarInap newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|KamarInap newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|KamarInap query()
+ * @method static \Illuminate\Database\Eloquent\Builder|KamarInap whereDiagnosaAkhir($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|KamarInap whereDiagnosaAwal($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|KamarInap whereJamKeluar($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|KamarInap whereJamMasuk($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|KamarInap whereKdKamar($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|KamarInap whereLama($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|KamarInap whereNoRawat($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|KamarInap whereSttsPulang($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|KamarInap whereTglKeluar($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|KamarInap whereTglMasuk($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|KamarInap whereTrfKamar($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|KamarInap whereTtlBiaya($value)
+ * @mixin \Eloquent
+ */
 class KamarInap extends Model
 {
     use HasFactory, HasCompositeKey;

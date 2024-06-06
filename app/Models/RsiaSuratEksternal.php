@@ -26,6 +26,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|RsiaSuratEksternal wherePj($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RsiaSuratEksternal whereTanggal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RsiaSuratEksternal whereTglTerbit($value)
+ * @property-read \App\Models\Pegawai|null $penanggungJawab
+ * @property-read \App\Models\Pegawai|null $penanggungJawabSimple
  * @mixin \Eloquent
  */
 class RsiaSuratEksternal extends Model

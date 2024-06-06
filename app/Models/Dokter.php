@@ -39,6 +39,9 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Dokter whereSttsNikah($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Dokter whereTglLahir($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Dokter whereTmpLahir($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\JadwalPoli> $jadwal
+ * @property-read int|null $jadwal_count
+ * @property-read \App\Models\Spesialis|null $spesialis
  * @mixin \Eloquent
  */
 class Dokter extends Model

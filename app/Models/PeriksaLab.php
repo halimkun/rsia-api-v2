@@ -7,6 +7,54 @@ use Illuminate\Database\Eloquent\Model;
 use Thiagoprz\CompositeKey\HasCompositeKey;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+/**
+ * App\Models\PeriksaLab
+ *
+ * @property string $no_rawat
+ * @property string $nip
+ * @property string $kd_jenis_prw
+ * @property string $tgl_periksa
+ * @property string $jam
+ * @property string $dokter_perujuk
+ * @property float $bagian_rs
+ * @property float $bhp
+ * @property float $tarif_perujuk
+ * @property float $tarif_tindakan_dokter
+ * @property float $tarif_tindakan_petugas
+ * @property float|null $kso
+ * @property float|null $menejemen
+ * @property float $biaya
+ * @property string $kd_dokter
+ * @property string|null $status
+ * @property string $kategori
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\DetailPeriksaLab> $detailPeriksaLab
+ * @property-read int|null $detail_periksa_lab_count
+ * @property-read \App\Models\Dokter $dokter
+ * @property-read \App\Models\JenisPerawatanLab $jenisPerawatan
+ * @property-read \App\Models\Petugas $petugas
+ * @property-read \App\Models\RegPeriksa $regPeriksa
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab query()
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab whereBagianRs($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab whereBhp($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab whereBiaya($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab whereDokterPerujuk($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab whereJam($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab whereKategori($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab whereKdDokter($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab whereKdJenisPrw($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab whereKso($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab whereMenejemen($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab whereNip($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab whereNoRawat($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab whereTarifPerujuk($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab whereTarifTindakanDokter($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab whereTarifTindakanPetugas($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PeriksaLab whereTglPeriksa($value)
+ * @mixin \Eloquent
+ */
 class PeriksaLab extends Model
 {
     use HasFactory, HasCompositeKey, Compoships;

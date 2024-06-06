@@ -5,6 +5,69 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * App\Models\RegPeriksa
+ *
+ * @property string|null $no_reg
+ * @property string $no_rawat
+ * @property string|null $tgl_registrasi
+ * @property string|null $jam_reg
+ * @property string|null $kd_dokter
+ * @property string|null $no_rkm_medis
+ * @property string|null $kd_poli
+ * @property string|null $p_jawab
+ * @property string|null $almt_pj
+ * @property string|null $hubunganpj
+ * @property float|null $biaya_reg
+ * @property string|null $stts
+ * @property string $stts_daftar
+ * @property string $status_lanjut
+ * @property string $kd_pj
+ * @property int|null $umurdaftar
+ * @property string|null $sttsumur
+ * @property string $status_bayar
+ * @property string $status_poli
+ * @property-read \App\Models\Penjab $caraBayar
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\DetailPemberianObat> $detailPemberianObat
+ * @property-read int|null $detail_pemberian_obat_count
+ * @property-read \App\Models\Dokter|null $dokter
+ * @property-read \App\Models\Pasien|null $pasien
+ * @property-read \App\Models\Pasien|null $pasienSomeData
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PemeriksaanRalan> $pemeriksaanRalan
+ * @property-read int|null $pemeriksaan_ralan_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PemeriksaanRanap> $pemeriksaanRanap
+ * @property-read int|null $pemeriksaan_ranap_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PeriksaLab> $periksaLab
+ * @property-read int|null $periksa_lab_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PeriksaRadiologi> $periksaRadiologi
+ * @property-read int|null $periksa_radiologi_count
+ * @property-read \App\Models\Poliklinik|null $poliklinik
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\ResepObat> $resepObat
+ * @property-read int|null $resep_obat_count
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa query()
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa whereAlmtPj($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa whereBiayaReg($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa whereHubunganpj($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa whereJamReg($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa whereKdDokter($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa whereKdPj($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa whereKdPoli($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa whereNoRawat($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa whereNoReg($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa whereNoRkmMedis($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa wherePJawab($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa whereStatusBayar($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa whereStatusLanjut($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa whereStatusPoli($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa whereStts($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa whereSttsDaftar($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa whereSttsumur($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa whereTglRegistrasi($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RegPeriksa whereUmurdaftar($value)
+ * @mixin \Eloquent
+ */
 class RegPeriksa extends Model
 {
     use HasFactory;

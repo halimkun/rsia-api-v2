@@ -5,6 +5,25 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * App\Models\RsiaKehadiranRapat
+ *
+ * @property int $id
+ * @property string $no_surat
+ * @property string $nik
+ * @property \Illuminate\Support\Carbon $created_at
+ * @property \Illuminate\Support\Carbon $updated_at
+ * @property-read \App\Models\Pegawai $pegawai
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaKehadiranRapat newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaKehadiranRapat newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaKehadiranRapat query()
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaKehadiranRapat whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaKehadiranRapat whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaKehadiranRapat whereNik($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaKehadiranRapat whereNoSurat($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaKehadiranRapat whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class RsiaKehadiranRapat extends Model
 {
     use HasFactory;

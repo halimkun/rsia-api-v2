@@ -30,6 +30,10 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|RsiaSuratInternal whereTanggal($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RsiaSuratInternal whereTempat($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RsiaSuratInternal whereTglTerbit($value)
+ * @property-read \App\Models\Pegawai|null $penanggungJawab
+ * @property-read \App\Models\Pegawai|null $penanggungJawabSimple
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RsiaPenerimaUndangan> $penerimaUndangan
+ * @property-read int|null $penerima_undangan_count
  * @mixin \Eloquent
  */
 class RsiaSuratInternal extends Model

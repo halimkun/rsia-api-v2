@@ -5,6 +5,25 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Thiagoprz\CompositeKey\HasCompositeKey;
 
+/**
+ * App\Models\RsiaPenerimaUndangan
+ *
+ * @property string|null $no_surat
+ * @property string|null $penerima
+ * @property string|null $tipe
+ * @property string|null $model
+ * @property string $created_at
+ * @property-read \App\Models\Pegawai|null $detail
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaPenerimaUndangan newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaPenerimaUndangan newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaPenerimaUndangan query()
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaPenerimaUndangan whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaPenerimaUndangan whereModel($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaPenerimaUndangan whereNoSurat($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaPenerimaUndangan wherePenerima($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaPenerimaUndangan whereTipe($value)
+ * @mixin \Eloquent
+ */
 class RsiaPenerimaUndangan extends Model
 {
     use HasCompositeKey;
