@@ -40,8 +40,8 @@ class RsiaPenerimaUndanganController extends Controller
     {
         $request->validate([
             'no_surat' => 'required|string',
-            'tipe' => 'required|string|in:surat/internal,komite/ppi,komite/pmkp,komite/medis,komite/keperawatan,komite/kesehatan,berkas/notulen',
-            'model' => 'required|string',
+            'tipe'     => 'required|string|in:surat/internal,komite/ppi,komite/pmkp,komite/medis,komite/keperawatan,komite/kesehatan,berkas/notulen',
+            'model'    => 'required|string',
         ]);
 
         // App\\\\Models\\\\RsiaSuratInternal to App\Models\RsiaSuratInternal

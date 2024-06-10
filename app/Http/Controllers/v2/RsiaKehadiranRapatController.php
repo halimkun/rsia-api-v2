@@ -37,13 +37,20 @@ class RsiaKehadiranRapatController extends Controller
      */
     public function store(Request $request)
     {
-        // TODO : make nik can use multiple nik
         $request->validate([
-            'no_surat' => 'required|string',
-            'tipe' => 'required|string|in:surat/internal,komite/ppi,komite/pmkp,komite/medis,komite/keperawatan,komite/kesehatan,berkas/notulen',
-            'model' => 'required|string|regex:/App\\\\Models\\\\[A-Za-z]+/',
-            'nik' => 'string|exists:pegawai,nik',
+            'no_surat'  => 'required|string',
+            'nik'       => 'string|exists:pegawai,nik',
+            'karyawans' => 'array',
         ]);
+
+        // karyawans exists in pegawai table
+        if ($request->has('karyawans')) {
+            foreach ($request->karyawans as $nik) {
+                $request->validate([
+                    'karyawans.*' => 'exists:pegawai,nik',
+                ]);
+            }
+        }
 
         // auth user
         $user = \Illuminate\Support\Facades\Auth::guard('user-aes')->user();
@@ -54,12 +61,17 @@ class RsiaKehadiranRapatController extends Controller
             return ApiResponse::error('resource not found', 'Kegiatan / Undangan tidak ditemukan', 404);
         }
 
-        // check if model file exists model from request is App\Models\RsiaSuratInternal
-        if (!file_exists(app_path('Models/' . str_replace('App\Models\\', '', $request->model) . '.php'))) {
-            return ApiResponse::error('Model not found', 'Model ' . $request->model . ' not found', 404);
-        }
-
         if ($request->has('nik')) { // petugas yang melakukan
+            $request->validate([
+                'tipe'      => 'required|string|in:surat/internal,komite/ppi,komite/pmkp,komite/medis,komite/keperawatan,komite/kesehatan,berkas/notulen',
+                'model'     => 'required|string|regex:/App\\\\Models\\\\[A-Za-z]+/',
+            ]);
+    
+            // check if model file exists model from request is App\Models\RsiaSuratInternal
+            if (!file_exists(app_path('Models/' . str_replace('App\Models\\', '', $request->model) . '.php'))) {
+                return ApiResponse::error('Model not found', 'Model ' . $request->model . ' not found', 404);
+            }
+
             // create or update penerima undangan
             $penerimaUndangan = \App\Models\RsiaPenerimaUndangan::updateOrCreate([
                 'no_surat' => $request->no_surat,
@@ -67,25 +79,19 @@ class RsiaKehadiranRapatController extends Controller
             ], [
                 'no_surat' => $request->no_surat,
                 'penerima' => $request->nik,
-                'tipe' => $request->tipe,
-                'model' => $request->model,
+                'tipe'     => $request->tipe,
+                'model'    => $request->model,
             ]);
 
-            $absen = RsiaKehadiranRapat::where('nik', $request->nik)
-                ->where('no_surat', $request->no_surat)
-                ->first();
-
-            if ($absen) {
-                return ApiResponse::error('resource already exists', 'Anda sudah melakukan absen', 400);
+            if ($request->has('karyawans')) {
+                foreach ($request->karyawans as $nik) {
+                    RsiaKehadiranRapat::firstOrCreate([
+                        'nik'      => $nik,
+                        'no_surat' => $request->no_surat,
+                    ]);
+                }
             }
-
-            // insert kehadiran rapat
-            RsiaKehadiranRapat::create([
-                'nik' => $request->nik,
-                'no_surat' => $request->no_surat,
-            ]);
-        } else { // request dari client (mobile)
-
+        } else { // request dari client (mobile) ----- user harus login mandiri, absensi tidak dapat diwakilkan
             if (!$penerimaUndangan->contains('penerima', null, $user->id_user)) {
                 return ApiResponse::error('user not permitted', 'Anda tidak terdaftar dalam undangan ini', 403);
             }
@@ -100,7 +106,7 @@ class RsiaKehadiranRapatController extends Controller
 
             // insert kehadiran rapat
             RsiaKehadiranRapat::create([
-                'nik' => $user->id_user,
+                'nik'      => $user->id_user,
                 'no_surat' => $request->no_surat,
             ]);
         }
@@ -111,12 +117,20 @@ class RsiaKehadiranRapatController extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  \App\Models\RsiaKehadiranRapat  $rsiaKehadiranRapat
+     * @param  String  $bae64_no_surat
      * @return \Illuminate\Http\Response
      */
-    public function show(RsiaKehadiranRapat $rsiaKehadiranRapat)
+    public function show(String $base64_no_surat)
     {
-        //
+        try {
+            $no_surat = base64_decode($base64_no_surat);
+        } catch (\Throwable $th) {
+            return ApiResponse::error('Invalid base64', 'Invalid base64 string', 400);
+        }
+
+        $rsiaKehadiranRapat = RsiaKehadiranRapat::where('no_surat', $no_surat)->get();
+
+        return new \App\Http\Resources\RealDataCollection($rsiaKehadiranRapat);
     }
 
     /**
