@@ -72,6 +72,6 @@ class RsiaSuratInternalController extends Controller
      */
     public function searchableBy(): array
     {
-        return ['perihal', 'penanggungJawabSimple.nama'];
+        return ['perihal', 'penanggungJawabSimple.nama', 'no_surat'];
     }
 }
