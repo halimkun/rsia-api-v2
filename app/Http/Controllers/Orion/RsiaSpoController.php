@@ -176,11 +176,11 @@ class RsiaSpoController extends \Orion\Http\Controllers\Controller
     protected function afterStore(Request $request, \Illuminate\Database\Eloquent\Model $entity)
     {
         $detailData = [
-            'nomor' => $entity->nomor,
-            'pengertian' => $request->pengertian,
-            'tujuan' => $request->tujuan,
-            'kebijakan' => $request->kebijakan,
-            'prosedur' => $request->prosedur,
+            'nomor'      => $entity->nomor,
+            'pengertian' => \Stevebauman\Purify\Facades\Purify::clean($request->pengertian),
+            'tujuan'     => \Stevebauman\Purify\Facades\Purify::clean($request->tujuan),
+            'kebijakan'  => \Stevebauman\Purify\Facades\Purify::clean($request->kebijakan),
+            'prosedur'   => \Stevebauman\Purify\Facades\Purify::clean($request->prosedur),
         ];
 
         \Illuminate\Support\Facades\DB::transaction(function () use ($entity, $detailData) {

@@ -15,6 +15,7 @@
         "laravel/tinker": "^2.5",
         "league/flysystem-sftp": "*",
         "rap2hpoutre/laravel-log-viewer": "^2.4",
+        "stevebauman/purify": "^6.2",
         "tailflow/laravel-orion": "^2.22",
         "thiagoprz/eloquent-composite-key": "^1.0"
     },
