@@ -18,6 +18,11 @@ Route::get('/', function (Request $request) {
     return response()->json(['message' => 'Hello World!']);
 });
 
+Route::middleware(['claim:role,pegawai'])->prefix('notification')->group(function () {
+    Route::post('send', [\App\Http\Controllers\v2\NotificationController::class, 'send']);
+    Route::post('with-template', [\App\Http\Controllers\v2\NotificationController::class, 'withTemplate']);
+});
+
 $files = scandir(__DIR__ . '/partials');
 foreach ($files as $file) {
     // if file is not a directory

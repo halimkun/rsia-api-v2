@@ -17,3 +17,8 @@ yarn-error.log
 /.vscode
 .rnd
 _ide_helper.php
+
+# firebase credentils
+firebase-credentials.json
+firebase_credentials.json
+firebase-credentials-rsia-aisyiyah.json
