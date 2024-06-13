@@ -78,11 +78,11 @@ class RsiaSuratInternalController extends Controller
         try {
             RsiaSuratInternal::create($request->except('user'));
         } catch (\Exception $e) {
-            \App\Helpers\Logger\BerkasLogger::make("data failed to save", 'error', ['data' => $request->all()]);
+            \App\Helpers\Logger\RSIALogger::berkas("data failed to save", 'error', ['data' => $request->all()]);
             return \App\Helpers\ApiResponse::error('Failed to save data', $e->getMessage(), 500);
         }
 
-        \App\Helpers\Logger\BerkasLogger::make("data saved successfully", 'info', ['data' => $request->all()]);
+        \App\Helpers\Logger\RSIALogger::berkas("data saved successfully", 'info', ['data' => $request->all()]);
         return \App\Helpers\ApiResponse::success('Data saved successfully');
     }
 
@@ -163,11 +163,11 @@ class RsiaSuratInternalController extends Controller
         try {
             $data->update($request->except('user'));
         } catch (\Exception $e) {
-            \App\Helpers\Logger\BerkasLogger::make("data failed to update", 'error', ['data' => $request->all()]);
+            \App\Helpers\Logger\RSIALogger::berkas("data failed to update", 'error', ['data' => $request->all()]);
             return \App\Helpers\ApiResponse::error('Failed to update data', $e->getMessage(), 500);
         }
 
-        \App\Helpers\Logger\BerkasLogger::make("data updated successfully", 'info', ['data' => $request->all()]);
+        \App\Helpers\Logger\RSIALogger::berkas("data updated successfully", 'info', ['data' => $request->all()]);
         return \App\Helpers\ApiResponse::success('Data updated successfully');
     }
 
@@ -189,11 +189,11 @@ class RsiaSuratInternalController extends Controller
         try {
             $data->delete();
         } catch (\Exception $e) {
-            \App\Helpers\Logger\BerkasLogger::make("data failed to delete", 'error', ['data' => $data]);
+            \App\Helpers\Logger\RSIALogger::berkas("data failed to delete", 'error', ['data' => $data]);
             return \App\Helpers\ApiResponse::error('Failed to delete data', $e->getMessage(), 500);
         }
 
-        \App\Helpers\Logger\BerkasLogger::make("data deleted successfully", 'info', ['data' => $data]);
+        \App\Helpers\Logger\RSIALogger::berkas("data deleted successfully", 'info', ['data' => $data]);
         return \App\Helpers\ApiResponse::success('Data deleted successfully');
     }
 
