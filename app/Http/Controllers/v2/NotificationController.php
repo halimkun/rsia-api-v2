@@ -34,8 +34,12 @@ class NotificationController extends Controller
         // FirebaseCloudMessaging::send($msg); 
         try {
             FirebaseCloudMessaging::send($msg);
+            \App\Helpers\Logger\RSIALogger::fcm('Notification sent successfully', 'info', [ 'topic' => $request->topic, 'title' => $request->title, 'body'  => $request->body, 'data'  => $request->data]);
+
             return ApiResponse::success('Notification sent successfully');
         } catch (\Exception $e) {
+            \App\Helpers\Logger\RSIALogger::fcm('Failed to send notification', 'error', [ 'topic' => $request->topic, 'title' => $request->title, 'body'  => $request->body, 'data'  => $request->data, 'error' => $e->getMessage()]);
+            
             return ApiResponse::error('Failed to send notification', $e->getMessage(), 500);
         }
     }
@@ -54,6 +58,7 @@ class NotificationController extends Controller
 
         // if template not found
         if (!$template) {
+            \App\Helpers\Logger\RSIALogger::fcm('Template not found', 'error', ['template' => $request->template]);
             return ApiResponse::error('Template not found', 'Template not found', 404);
         }
 
@@ -75,8 +80,12 @@ class NotificationController extends Controller
 
         try {
             FirebaseCloudMessaging::send($msg);
+            \App\Helpers\Logger\RSIALogger::fcm('Notification sent successfully', 'info', ['template' => $request->template, 'data' => $request->data, 'data_on_template' => $request->data_on_template, 'topic' => $template->topic ?? $request->topic, 'title' => $template->title, 'content' => $content]);
+
             return ApiResponse::success('Notification sent successfully');
         } catch (\Exception $e) {
+            \App\Helpers\Logger\RSIALogger::fcm('Failed to send notification', 'error', ['template' => $request->template, 'data' => $request->data, 'data_on_template' => $request->data_on_template, 'topic' => $template->topic ?? $request->topic, 'title' => $template->title, 'content' => $content, 'error' => $e->getMessage()]);
+
             return ApiResponse::error('Failed to send notification', $e->getMessage(), 500);
         }
     }
@@ -105,6 +114,7 @@ class NotificationController extends Controller
             }
 
             if (!$keyExists) {
+                \App\Helpers\Logger\RSIALogger::fcm('Key not found in data', 'error', ['key' => $key, 'data' => $data]);
                 throw new \Exception('Key ' . $key . ' not found in data');
             }
 

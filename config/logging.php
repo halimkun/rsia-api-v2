@@ -121,6 +121,20 @@ return [
             'level' => env('LOG_LEVEL_BERKAS', 'debug'),
             'days' => 14,
         ],
+
+        'undangan' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/undangan.log'),
+            'level' => env('LOG_LEVEL_UNDANGAN', 'debug'),
+            'days' => 14,
+        ],
+
+        'fcm' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/fcm.log'),
+            'level' => env('LOG_LEVEL_FCM', 'debug'),
+            'days' => 14,
+        ],
     ],
 
 ];

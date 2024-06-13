@@ -51,6 +51,7 @@ class RsiaPenerimaUndanganController extends Controller
 
         // check if model file exists model from request is App\Models\RsiaSuratInternal
         if (!file_exists(app_path('Models/' . str_replace('App\Models\\', '', $request->model) . '.php'))) {
+            \App\Helpers\Logger\RSIALogger::undangan("Model tidak ditemukan", "error", ['model' => $request->model]);
             return ApiResponse::error('Model not found', 'Model ' . $request->model . ' not found -- ' . str_replace('App\Models\\', '', $request->model), 404);
         }
 
@@ -83,6 +84,7 @@ class RsiaPenerimaUndanganController extends Controller
         $invalidPenerima = array_diff($penerima, $pegawaiNik);
 
         if (!empty($invalidPenerima)) {
+            \App\Helpers\Logger\RSIALogger::undangan("Data penerima undangan tidak valid", "error", ['penerima' => $invalidPenerima]);
             return ApiResponse::error('Invalid data', 'Penerima undangan ' . implode(', ', $invalidPenerima) . ' tidak ditemukan', 400);
         }
 
@@ -101,6 +103,7 @@ class RsiaPenerimaUndanganController extends Controller
                 }
             });
         } catch (\Exception $e) {
+            \App\Helpers\Logger\RSIALogger::undangan("Gagal menyimpan data", "error", ['error' => $e->getMessage()]);
             return \App\Helpers\ApiResponse::error('Failed to store data', $e->getMessage(), 500);
         }
 
