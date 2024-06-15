@@ -190,7 +190,7 @@ class RsiaSuratMasukController extends Controller
                 $data->update($request->all());
 
                 // Delete old file if it exists
-                if ($file && $data && $st::disk('sftp')->exists(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $oldBerkas)) {
+                if ($file && $data && $oldBerkas != '' && $st::disk('sftp')->exists(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $oldBerkas)) {
                     try {
                         $st::disk('sftp')->delete(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $oldBerkas);
                         \App\Helpers\Logger\RSIALogger::berkas("old file deleted successfully", 'info', ['file_name' => $oldBerkas]);
