@@ -290,7 +290,7 @@ class RsiaSuratMasukController extends Controller
     private static function validationRule($withRequired = true)
     {
         return [
-            "file"            => "file|mimes:pdf,jpg,jpeg,png|max:28672",
+            "file"            => "file|mimes:pdf,jpg,jpeg,png|max:32768",
 
             "no_simrs"        => "required|date",
             "no_surat"        => "string|nullable",
