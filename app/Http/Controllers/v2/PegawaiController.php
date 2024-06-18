@@ -153,7 +153,7 @@ class PegawaiController extends Controller
         }
 
         if ($request->delete_old_photo) {
-            if ($pegawai && $file && $st::disk('sftp')->exists(env('FOTO_PEGAWAI_SAVE_LOCATION') . $oldPhoto)) {
+            if ($pegawai && $file && $oldPhoto != '' && $st::disk('sftp')->exists(env('FOTO_PEGAWAI_SAVE_LOCATION') . $oldPhoto)) {
                 $st::disk('sftp')->delete(env('FOTO_PEGAWAI_SAVE_LOCATION') . $oldPhoto);
             }
         }

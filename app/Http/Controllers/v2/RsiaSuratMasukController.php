@@ -258,7 +258,7 @@ class RsiaSuratMasukController extends Controller
                 
                 // Delete associated file if it exists
                 $st = new \Illuminate\Support\Facades\Storage();
-                if ($st::disk('sftp')->exists(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $data->berkas)) {
+                if ($data->berkas != '' && $st::disk('sftp')->exists(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $data->berkas)) {
                     $st::disk('sftp')->delete(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $data->berkas);
                     \App\Helpers\Logger\RSIALogger::berkas("File {$data->berkas} deleted successfully", 'info');
                 }
