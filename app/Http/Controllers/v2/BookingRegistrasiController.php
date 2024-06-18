@@ -97,8 +97,13 @@ class BookingRegistrasiController extends Controller
      * @param  String  $base64_no_rkm_medis_and_tanggal_periksa
      * @return \Illuminate\Http\Response
      */
-    public function show($base64_no_rkm_medis_and_tanggal_periksa)
+    public function show($base64_no_rkm_medis_and_tanggal_periksa, Request $request)
     {
+        $includes = [];
+        if ($request->has('include')) {
+            $includes = explode(',', $request->include);
+        }
+
         $decoded = base64_decode($base64_no_rkm_medis_and_tanggal_periksa);
         $exploded = explode('.', $decoded);
 
@@ -109,6 +114,7 @@ class BookingRegistrasiController extends Controller
 
         $data = $booking->where('no_rkm_medis', $no_rkm_medis)
             ->where('tanggal_periksa', $tanggal_periksa)
+            ->with($includes)
             ->first();
 
         if ($data) {
@@ -126,7 +132,7 @@ class BookingRegistrasiController extends Controller
      */
     public function edit($id)
     {
-        //
+        // INFO : implement edit booking if needed
     }
 
     /**
@@ -138,7 +144,7 @@ class BookingRegistrasiController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // TODO : implement update booking
+        // INFO : implement update booking if needed
     }
 
     /**
@@ -149,7 +155,7 @@ class BookingRegistrasiController extends Controller
      */
     public function destroy($id)
     {
-        // TODO : implement delete booking
+        // INFO : implement delete booking if needed
     }
 
     /**
