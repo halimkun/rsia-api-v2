@@ -69,6 +69,6 @@ class BookingRegistrasiController extends Controller
      */
     public function includes(): array
     {
-        return ['dokter', 'penjab', 'pasien', 'poli'];
+        return ['dokter', 'dokter.spesialis', 'penjab', 'pasien', 'poli'];
     }
 }
