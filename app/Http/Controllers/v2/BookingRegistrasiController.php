@@ -45,7 +45,6 @@ class BookingRegistrasiController extends Controller
             'kd_poli'         => 'required|exists:poliklinik,kd_poli',
             'kd_pj'           => 'required|exists:penjab,kd_pj',
             'limit_reg'       => 'required|numeric|in:0,1',
-            'waktu_kunjungan' => 'required|date_format:Y-m-d H:i:s',
         ]);
 
         // check if the patient already has a booking
@@ -64,17 +63,20 @@ class BookingRegistrasiController extends Controller
             // get the last no_reg for the date of tanggal_periksa
             $lastNoReg = $booking->where('tanggal_periksa', $request->tanggal_periksa)
                 ->max('no_reg');
-            
-                // lastNoReg example 002 + 1 = 003
+
+            // lastNoReg example 002 + 1 = 003
             $noReg = str_pad($lastNoReg + 1, 3, '0', STR_PAD_LEFT);
+
+            // get the current date and time
+            $now = Carbon::now();
 
             // append the no_reg to the request
             $request->merge([
-                // tanggal booking format Y-m-d
-                'tanggal_booking' => \Carbon\Carbon::now()->format('Y-m-d'),
-                'jam_booking' => \Carbon\Carbon::now()->format('H:i:s'),
+                'tanggal_booking' => $now->format('Y-m-d'),
+                'jam_booking' => $now->format('H:i:s'),
                 'status' => 'Terdaftar',
                 'no_reg' => $noReg,
+                'waktu_kunjungan' => $now->format('Y-m-d H:i:s'),
             ]);
 
             // create the booking data
