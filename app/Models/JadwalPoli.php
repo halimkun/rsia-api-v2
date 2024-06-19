@@ -50,6 +50,6 @@ class JadwalPoli extends Model
 
     public function dokter()
     {
-        return $this->belongsTo(Dokter::class, 'kd_dokter', 'kd_dokter');
+        return $this->belongsTo(Dokter::class, 'kd_dokter', 'kd_dokter')->select('kd_dokter', 'nm_dokter', 'kd_sps');
     }
 }
