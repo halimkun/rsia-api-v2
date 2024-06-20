@@ -37,7 +37,7 @@ class BridgingSepController extends \Orion\Http\Controllers\Controller
      */
     public function filterableBy(): array
     {
-        return ['no_sep', 'no_rawat', 'klsrawat', 'nama_pasien', 'no_kartu', 'nomr'];
+        return ['no_sep', 'no_rawat', 'klsrawat', 'nama_pasien', 'no_kartu', 'nomr', 'jnspelayanan'];
     }
 
     /**
