@@ -72,7 +72,7 @@ class RsiaPksController extends Controller
         $explodedLastNomor = explode('/', $lastNomor->no_pks_internal);
 
         $buildedNomor = [
-            ($explodedLastNomor[0] + 1),
+            str_pad(($explodedLastNomor[0] + 1), 3, '0', STR_PAD_LEFT),
             $request->jenis,
             'PKS-RSIA',
             \Carbon\Carbon::parse($request->tgl_terbit)->format('dmy'),
