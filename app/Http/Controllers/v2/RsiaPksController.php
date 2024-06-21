@@ -181,6 +181,11 @@ class RsiaPksController extends Controller
                     $request->merge(['tanggal_akhir' => null]);
                 }
 
+                // check no_pks_eksternal on request if null replare with empty strings
+                if ($request->no_pks_eksternal == 'null' || $request->no_pks_eksternal == null) {
+                    $request->merge(['no_pks_eksternal' => '']);
+                }
+
                 $data->update($request->except(['file', 'berkas']));
 
                 if ($file) {
