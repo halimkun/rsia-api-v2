@@ -155,7 +155,7 @@ class RsiaPksController extends Controller
     {
         $request->validate([
             // 'no_pks_internal'  => 'required|string|min:20',
-            'no_pks_eksternal' => 'string',
+            'no_pks_eksternal' => 'nullable|string',
             'judul'            => 'required|string',
             'tgl_terbit'       => 'required|date',
             'tanggal_awal'     => 'date',
