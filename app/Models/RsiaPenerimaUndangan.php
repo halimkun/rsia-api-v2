@@ -48,6 +48,6 @@ class RsiaPenerimaUndangan extends Model
     // detail penerima
     public function detail()
     {
-        return $this->belongsTo(Pegawai::class, 'penerima', 'nik')->select('nik', 'nama', 'jbtn', 'departemen');
+        return $this->belongsTo(Pegawai::class, 'penerima', 'nik')->select('nik', 'nama', 'jbtn', 'departemen', 'bidang');
     }
 }

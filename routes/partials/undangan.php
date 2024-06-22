@@ -9,7 +9,11 @@ Orion::resource('undangan', \App\Http\Controllers\Orion\RsiaUndangan::class)
 
 Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('undangan')->group(function () {
     // ==================== PENERIMA UNDANGAN 
+    Orion::resource('penerima', \App\Http\Controllers\Orion\RsiaPenerimaUndanganController::class)->only(['search'])
+        ->parameters(['penerima' => 'base64_no_surat']);
+        
     Route::apiResource('penerima', \App\Http\Controllers\v2\RsiaPenerimaUndanganController::class)
+        ->only(['store', 'show'])
         ->parameters(['penerima' => 'base64_no_surat']);
 
     // ==================== KEHADIRAN RAPAT

@@ -121,13 +121,16 @@ class RsiaPenerimaUndanganController extends Controller
         $page = request()->get('page', 1);
         $decodedNoSurat = base64_decode($encodedNoSurat);
         
-        $penerimaUndangan = \App\Models\RsiaPenerimaUndangan::where('no_surat', $decodedNoSurat)->paginate(10, ['*'], 'page', $page);
+        // $penerimaUndangan = \App\Models\RsiaPenerimaUndangan::where('no_surat', $decodedNoSurat)->paginate(10, ['*'], 'page', $page);
+        $penerimaUndangan = \App\Models\RsiaPenerimaUndangan::where('no_surat', $decodedNoSurat)->get();
+
 
         if ($penerimaUndangan->isEmpty()) {
             return \App\Helpers\ApiResponse::error('Data not found', 'Data penerima undangan tidak ditemukan', 404);
         }
 
         return new \App\Http\Resources\Undangan\Penerima\CompleteCollection($penerimaUndangan);
+        // return new \App\Http\Resources\Undangan\Penerima\RealCollection($penerimaUndangan);
     }
 
     /**
