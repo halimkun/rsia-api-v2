@@ -131,4 +131,14 @@ class BridgingSep extends Model
         'no_rawat' => 'string',
     ];
 
+    
+    public function reg_periksa()
+    {
+        return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'tgl_registrasi', 'jam_reg');
+    }
+
+    public function kamar_inap()
+    {
+        return $this->belongsTo(KamarInap::class, 'no_rawat', 'no_rawat')->select('no_rawat', '');
+    }
 }

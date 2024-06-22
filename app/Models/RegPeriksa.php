@@ -213,6 +213,11 @@ class RegPeriksa extends Model
         return $this->hasMany(PeriksaRadiologi::class, 'no_rawat', 'no_rawat');
     }
 
+    /**
+     * Get the detail pemberian obat that owns the registrasi.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * */ 
     public function detailPemberianObat()
     {
         return $this->hasMany(DetailPemberianObat::class, 'no_rawat', 'no_rawat');

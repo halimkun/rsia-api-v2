@@ -49,4 +49,14 @@ class BridgingSepController extends \Orion\Http\Controllers\Controller
     {
         return ['no_sep', 'no_rawat', 'klsrawat', 'nama_pasien', 'no_kartu', 'nomr'];
     }
+
+    /**
+     * The relations that are used for including.
+     * 
+     * @return array
+     * */ 
+    public function includes(): array
+    {
+        return ['reg_periksa', 'kamar_inap'];
+    }
 }

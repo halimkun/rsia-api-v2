@@ -72,6 +72,6 @@ class PegawaiController extends Controller
      */
     public function filterableBy(): array
     {
-        return ['stts_aktif', 'departemen', 'nik', 'departemen'];
+        return ['stts_aktif', 'departemen', 'nik', 'departemen', 'jbtn'];
     }
 }
