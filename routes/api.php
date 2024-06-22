@@ -15,7 +15,18 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function (Request $request) {
-    return response()->json(['message' => 'Hello World!']);
+    try {
+        $c = \Illuminate\Support\Facades\DB::connection()->getPdo();
+        return response()->json([
+            'message' => 'Database connection success!',
+            'connection' => $c->getAttribute(PDO::ATTR_CONNECTION_STATUS)
+        ], 200);
+    } catch (\Exception $e) {
+        return response()->json([
+            'message' => 'Database connection failed!',
+            'error' => $e->getMessage()
+        ], 500);
+    }
 });
 
 Route::middleware(['claim:role,pegawai'])->prefix('notification')->group(function () {
