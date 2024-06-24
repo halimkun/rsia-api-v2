@@ -16,6 +16,7 @@ Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('undangan')->group
         ->only(['store', 'show'])
         ->parameters(['penerima' => 'base64_no_surat']);
 
+    // TODO : review ulang endpoint undangan (SEMUA)
     // ==================== KEHADIRAN RAPAT
     Route::apiResource('kehadiran', \App\Http\Controllers\v2\RsiaKehadiranRapatController::class)
         ->only(['store', 'show'])
