@@ -101,6 +101,13 @@ class RegPeriksa extends Model
     public $timestamps = false;
 
     /**
+     * Indicates if the model should be incrementing.
+     * 
+     * @var bool
+     * */ 
+    public $incrementing = false;
+
+    /**
      * The attributes that should be cast.
      *
      * @var array
@@ -139,7 +146,7 @@ class RegPeriksa extends Model
     */
     public function dokter()
     {
-        return $this->belongsTo(Dokter::class, 'kd_dokter', 'kd_dokter')->select('kd_dokter', 'nm_dokter');
+        return $this->belongsTo(Dokter::class, 'kd_dokter', 'kd_dokter')->select('kd_dokter', 'nm_dokter', 'kd_sps');
     }
 
     /**
