@@ -61,7 +61,7 @@ class JadwalDokterController extends \Orion\Http\Controllers\Controller
      */
     public function includes(): array
     {
-        return ['dokter', 'dokter.spesialis', 'poliklinik'];
+        return ['dokter', 'dokter.spesialis', 'dokter.pegawai', 'poliklinik'];
     }
 
     /**
