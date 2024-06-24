@@ -42,7 +42,7 @@ class RsiaSpoController extends \Orion\Http\Controllers\Controller
      * @param int|string $key
      * @return Model
      */
-    protected function runShowFetchQuery(Request $request, \Illuminate\Database\Eloquent\Builder $query, $key): \Illuminate\Database\Eloquent\Model
+    protected function runShowFetchQuery(Request $request, \Illuminate\Database\Eloquent\Builder $q, $key): \Illuminate\Database\Eloquent\Model
     {
         // try decoding the key using base64
         try {
@@ -51,7 +51,7 @@ class RsiaSpoController extends \Orion\Http\Controllers\Controller
             throw new \Illuminate\Database\Eloquent\ModelNotFoundException();
         }
 
-        return $this->runFetchQuery($request, $query, $key);
+        return $this->runFetchQuery($request, $q, $key);
     }
 
     /**
@@ -61,7 +61,7 @@ class RsiaSpoController extends \Orion\Http\Controllers\Controller
      * @param Model $entity
      * @param array $attributes
      */
-    protected function performStore(\Orion\Http\Requests\Request $request, \Illuminate\Database\Eloquent\Model $entity, array $attributes): void
+    protected function performStore(\Orion\Http\Requests\Request $request, \Illuminate\Database\Eloquent\Model $e, array $attributes): void
     {
         // Retrieve the maximum 'nomor' for the given year and jenis
         $maxNomor = $this->model::whereYear('tgl_terbit', $request->tgl_terbit)
@@ -97,8 +97,8 @@ class RsiaSpoController extends \Orion\Http\Controllers\Controller
         ];
 
         // Fill the entity with the attributes
-        $this->performFill($request, $entity, $newAttributes);
-        $entity->save();
+        $this->performFill($request, $e, $newAttributes);
+        $e->save();
     }
 
     /**
@@ -109,7 +109,7 @@ class RsiaSpoController extends \Orion\Http\Controllers\Controller
      * @param int|string $key
      * @return Model
      */
-    protected function runUpdateFetchQuery(Request $request, \Illuminate\Database\Eloquent\Builder $query, $key): \Illuminate\Database\Eloquent\Model
+    protected function runUpdateFetchQuery(Request $request, \Illuminate\Database\Eloquent\Builder $q, $key): \Illuminate\Database\Eloquent\Model
     {
         // try decoding the key using base64
         try {
@@ -118,7 +118,7 @@ class RsiaSpoController extends \Orion\Http\Controllers\Controller
             throw new \Illuminate\Database\Eloquent\ModelNotFoundException();
         }
 
-        return $this->runFetchQuery($request, $query, $key);
+        return $this->runFetchQuery($request, $q, $key);
     }
 
     /**
@@ -128,10 +128,10 @@ class RsiaSpoController extends \Orion\Http\Controllers\Controller
      * @param Model $entity
      * @param array $attributes
      */
-    protected function performUpdate(Request $request, \Illuminate\Database\Eloquent\Model $entity, array $attributes): void
+    protected function performUpdate(Request $request, \Illuminate\Database\Eloquent\Model $e, array $attributes): void
     {
         $newAttributes = [
-            'nomor'        => $entity->nomor,
+            'nomor'        => $e->nomor,
             'judul'        => $request->judul,
             'unit'         => $request->unit,
             'unit_terkait' => $request->unit_terkait,
@@ -140,8 +140,8 @@ class RsiaSpoController extends \Orion\Http\Controllers\Controller
         ];
 
         // Fill the entity with the attributes
-        $this->performFill($request, $entity, $newAttributes);
-        $entity->save();
+        $this->performFill($request, $e, $newAttributes);
+        $e->save();
     }
 
     /**
@@ -218,7 +218,7 @@ class RsiaSpoController extends \Orion\Http\Controllers\Controller
      * @param int|string $key
      * @return Model
      */
-    protected function runRestoreFetchQuery(Request $request, \Illuminate\Database\Eloquent\Builder $query, $key): \Illuminate\Database\Eloquent\Model
+    protected function runRestoreFetchQuery(Request $request, \Illuminate\Database\Eloquent\Builder $q, $key): \Illuminate\Database\Eloquent\Model
     {
         try {
             $key = base64_decode($key);
@@ -226,7 +226,7 @@ class RsiaSpoController extends \Orion\Http\Controllers\Controller
             throw new \Illuminate\Database\Eloquent\ModelNotFoundException();
         }
         
-        return $this->runFetchQuery($request, $query, $key);
+        return $this->runFetchQuery($request, $q, $key);
     }
 
     /**
@@ -237,7 +237,7 @@ class RsiaSpoController extends \Orion\Http\Controllers\Controller
      * @param int|string $key
      * @return Model
      */
-    protected function runDestroyFetchQuery(Request $request, \Illuminate\Database\Eloquent\Builder $query, $key): \Illuminate\Database\Eloquent\Model
+    protected function runDestroyFetchQuery(Request $request, \Illuminate\Database\Eloquent\Builder $q, $key): \Illuminate\Database\Eloquent\Model
     {
         try {
             $key = base64_decode($key);
@@ -245,7 +245,7 @@ class RsiaSpoController extends \Orion\Http\Controllers\Controller
             throw new \Illuminate\Database\Eloquent\ModelNotFoundException();
         }
 
-        return $this->runFetchQuery($request, $query, $key);
+        return $this->runFetchQuery($request, $q, $key);
     }
 
     /**
