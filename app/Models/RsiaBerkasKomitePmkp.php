@@ -18,7 +18,7 @@ use Thiagoprz\CompositeKey\HasCompositeKey;
  * @property int $status
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \App\Models\Pegawai|null $penanggungjawab
+ * @property-read \App\Models\Pegawai|null $penanggungJawab
  * @method static \Illuminate\Database\Eloquent\Builder|RsiaBerkasKomitePmkp newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|RsiaBerkasKomitePmkp newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|RsiaBerkasKomitePmkp query()
@@ -44,38 +44,12 @@ class RsiaBerkasKomitePmkp extends Model
     protected $guarded = [];
 
 
-    public function exposedScopes()
+    public function penanggungJawab()
     {
-        return [];
+        return $this->belongsTo(Pegawai::class, 'pj', 'nik');
     }
 
-    public function searchableBy()
-    {
-        return ['perihal', 'penanggungjawab.nama'];
-    }
-
-    public function filterableBy()
-    {
-        return ['tgl_terbit', 'pj', 'status'];
-    }
-
-    public function sortableBy()
-    {
-        return ['perihal', 'tgl_terbit', 'status', 'created_at', 'updated_at'];
-    }
-
-    public function aggregatableBy()
-    {
-        return [];
-    }
-
-    public function includableBy()
-    {
-        return ['penanggungjawab'];
-    }
-
-
-    public function penanggungjawab()
+    public function penanggungJawabSimple()
     {
         return $this->belongsTo(Pegawai::class, 'pj', 'nik')->select('nik', 'nama');
     }

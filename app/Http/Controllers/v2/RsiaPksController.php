@@ -21,7 +21,7 @@ class RsiaPksController extends Controller
         $select = $request->input('select', '*');
 
         $data = \App\Models\RsiaPks::select(array_map('trim', explode(',', $select)))
-            ->with('penanggungjawab')
+            ->with('penanggungJawab')
             ->where('status', 1)
             ->orderBy('tgl_terbit', 'desc')
             ->orderBy('id', 'desc')
@@ -123,7 +123,7 @@ class RsiaPksController extends Controller
     public function show($id)
     {
         $data = \App\Models\RsiaPks::where('id', $id)
-            ->with('penanggungjawab')
+            ->with('penanggungJawab')
             ->first();
 
         if (!$data) {

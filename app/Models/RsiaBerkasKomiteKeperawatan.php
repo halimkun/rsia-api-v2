@@ -46,6 +46,11 @@ class RsiaBerkasKomiteKeperawatan extends Model
 
     public function penanggungJawab()
     {
+        return $this->belongsTo(Pegawai::class, 'pj', 'nik');
+    }
+
+    public function penanggungJawabSimple()
+    {
         return $this->belongsTo(Pegawai::class, 'pj', 'nik')->select('nik', 'nama');
     }
 }

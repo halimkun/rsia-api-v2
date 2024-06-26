@@ -22,7 +22,7 @@ class RsiaBerkasKomiteMedisController extends Controller
         $select = $request->input('select', '*');
 
         $data = \App\Models\RsiaBerkasKomiteMedis::select(array_map('trim', explode(',', $select)))
-            ->with('penanggungjawab')
+            ->with('penanggungJawab')
             ->where('status', 1)
             ->orderBy('created_at', 'desc')
             ->paginate(10, array_map('trim', explode(',', $select)), 'page', $page);
@@ -106,7 +106,7 @@ class RsiaBerkasKomiteMedisController extends Controller
 
         $data = \App\Models\RsiaBerkasKomiteMedis::where('nomor', $identifier[0])
             ->where('tgl_terbit', $identifier[1])
-            ->with('penanggungjawab')
+            ->with('penanggungJawab')
             ->first();
 
         if (!$data) {

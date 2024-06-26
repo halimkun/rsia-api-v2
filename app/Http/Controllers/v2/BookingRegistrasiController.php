@@ -134,7 +134,7 @@ class BookingRegistrasiController extends Controller
      */
     public function edit($id)
     {
-        // INFO : implement edit booking if needed
+        // 
     }
 
     /**
@@ -146,7 +146,7 @@ class BookingRegistrasiController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // INFO : implement update booking if needed
+        // 
     }
 
     /**
@@ -157,7 +157,7 @@ class BookingRegistrasiController extends Controller
      */
     public function destroy($id)
     {
-        // INFO : implement delete booking if needed
+        // 
     }
 
     /**

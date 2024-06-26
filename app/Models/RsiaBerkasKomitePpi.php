@@ -18,7 +18,7 @@ use Thiagoprz\CompositeKey\HasCompositeKey;
  * @property int $status
  * @property \Illuminate\Support\Carbon $created_at
  * @property \Illuminate\Support\Carbon $updated_at
- * @property-read \App\Models\Pegawai|null $penanggungjawab
+ * @property-read \App\Models\Pegawai|null $penanggungJawab
  * @method static \Illuminate\Database\Eloquent\Builder|RsiaBerkasKomitePpi newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|RsiaBerkasKomitePpi newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|RsiaBerkasKomitePpi query()
@@ -51,7 +51,7 @@ class RsiaBerkasKomitePpi extends Model
 
     public function searchableBy()
     {
-        return ['perihal', 'penanggungjawab.nama'];
+        return ['perihal', 'penanggungJawab.nama'];
     }
 
     public function filterableBy()
@@ -71,11 +71,16 @@ class RsiaBerkasKomitePpi extends Model
 
     public function includableBy()
     {
-        return ['penanggungjawab'];
+        return ['penanggungJawab'];
     }
 
 
-    public function penanggungjawab()
+    public function penanggungJawab()
+    {
+        return $this->belongsTo(Pegawai::class, 'pj', 'nik');
+    }
+
+    public function penanggungJawabSimple()
     {
         return $this->belongsTo(Pegawai::class, 'pj', 'nik')->select('nik', 'nama');
     }
