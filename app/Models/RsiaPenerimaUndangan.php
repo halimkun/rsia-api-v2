@@ -45,9 +45,24 @@ class RsiaPenerimaUndangan extends Model
         'model' => 'string',
     ];
 
+
     // detail penerima
     public function detail()
     {
         return $this->belongsTo(Pegawai::class, 'penerima', 'nik')->select('nik', 'nama', 'jbtn', 'departemen', 'bidang');
+    }
+
+    // Relasi Polimorfik
+    public function relatedModel(): \Illuminate\Database\Eloquent\Relations\MorphTo
+    {
+        return $this->morphTo('no_surat', 'model', 'no_surat', 'no_surat');
+    }
+
+    // Query Scope untuk Pencarian
+    public function scopeSearchByRelatedModel($query, $searchTerm)
+    {
+        return $query->whereHas('relatedModel', function ($query) use ($searchTerm) {
+            $query->where('perihal', 'like', "%{$searchTerm}%");
+        });
     }
 }

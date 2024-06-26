@@ -4,8 +4,9 @@ namespace App\Http\Controllers\Orion;
 
 use Orion\Http\Controllers\Controller;
 use Orion\Concerns\DisableAuthorization;
+use Illuminate\Http\Request;
 
-class RsiaUndangan extends Controller
+class RsiaUndanganController extends Controller
 {
     use DisableAuthorization;
 
@@ -13,7 +14,7 @@ class RsiaUndangan extends Controller
      * Fully-qualified model class name
      */
     protected $model = \App\Models\RsiaPenerimaUndangan::class;
-    
+
     /**
      * @var string $resource
      */
@@ -24,17 +25,49 @@ class RsiaUndangan extends Controller
      */
     protected $collectionResource = \App\Http\Resources\Undangan\UndanganCollection::class;
 
-    
+
+    /**
+     * Builds Eloquent query for fetching entities in index method.
+     *
+     * @param Request $request
+     * @param array $requestedRelations
+     * @return Builder
+     */
     protected function buildIndexFetchQuery(\Orion\Http\Requests\Request $request, array $requestedRelations): \Illuminate\Database\Eloquent\Builder
     {
         $query = parent::buildIndexFetchQuery($request, $requestedRelations);
-
         $query->select(['no_surat', 'model'])->groupBy('no_surat', 'model');
 
         return $query;
     }
-    
-    
+
+    /**
+     * Runs the given query for fetching entities in index method.
+     *
+     * @param Request $request
+     * @param Builder $query
+     * @param int $paginationLimit
+     * @return Paginator|Collection
+     * @throws BindingResolutionException
+     */
+    protected function runIndexFetchQuery(Request $request, \Illuminate\Database\Eloquent\Builder $query, int $paginationLimit)
+    {
+        $searchTerm = $request->input('search.value', '');
+        $query      = $query->searchByRelatedModel($searchTerm);
+        
+        return $this->shouldPaginate($request, $paginationLimit) ? $query->paginate($paginationLimit) : $query->get();
+    }
+
+    /**
+     * The list of available query scopes.
+     *
+     * @return array
+     */
+    public function exposedScopes(): array
+    {
+        return ['scopeSearchByRelatedModel'];
+    }
+
     /**
      * Retrieves currently authenticated user based on the guard.
      *
