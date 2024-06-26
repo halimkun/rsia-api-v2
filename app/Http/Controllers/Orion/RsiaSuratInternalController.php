@@ -9,7 +9,7 @@ use Orion\Concerns\DisableAuthorization;
 class RsiaSuratInternalController extends Controller
 {
     use DisableAuthorization;
-    
+
     /**
      * Fully-qualified model class name
      */
@@ -23,6 +23,16 @@ class RsiaSuratInternalController extends Controller
     public function resolveUser()
     {
         return \Illuminate\Support\Facades\Auth::guard('user-aes')->user();
+    }
+
+    /**
+     * The list of available query scopes.
+     *
+     * @return array
+     */
+    public function exposedScopes(): array
+    {
+        return ['hasPenerima'];
     }
 
     /**
@@ -45,7 +55,7 @@ class RsiaSuratInternalController extends Controller
         return ['penanggungJawabSimple.nama', 'pj', 'tempat', 'no_surat', 'created_at'];
     }
 
-        /**
+    /**
      * The relations that are always included together with a resource.
      *
      * @return array
@@ -62,7 +72,7 @@ class RsiaSuratInternalController extends Controller
      */
     public function includes(): array
     {
-        return [];
+        return ['penerimaUndangan'];
     }
 
     /**

@@ -7,8 +7,7 @@ Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('surat')->group(fu
 
   // ==================== SURAT INTERNAL  
   Orion::resource('internal', \App\Http\Controllers\Orion\RsiaSuratInternalController::class)->only('search');
-  Route::resource('internal', \App\Http\Controllers\v2\RsiaSuratInternalController::class, [])
-    ->except(['create', 'edit'])
+  Route::resource('internal', \App\Http\Controllers\v2\RsiaSuratInternalController::class, [])->except(['create', 'edit'])
     ->parameters(['internal' => 'base64_nomor_surat']);
 
 

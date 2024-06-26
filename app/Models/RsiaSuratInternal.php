@@ -55,11 +55,11 @@ class RsiaSuratInternal extends Model
     public $incrementing = false;
 
     public $timestamps = false;
-    
-    
+
+
     public function penerimaUndangan()
     {
-        return $this->morphMany(RsiaPenerimaUndangan::class, 'undangan');
+        return $this->hasMany(RsiaPenerimaUndangan::class, 'no_surat', 'no_surat');
     }
 
     public function penanggungJawab()
@@ -70,5 +70,17 @@ class RsiaSuratInternal extends Model
     public function penanggungJawabSimple()
     {
         return $this->belongsTo(Pegawai::class, 'pj', 'nik')->select('nik', 'nama');
+    }
+
+
+    /**
+     * Scope a query to only include models that have related data in RsiaPenerimaUndangan.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopehasPenerima($query)
+    {
+        return $query->whereHas('penerimaUndangan');
     }
 }
