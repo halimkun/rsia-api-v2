@@ -29,6 +29,18 @@ Route::get('/', function (Request $request) {
     }
 });
 
+Route::get('/credit', function (Request $request) {
+    return response()->json([
+        'developer'   => 'M Faisal Halim',
+        'email'       => 'ffaisalhalim@gmail.com',
+        'github'      => 'https://github.com/halimkun',
+        'repository'  => 'https://github.com/halimkun/rsia-api-v2.git',
+        'license'     => 'MIT License',
+        'license_url' => 'https://github.com/halimkun/rsia-api-v2/blob/master/LICENSE',
+        'version'     => 'Laravel ' . app()->version(),
+    ], 200);
+});
+
 Route::middleware(['user-aes', 'claim:role,pegawai|dokter'])->prefix('notification')->group(function () {
     Route::post('send', [\App\Http\Controllers\v2\NotificationController::class, 'send']);
     Route::post('with-template', [\App\Http\Controllers\v2\NotificationController::class, 'withTemplate']);
