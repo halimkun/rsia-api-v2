@@ -150,7 +150,6 @@ class RsiaSkController extends Controller
      */
     public function update(Request $request, $identifier)
     {
-        // FIXME : cek dan test ketika mencoba mengupdate tgl_terbit
         $request->validate([
             'jenis'      => 'required|string',
             'judul'      => 'required|string',
@@ -175,8 +174,9 @@ class RsiaSkController extends Controller
             return ApiResponse::error('data not found', 'data with identifier ' . $identifier . ' not found', 404);
         }
 
-        $oldFile = $data->berkas;
-        $file = $request->file('file');
+        $oldData   = $data->toArray();
+        $oldFile   = $data->berkas;
+        $file      = $request->file('file');
         $file_name = $file ? strtotime(now()) . '-' . str_replace(' ', '_', $file->getClientOriginalName()) : $data->berkas;
 
         $request->merge([
@@ -214,7 +214,7 @@ class RsiaSkController extends Controller
             return ApiResponse::error('failed to save data', $e->getMessage(), 500);
         }
 
-        \App\Helpers\Logger\RSIALogger::berkas("data updated successfully", 'info', ['data' => $request->all()]);
+        \App\Helpers\Logger\RSIALogger::berkas("data updated successfully", 'info', ['old_data' => $oldData, 'data' => $request->all()]);
         return ApiResponse::success('data updated successfully');
     }
 

@@ -139,9 +139,12 @@ class RsiaSuratEksternalController extends Controller
         $request->validate(self::validationRule(false));
 
         $data = RsiaSuratEksternal::where('no_surat', $decoded_no_surat)->first();
+        
         if (!$data) {
             return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
+
+        $oldData = $data->toArray();
 
         try {
             $data->update($request->all());
@@ -150,7 +153,7 @@ class RsiaSuratEksternalController extends Controller
             return \App\Helpers\ApiResponse::error('Gagal mengupdate data surat eksternal', $e->getMessage(), 500);
         }
 
-        \App\Helpers\Logger\RSIALogger::berkas("data updated successfully", 'info', ['data' => $request->all()]);
+        \App\Helpers\Logger\RSIALogger::berkas("data updated successfully", 'info', ['data' => $request->all(), 'old_data' => $oldData]);
         return \App\Helpers\ApiResponse::success('Berhasil mengupdate data surat eksternal');
     }
 

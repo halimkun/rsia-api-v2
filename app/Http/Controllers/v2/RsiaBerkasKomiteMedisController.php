@@ -175,16 +175,18 @@ class RsiaBerkasKomiteMedisController extends Controller
             return \App\Helpers\ApiResponse::error("Resource not found", "Data dengan detail tersebut tidak ditemukan", 404);
         }
 
+        $oldData = $data->toArray();
+
         try {
             DB::transaction(function () use ($request, $data) {
                 $data->update($request->except(['nomor', 'tgl_terbit']));
-                \App\Helpers\Logger\RSIALogger::berkas("data updated successfully", 'info', ['data' => $request->all()]);
             });
         } catch (\Exception $e) {
             \App\Helpers\Logger\RSIALogger::berkas("failed to update data", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
             return \App\Helpers\ApiResponse::error("failed to update data", $e->getMessage(), 500);
         }
-
+        
+        \App\Helpers\Logger\RSIALogger::berkas("data updated successfully", 'info', ['data' => $request->all(), 'old_data' => $oldData]);
         return \App\Helpers\ApiResponse::success("data updated successfully");
     }
 

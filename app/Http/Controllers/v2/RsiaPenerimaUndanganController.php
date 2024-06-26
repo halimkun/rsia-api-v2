@@ -79,8 +79,8 @@ class RsiaPenerimaUndanganController extends Controller
         }
 
         // validate penerima undangan is exists on pegawai table
-        $pegawai = \App\Models\Pegawai::whereIn('nik', $penerima)->get();
-        $pegawaiNik = $pegawai->pluck('nik')->toArray();
+        $pegawai         = \App\Models\Pegawai::whereIn('nik', $penerima)->get();
+        $pegawaiNik      = $pegawai->pluck('nik')->toArray();
         $invalidPenerima = array_diff($penerima, $pegawaiNik);
 
         if (!empty($invalidPenerima)) {
@@ -97,8 +97,8 @@ class RsiaPenerimaUndanganController extends Controller
                     \App\Models\RsiaPenerimaUndangan::updateOrCreate([
                         'no_surat' => $no_surat,
                         'penerima' => $nik,
-                        'tipe' => $request->tipe,
-                        'model' => $request->model,
+                        'tipe'     => $request->tipe,
+                        'model'    => $request->model,
                     ]);
                 }
             });
@@ -107,6 +107,7 @@ class RsiaPenerimaUndanganController extends Controller
             return \App\Helpers\ApiResponse::error('Failed to store data', $e->getMessage(), 500);
         }
 
+        \App\Helpers\Logger\RSIALogger::undangan("Data Penerima undangan berhasil disimpan", "info", ['model' => $request->model, 'no_surat' => $no_surat, 'penerima' => $penerima, 'tipe' => $request->tipe]);
         return \App\Helpers\ApiResponse::success('Data stored successfully');
     }
 

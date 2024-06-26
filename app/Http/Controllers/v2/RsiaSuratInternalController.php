@@ -156,9 +156,12 @@ class RsiaSuratInternalController extends Controller
         $request->validate(self::validationRule(false));
 
         $data = RsiaSuratInternal::where('no_surat', $decoded_no_surat)->first();
+
         if (!$data) {
             return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
+
+        $oldData = $data->toArray();
 
         try {
             $data->update($request->except('user'));
@@ -167,7 +170,7 @@ class RsiaSuratInternalController extends Controller
             return \App\Helpers\ApiResponse::error('Failed to update data', $e->getMessage(), 500);
         }
 
-        \App\Helpers\Logger\RSIALogger::berkas("data updated successfully", 'info', ['data' => $request->all()]);
+        \App\Helpers\Logger\RSIALogger::berkas("data updated successfully", 'info', ['old_data' => $oldData, 'data' => $request->all()]);
         return \App\Helpers\ApiResponse::success('Data updated successfully');
     }
 

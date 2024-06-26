@@ -35,11 +35,9 @@ class NotificationController extends Controller
         try {
             FirebaseCloudMessaging::send($msg);
             \App\Helpers\Logger\RSIALogger::fcm('Notification sent successfully', 'info', [ 'topic' => $request->topic, 'title' => $request->title, 'body'  => $request->body, 'data'  => $request->data]);
-
             return ApiResponse::success('Notification sent successfully');
         } catch (\Exception $e) {
             \App\Helpers\Logger\RSIALogger::fcm('Failed to send notification', 'error', [ 'topic' => $request->topic, 'title' => $request->title, 'body'  => $request->body, 'data'  => $request->data, 'error' => $e->getMessage()]);
-            
             return ApiResponse::error('Failed to send notification', $e->getMessage(), 500);
         }
     }

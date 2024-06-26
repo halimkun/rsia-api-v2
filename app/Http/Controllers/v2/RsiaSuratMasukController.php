@@ -154,6 +154,7 @@ class RsiaSuratMasukController extends Controller
         $request->validate(self::validationRule());
 
         $data = RsiaSuratMasuk::where('no', $no)->first();
+
         if (!$data) {
             return \App\Helpers\ApiResponse::notFound('Resource not found');
         }
@@ -167,6 +168,7 @@ class RsiaSuratMasukController extends Controller
             }
         }
 
+        $oldData = $data->toArray();
         $oldBerkas = $data->berkas;
         $request->merge([
             'berkas' => $file ? $file_name : $data->berkas,
@@ -212,7 +214,7 @@ class RsiaSuratMasukController extends Controller
                 }
             });
         } catch (\Exception $e) {
-            \App\Helpers\Logger\RSIALogger::berkas("data failed to update", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
+            \App\Helpers\Logger\RSIALogger::berkas("data failed to update", 'error', ['old_data' => $oldData, 'data' => $request->all(), 'error' => $e->getMessage()]);
             return \App\Helpers\ApiResponse::error('Failed to update data', $e->getMessage(), 500);
         }
 

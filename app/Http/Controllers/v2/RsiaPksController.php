@@ -170,8 +170,9 @@ class RsiaPksController extends Controller
             return \App\Helpers\ApiResponse::error("Resource not found", "Data dengan detail tersebut tidak ditemukan", 404);
         }
 
-        $file = $request->file('file');
-        $oldFIle = $data->berkas;
+        $oldData  = $data->toArray();
+        $file     = $request->file('file');
+        $oldFIle  = $data->berkas;
         $fileName = $file ? strtotime(now()) . '-' . str_replace(' ', '_', $file->getClientOriginalName()) : $oldFIle;
 
         try {
@@ -227,7 +228,7 @@ class RsiaPksController extends Controller
             return \App\Helpers\ApiResponse::error("failed to update data", $e->getMessage(), 500);
         }
 
-        \App\Helpers\Logger\RSIALogger::berkas("data updated successfully", 'info', ['data' => $request->all()]);
+        \App\Helpers\Logger\RSIALogger::berkas("data updated successfully", 'info', ['data' => $request->all(), 'old_data' => $oldData]);
         return \App\Helpers\ApiResponse::success("data updated successfully");
     }
 
