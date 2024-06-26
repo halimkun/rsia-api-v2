@@ -150,7 +150,7 @@ class RsiaSkController extends Controller
      */
     public function update(Request $request, $identifier)
     {
-        // TODO : check dan test ketika mencoba mengupdate tgl_terbit
+        // FIXME : cek dan test ketika mencoba mengupdate tgl_terbit
         $request->validate([
             'jenis'      => 'required|string',
             'judul'      => 'required|string',

@@ -47,7 +47,7 @@ class BerkasPegawaiController  extends Controller
         $request->validate(self::validationRule());
 
         try {
-            // TODO : tambahkan upload file, jika file gagak diupload maka berkas tidak disimpan
+            // TODO : tambahkan upload file, jika file gagal diupload maka berkas tidak disimpan
             \App\Models\BerkasPegawai::create($request->all());
         } catch (\Exception $e) {
             return \App\Helpers\ApiResponse::error('Failed to save data', $e->getMessage(), 500);
@@ -106,7 +106,7 @@ class BerkasPegawaiController  extends Controller
         }
 
         try {
-            // TODO : tambahkan upload file, jika file gagak diupload maka berkas tidak disimpan
+            // TODO : tambahkan upload file, jika file gagal diupload maka berkas tidak disimpan
             \App\Models\BerkasPegawai::where('nik', $nik)->where('kode_berkas', $kode_berkas)->update($request->all());
         } catch (\Exception $e) {
             return \App\Helpers\ApiResponse::error('Failed to update data', $e->getMessage(), 500);
