@@ -29,7 +29,7 @@ Route::get('/', function (Request $request) {
     }
 });
 
-Route::middleware(['claim:role,pegawai'])->prefix('notification')->group(function () {
+Route::middleware(['user-aes', 'claim:role,pegawai|dokter'])->prefix('notification')->group(function () {
     Route::post('send', [\App\Http\Controllers\v2\NotificationController::class, 'send']);
     Route::post('with-template', [\App\Http\Controllers\v2\NotificationController::class, 'withTemplate']);
 });
