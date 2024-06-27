@@ -77,6 +77,6 @@ class RegPeriksaController extends \Orion\Http\Controllers\Controller
      * */ 
     public function includes(): array
     {
-        return ['pasien', 'dokter', 'poliklinik', 'dokter.spesialis'];
+        return ['pasien', 'dokter', 'poliklinik', 'dokter.spesialis', 'pasienBayi'];
     }
 }

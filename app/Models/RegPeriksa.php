@@ -229,4 +229,10 @@ class RegPeriksa extends Model
     {
         return $this->hasMany(DetailPemberianObat::class, 'no_rawat', 'no_rawat');
     }
+
+    public function pasienBayi()
+    {
+        return $this->belongsTo(PasienBayi::class, 'no_rkm_medis', 'no_rkm_medis') 
+            ->select('no_rkm_medis', 'berat_badan', 'anakke', 'keterangan', 'diagnosa');
+    }
 }
