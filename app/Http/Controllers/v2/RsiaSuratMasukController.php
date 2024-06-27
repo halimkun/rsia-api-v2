@@ -48,7 +48,9 @@ class RsiaSuratMasukController extends Controller
             $request->request->remove('file');
         }
 
-        $file = $request->file("file");
+        $file      = $request->file("file");
+        $file_name = null;
+        $st        = new \Illuminate\Support\Facades\Storage();
         $request->merge([
             'status' => '1',
         ]);
@@ -58,7 +60,6 @@ class RsiaSuratMasukController extends Controller
         if ($file) {
             $file_name = strtotime(now()) . '-' . str_replace([' ', '_'], '-', $file->getClientOriginalName());
 
-            $st = new \Illuminate\Support\Facades\Storage();
             if (!$st::disk('sftp')->exists(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION'))) {
                 $st::disk('sftp')->makeDirectory(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION'));
             }
@@ -98,11 +99,6 @@ class RsiaSuratMasukController extends Controller
             \App\Helpers\Logger\RSIALogger::berkas("data failed to save", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
             return \App\Helpers\ApiResponse::error('Failed to save data', $e->getMessage(), 500);
         }
-
-        // =============== Old code
-        // if ($file) {
-        //     $st::disk('sftp')->put(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $file_name, file_get_contents($file));
-        // }
 
         \App\Helpers\Logger\RSIALogger::berkas("data saved successfully", 'info', ['data' => $request->all()]);
         return \App\Helpers\ApiResponse::success('Data saved successfully');
@@ -150,7 +146,9 @@ class RsiaSuratMasukController extends Controller
             $request->request->remove('file');
         }
 
-        $file = $request->file("file");
+        $file      = $request->file("file");
+        $file_name = null;
+        $st        = new \Illuminate\Support\Facades\Storage();
         $request->validate(self::validationRule());
 
         $data = RsiaSuratMasuk::where('no', $no)->first();
@@ -162,13 +160,12 @@ class RsiaSuratMasukController extends Controller
         if ($file) {
             $file_name = strtotime(now()) . '-' . str_replace([' ', '_'], '-', $file->getClientOriginalName());
 
-            $st = new \Illuminate\Support\Facades\Storage();
             if (!$st::disk('sftp')->exists(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION'))) {
                 $st::disk('sftp')->makeDirectory(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION'));
             }
         }
 
-        $oldData = $data->toArray();
+        $oldData   = $data->toArray();
         $oldBerkas = $data->berkas;
         $request->merge([
             'berkas' => $file ? $file_name : $data->berkas,
@@ -218,24 +215,6 @@ class RsiaSuratMasukController extends Controller
             return \App\Helpers\ApiResponse::error('Failed to update data', $e->getMessage(), 500);
         }
 
-        // =============== Old code
-        // try {
-        //     \Illuminate\Support\Facades\DB::transaction(function () use ($request, $data) {
-        //         $data->update($request->all());
-        //     });
-        // } catch (\Exception $e) {
-        //     return \App\Helpers\ApiResponse::error('Failed to update data', $e->getMessage(), 500);
-        // }
-
-        // if ($file && $data && $st::disk('sftp')->exists(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $oldBerkas)) {
-        //     $st::disk('sftp')->delete(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $oldBerkas);
-        // }
-
-        // // if file uoloaded, save new file
-        // if ($file) {
-        //     $st::disk('sftp')->put(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $file_name, file_get_contents($file));
-        // }
-
         \App\Helpers\Logger\RSIALogger::berkas("data updated successfully", 'info', ['data' => $request->all()]);
         return \App\Helpers\ApiResponse::success('Data updated successfully');
     }
@@ -270,20 +249,6 @@ class RsiaSuratMasukController extends Controller
             \App\Helpers\Logger\RSIALogger::berkas("Failed to delete data or associated file", 'error', ['error' => $e->getMessage()]);
             return \App\Helpers\ApiResponse::error('Failed to delete data', $e->getMessage(), 500);
         }
-        
-        // =============== Old code
-        // try {
-        //     \Illuminate\Support\Facades\DB::transaction(function () use ($data) {
-        //         $data->delete();
-        //     });
-        // } catch (\Exception $e) {
-        //     return \App\Helpers\ApiResponse::error('Failed to delete data', $e->getMessage(), 500);
-        // }
-
-        // $st = new \Illuminate\Support\Facades\Storage();
-        // if ($data && $st::disk('sftp')->exists(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $data->berkas)) {
-        //     $st::disk('sftp')->delete(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $data->berkas);
-        // }
 
         \App\Helpers\Logger\RSIALogger::berkas("Data deleted successfully", 'info', ['data' => $data]);
         return \App\Helpers\ApiResponse::success('Data deleted successfully');

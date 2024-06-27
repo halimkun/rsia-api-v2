@@ -9,8 +9,6 @@ use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
 
-// TODO : Add Logging to all method
-
 class RsiaSkController extends Controller
 {
     /**
