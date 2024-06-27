@@ -65,6 +65,11 @@ class UserAuthController extends Controller
     {
         // laravel passport revokes the token
         $user = \Illuminate\Support\Facades\Auth::guard('user-aes')->user();
+
+        if (!$user) {
+            return \App\Helpers\ApiResponse::error('User not found', 'Unauthorized', 401);
+        }
+
         $user->token()->revoke();
 
         return \App\Helpers\ApiResponse::success('User logged out successfully');

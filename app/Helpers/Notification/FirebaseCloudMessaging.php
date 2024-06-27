@@ -8,7 +8,7 @@ use Request;
 
 class FirebaseCloudMessaging
 {
-    private $credentials = 'firebase-credentials.json';
+    private $credentials = 'firebase-credentials--rsia-aisyiyah.json';
 
     private $factory;
 
