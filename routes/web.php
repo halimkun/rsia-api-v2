@@ -18,3 +18,4 @@ Route::get('/', function () {
 });
 
 Route::get('logs', [\Rap2hpoutre\LaravelLogViewer\LogViewerController::class, 'index']);
+Route::get('/horizon/{view?}', [\App\Http\Controllers\HorizonCustomHomeController::class, 'index'])->where('view', '(.*)')->name('horizon.index');
