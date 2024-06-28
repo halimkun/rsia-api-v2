@@ -9,7 +9,7 @@ class NotificationTemplate extends Model
 {
     use HasFactory;
 
-    protected $table = 'notification_template';
+    protected $table = 'rsia_notification_template';
 
     protected $guarded = ['id'];
 

@@ -46,7 +46,7 @@ class NotificationController extends Controller
     {
         $request->validate([
             // 'topic'            => 'required|string',
-            'template'         => 'required|string|exists:notification_template,name',
+            'template'         => 'required|string|exists:rsia_notification_template,name',
             'data_on_template' => 'array',
             'data'             => 'array'
         ]);
