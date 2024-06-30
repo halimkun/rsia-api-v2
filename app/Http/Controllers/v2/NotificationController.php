@@ -52,7 +52,7 @@ class NotificationController extends Controller
         ]);
 
         // get template from database
-        $template = \App\Models\NotificationTemplate::where('name', $request->template)->first();
+        $template = \App\Models\RsiaTemplateNotifikasi::where('name', $request->template)->first();
 
         // if template not found
         if (!$template) {

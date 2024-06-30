@@ -55,7 +55,7 @@ class FirebaseCloudMessaging
     public static function withTemplate($template, \Illuminate\Support\Collection $templateData, string $topic = '', array $notificationData = [])
     {
         // get template from database
-        $template = \App\Models\NotificationTemplate::where('name', $template)->first();
+        $template = \App\Models\RsiaTemplateNotifikasi::where('name', $template)->first();
 
         // if template not found
         if (!$template) {

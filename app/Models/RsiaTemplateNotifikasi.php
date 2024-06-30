@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class NotificationTemplate extends Model
+class RsiaTemplateNotifikasi extends Model
 {
     use HasFactory;
 
-    protected $table = 'rsia_notification_template';
+    protected $table = 'rsia_template_notifikasi';
 
     protected $guarded = ['id'];
 
