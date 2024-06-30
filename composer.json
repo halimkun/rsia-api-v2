@@ -11,6 +11,8 @@
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "kreait/firebase-php": "^6.9",
+        "kreait/laravel-firebase": "^4.2",
+        "laravel-notification-channels/fcm": "^2.7",
         "laravel/framework": "^8.75",
         "laravel/horizon": "^5.22",
         "laravel/passport": "^10.4",

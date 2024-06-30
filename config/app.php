@@ -181,6 +181,12 @@ return [
 
         // rap2hpoutre/laravel-log-viewer
         Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider::class,
+
+        // Laravel Firebase - Kreait
+        Kreait\Laravel\Firebase\ServiceProvider::class,
+
+        // Laravel Notification Channels
+        Illuminate\Notifications\NotificationServiceProvider::class,
     ],
 
     /*
