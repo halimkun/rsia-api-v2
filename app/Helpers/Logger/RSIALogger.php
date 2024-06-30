@@ -8,7 +8,7 @@ class RSIALogger
     {
         // append user id to context
         $user = \Illuminate\Support\Facades\Auth::guard('user-aes')->user();
-        $context['user'] = $user->id_user;
+        $context['user'] = $user->id_user ?? 'unknown';
 
         // log the message
         $logger = \Illuminate\Support\Facades\Log::channel('berkas');
@@ -19,7 +19,7 @@ class RSIALogger
     {
         // append user id to context
         $user = \Illuminate\Support\Facades\Auth::guard('user-aes')->user();
-        $context['user'] = $user->id_user;
+        $context['user'] = $user->id_user ?? 'unknown';
 
         // log the message
         $logger = \Illuminate\Support\Facades\Log::channel('undangan');
@@ -30,7 +30,7 @@ class RSIALogger
     {
         // append user id to context
         $user = \Illuminate\Support\Facades\Auth::guard('user-aes')->user();
-        $context['user'] = $user->id_user;
+        $context['user'] = $user->id_user ?? 'unknown';
 
         // log the message
         $logger = \Illuminate\Support\Facades\Log::channel('fcm');
