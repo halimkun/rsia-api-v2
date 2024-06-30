@@ -8,10 +8,13 @@ use Request;
 
 class ParseNotificationMessage
 {
-    public static function run(string $content, \Illuminate\Support\Collection $data)
+    public static function run(string $body, \Illuminate\Support\Collection $data)
     {
         // Find all placeholders in content
-        preg_match_all('/\{\{\s*(.*?)\s*\}\}/', $content, $matches);
+        preg_match_all('/\{\{\s*(.*?)\s*\}\}/', $body, $matches);
+        
+        // Initialize $content with $body
+        $content = $body;
     
         foreach ($matches[1] as $key) {
             // Extract the value from the collection using dot notation
@@ -27,6 +30,7 @@ class ParseNotificationMessage
     
             // Replace placeholder in content with the value found
             $content = str_replace(['{{ ' . $key . ' }}', '{{' . $key . '}}'], $value, $content);
+            \App\Helpers\Logger\RSIALogger::fcm('Parse notification message', 'info', ['key' => $key, 'value' => $value, 'content' => $content]);
         }
     
         return $content;
