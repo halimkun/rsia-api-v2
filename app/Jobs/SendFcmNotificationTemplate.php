@@ -2,7 +2,6 @@
 
 namespace App\Jobs;
 
-use App\Helpers\Logger\RSIALogger;
 use Illuminate\Bus\Queueable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Queue\SerializesModels;
@@ -35,15 +34,6 @@ class SendFcmNotificationTemplate implements ShouldQueue
      */
     public $backoff = 3;
 
-    /**
-     * Get the tags that should be assigned to the job.
-     *
-     * @return array<int, string>
-     */
-    public function tags(): array
-    {
-        return ['fcm-notification'];
-    }
 
     /**
      * Create a new job instance.
@@ -57,6 +47,26 @@ class SendFcmNotificationTemplate implements ShouldQueue
     }
 
     /**
+     * Get the tags that should be assigned to the job.
+     *
+     * @return array<int, string>
+     */
+    public function tags(): array
+    {
+        return ['fcm-notification'];
+    }
+
+    /**
+     * Determine the time at which the job should timeout.
+     *
+     * @return \DateTime
+     */
+    public function retryUntil()
+    {
+        return now()->addMinutes(1);
+    }
+
+    /**
      * Execute the job.
      *
      * @return void
@@ -64,16 +74,32 @@ class SendFcmNotificationTemplate implements ShouldQueue
     public function handle()
     {
         foreach ($this->topics as $i => $topic) {
-            
+
             if ($i > 0) {
                 sleep(3);
             }
 
+            // TODO : Fungsikan FirebaseCloudMessaging untuk mengirim notifikasi menggunakan template
             try {
-                // TODO : Fungsikan FirebaseCloudMessaging untuk mengirim notifikasi menggunakan template
-                Log::info('Notifikasi berhasil dikirim', ['topic' => $topic, 'time' => now()->toDateTimeString()]);
+                \App\Helpers\Notification\FirebaseCloudMessaging::withTemplate(
+                    $this->template,
+                    collect([
+                        'pegawai' => [
+                            'nama' => 'M Faisal Halim',
+                            'departemen' => [
+                                'dep_name' => 'IT',
+                            ]
+                        ],
+                    ]),
+                    $topic,
+                    []
+                );
+
+
+
+                \App\Helpers\Logger\RSIALogger::fcm("Send notification to topic $topic with template $this->template", 'info', ['topic' => $topic, 'template' => $this->template]);
             } catch (\Exception $e) {
-                RSIALogger::fcm($e->getMessage(), 'error', ['topic' => $topic, 'time' => now()->toDateTimeString()]);
+                \App\Helpers\Logger\RSIALogger::fcm($e->getMessage(), 'error', ['topic' => $topic, 'time' => now()->toDateTimeString()]);
             }
         }
     }

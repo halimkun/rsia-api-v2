@@ -2,10 +2,11 @@
 
 namespace App\Models;
 
+use Laravel\Passport\HasApiTokens;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Database\Eloquent\Model;
-use Laravel\Passport\HasApiTokens;
 
 /**
  * App\Models\Pasien
@@ -93,7 +94,7 @@ use Laravel\Passport\HasApiTokens;
  */
 class Pasien extends Authenticatable
 {
-    use HasFactory, HasApiTokens;
+    use HasFactory, HasApiTokens, Notifiable;
 
     protected $table = 'pasien';
 
@@ -107,8 +108,18 @@ class Pasien extends Authenticatable
         'no_rkm_medis' => 'string',
         'kd_pj' => 'string',
     ];
-    
+
     public $timestamps = false;
 
     public $incrementing = false;
+
+    /**
+     * Specifies the user's FCM tokens
+     *
+     * @return string|array
+     */
+    public function routeNotificationForFcm()
+    {
+        return null;
+    }
 }
