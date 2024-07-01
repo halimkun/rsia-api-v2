@@ -42,12 +42,19 @@ Route::get('/credit', function (Request $request) {
     ], 200);
 });
 
-Route::middleware(['user-aes', 'claim:role,pegawai|dokter'])->prefix('notification')->group(function () {
-    Route::post('test', function(Request $request) {
-        \App\Jobs\JadwalPraktikDokter::dispatch('perubahan_jadwal_dokter', ['003300'], collect($request->all()));
+Route::middleware(['claim:role,pegawai|dokter'])->prefix('notification')->group(function () {
+    Route::get('/', [\App\Http\Controllers\NotificationController::class, 'index']);
+    Route::put('/{id}/read', [\App\Http\Controllers\NotificationController::class, 'read']);
+    Route::patch('/{id}/read', [\App\Http\Controllers\NotificationController::class, 'read']);
+    Route::delete('/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy']);
+
+    Route::middleware(['user-aes'])->group(function () {
+        Route::post('test', function(Request $request) {
+            \App\Jobs\JadwalPraktikDokter::dispatch('perubahan_jadwal_dokter', ['003300'], collect($request->all()));
+        });
+        Route::post('send', [\App\Http\Controllers\v2\NotificationController::class, 'send']);
+        Route::post('with-template', [\App\Http\Controllers\v2\NotificationController::class, 'withTemplate']);
     });
-    Route::post('send', [\App\Http\Controllers\v2\NotificationController::class, 'send']);
-    Route::post('with-template', [\App\Http\Controllers\v2\NotificationController::class, 'withTemplate']);
 });
 
 $files = scandir(__DIR__ . '/partials');
