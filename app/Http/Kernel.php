@@ -21,6 +21,9 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
+
+        // custom
+        \App\Http\Middleware\AddHeaderAccessToken::class,
     ];
 
     /**
@@ -63,8 +66,12 @@ class Kernel extends HttpKernel
         'throttle'          => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified'          => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
 
+        // Add Header Access Token Middleware
+        'add-header'        => \App\Http\Middleware\AddHeaderAccessToken::class,
+
         // Laravel Passport Claim Middleware
         'claim'             => \App\Http\Middleware\CheckForClaim::class,
+        
         // Pasien Middleware
         'pasien'            => \App\Http\Middleware\PasienMiddleware::class,
         'user-aes'          => \App\Http\Middleware\UserMiddleware::class,
