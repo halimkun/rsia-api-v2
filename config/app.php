@@ -173,6 +173,7 @@ return [
         App\Providers\AuthServiceProvider::class,
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
+        App\Providers\HorizonServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
 
         // Laravel IDE Helper - https://github.com/barryvdh/laravel-ide-helper
@@ -180,6 +181,12 @@ return [
 
         // rap2hpoutre/laravel-log-viewer
         Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider::class,
+
+        // Laravel Firebase - Kreait
+        Kreait\Laravel\Firebase\ServiceProvider::class,
+
+        // Laravel Notification Channels
+        Illuminate\Notifications\NotificationServiceProvider::class,
     ],
 
     /*
