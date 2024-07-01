@@ -2,10 +2,7 @@
 
 namespace App\Helpers\Notification;
 
-use Kreait\Firebase\Factory;
-use Kreait\Firebase\Messaging\CloudMessage;
-use Request;
-
+// NOTE : body yang diterima harus berupa real string, bukan json_encode, jadi notifikasi tidak akan bermasalah dengan karakter khusus.
 class ParseNotificationMessage
 {
     public static function run(string $body, \Illuminate\Support\Collection $data)
