@@ -32,8 +32,9 @@ class PenerimaUndanganWithKehadiranCollection extends ResourceCollection
             // merge data with kehadiran & $item->getRelations()
             $data = array_merge($data, [
                 'hadir'     => $kehadiran ? true : false,
-                'detail'    => $item->getRelations(),
             ]);
+
+            $data = array_merge($data, $item->getRelations());
 
             return $data;
         });
