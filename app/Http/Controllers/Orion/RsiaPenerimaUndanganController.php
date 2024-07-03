@@ -10,6 +10,9 @@ class RsiaPenerimaUndanganController extends \Orion\Http\Controllers\Controller
 
     protected $model = \App\Models\RsiaPenerimaUndangan::class;
 
+    // collection
+    protected $collectionResource = \App\Http\Resources\PenerimaUndanganWithKehadiranCollection::class;
+
     /**
      * Retrieves currently authenticated user based on the guard.
      *
