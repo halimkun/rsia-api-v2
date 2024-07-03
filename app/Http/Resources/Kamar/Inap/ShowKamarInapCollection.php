@@ -19,13 +19,19 @@ class ShowKamarInapCollection extends ResourceCollection
 
         $regPeriksa = \App\Models\RegPeriksa::where('no_rawat', $this->collection->first()->no_rawat)->first();
 
+        $masuk  = Carbon::parse($regPeriksa->tgl_registrasi . " " . $regPeriksa->jam_reg);
+        $keluar = Carbon::parse($this->collection->first()->tgl_keluar . " " . $this->collection->first()->jam_keluar);
+
+        // Hitung selisih waktu dalam menit
+        $diffMinutes = $masuk->diffInMinutes($keluar);
+
+        $days   = floor($diffMinutes / (60 * 24)) + 1;
+        $durasi = sprintf("%02d:%02d", floor($diffMinutes / 60), $diffMinutes % 60);
+
         // map the collection to get the data
         return [
-            "lama_inap" => $this->collection->sum("lama"),
-            "lama_jam" => $this->getDiffMinutesSecond(
-                Carbon::parse($regPeriksa->tgl_registrasi . " " . $regPeriksa->jam_reg),
-                Carbon::parse($this->collection->first()->tgl_keluar . " " . $this->collection->first()->jam_keluar)
-            ),
+            "lama_inap" => $days,
+            "lama_jam"  => $durasi,
             "pasien_bayi"    => $regPeriksa->pasienBayi,
             "detail" => $this->collection->map(function ($kamarInap) {
                 return [
@@ -46,7 +52,8 @@ class ShowKamarInapCollection extends ResourceCollection
         ];
     }
 
-    private function getDiffMinutesSecond(Carbon $masuk, Carbon $keluar) {
+    private function getDiffMinutesSecond(Carbon $masuk, Carbon $keluar)
+    {
         $diffHour = $masuk->diffInHours($keluar);
         $diffMinute = $masuk->diffInMinutes($keluar) % 60;
 

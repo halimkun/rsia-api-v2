@@ -11,6 +11,7 @@ class RealCostPasienRawatInap extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param  string  $base64_no_rawat
      * @return \Illuminate\Http\Response
      */
     public function index($base64_no_rawat)
@@ -54,7 +55,7 @@ class RealCostPasienRawatInap extends Controller
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  string  $id
      * @return \Illuminate\Http\Response
      */
     public function show($id)
