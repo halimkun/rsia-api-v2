@@ -17,6 +17,7 @@ class BookingRegistrasiCollection extends ResourceCollection
         // return parent::toArray($request);
 
         $regPeriksaSumData = \App\Models\RegPeriksa::where('tgl_registrasi', $this->collection->first()->tanggal_periksa)
+            ->where('stts', 'Belum')
             ->groupBy('kd_poli', 'kd_dokter')
             ->selectRaw('kd_poli, kd_dokter, count(*) as total')
             ->get();
