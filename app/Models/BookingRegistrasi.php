@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Awobaz\Compoships\Compoships;
 use Illuminate\Database\Eloquent\Model;
 use Thiagoprz\CompositeKey\HasCompositeKey;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -42,13 +43,13 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class BookingRegistrasi extends Model
 {
-    use HasFactory, HasCompositeKey;
+    use HasFactory, HasCompositeKey, Compoships;
 
     /**
      * The table associated with the model.
      * 
      * @var string
-     * */ 
+     * */
     protected $table = 'booking_registrasi';
 
     /**
@@ -88,6 +89,26 @@ class BookingRegistrasi extends Model
         'waktu_kunjungan' => 'datetime',
     ];
 
+    // scope check stts on regPeriksa
+    public function scopeStatusBelum($query, $no_rkm_medis, $tanggal_periksa)
+    {
+        return $query->whereHas('regPeriksa', function ($query) use ($no_rkm_medis, $tanggal_periksa) {
+            $query->where('no_rkm_medis', $no_rkm_medis);
+            $query->where('tgl_registrasi', $tanggal_periksa);
+            $query->where('stts', 'Belum');
+        });
+    }
+
+    /**
+     * Get the regPeriksa that owns the booking registrasi.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * */
+    public function regPeriksa()
+    {
+        return $this->belongsTo(RegPeriksa::class, ['no_rkm_medis', 'tanggal_periksa'], ['no_rkm_medis', 'tgl_registrasi']);
+    }
+
     /**
      * Get the pasien that owns the booking registrasi.
      * 
@@ -105,7 +126,7 @@ class BookingRegistrasi extends Model
      * */
     public function pasien()
     {
-        return $this->belongsTo(Pasien::class, 'no_rkm_medis', 'no_rkm_medis');
+        return $this->belongsTo(Pasien::class, 'no_rkm_medis', 'no_rkm_medis')->select('no_rkm_medis', 'nm_pasien', 'jk', 'tmp_lahir', 'tgl_lahir', 'email');
     }
 
     /**

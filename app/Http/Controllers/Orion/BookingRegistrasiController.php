@@ -33,6 +33,16 @@ class BookingRegistrasiController extends Controller
     }
 
     /**
+     * The list of available query scopes.
+     *
+     * @return array
+     */
+    public function exposedScopes(): array
+    {
+        return ['statusBelum'];
+    }
+
+    /**
      * The attributes that are used for sorting.
      *
      * @return array
