@@ -3,6 +3,7 @@
 namespace App\Http\Resources\Pasien\Tarif;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Collection;
 
 class RealCostResource extends JsonResource
 {
@@ -16,17 +17,20 @@ class RealCostResource extends JsonResource
     {
         $no_rawat = $this->resource->no_rawat;
         $gabung = \App\Models\RanapGabung::select('no_rawat2')->where('no_rawat', $no_rawat)->first();
-        
-        $data = $this->getTarif($no_rawat, $request);
+
+        $data['tarif_ibu'] = $this->getTarif($no_rawat, $request);
 
         if ($gabung) {
-            $data['gabung'] = $this->getTarif($gabung->no_rawat2, $request);
+            $data['tarif_anak'] = $this->getTarif($gabung->no_rawat2, $request);
+
+            $data['tarif_ibu_anak'] = collect($data['tarif_ibu'])->mergeRecursive($data['tarif_anak'])
+                ->mapWithKeys(function ($item, $key) {
+                    return [$key => collect($item)->flatten()->sum()];
+                });
         }
 
-        // sum all 
-        $data['total'] = collect($data)->sum(function ($item) {
-            return $item ? collect($item)->sum() : 0;
-        });
+        // Sum all individual tarif elements
+        $data['total_tarif'] = isset($data['tarif_ibu_anak']) ? collect($data['tarif_ibu_anak'])->sum() : collect($data['tarif_ibu'])->sum();
 
         return $data;
     }
