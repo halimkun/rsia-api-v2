@@ -106,7 +106,7 @@ class BookingRegistrasi extends Model
      * */
     public function regPeriksa()
     {
-        return $this->belongsTo(RegPeriksa::class, ['no_rkm_medis', 'tanggal_periksa'], ['no_rkm_medis', 'tgl_registrasi']);
+        return $this->belongsTo(RegPeriksa::class, ['no_rkm_medis', 'tanggal_periksa'], ['no_rkm_medis', 'tgl_registrasi'])->select('no_rkm_medis', 'no_reg', 'no_rawat', 'tgl_registrasi', 'jam_reg');
     }
 
     /**

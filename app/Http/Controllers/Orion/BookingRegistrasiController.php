@@ -23,6 +23,11 @@ class BookingRegistrasiController extends Controller
     protected $model = \App\Models\BookingRegistrasi::class;
 
     /**
+     * @var string $collectionResource
+     */
+    protected $collectionResource = \App\Http\Resources\Booking\Registrasi\BookingRegistrasiCollection::class;
+
+    /**
      * Retrieves currently authenticated user based on the guard.
      *
      * @return \Illuminate\Contracts\Auth\Authenticatable|null
@@ -43,6 +48,16 @@ class BookingRegistrasiController extends Controller
     }
 
     /**
+     * The relations and fields that are allowed to be aggregated on a resource.
+     *
+     * @return array
+     */
+    public function aggregates(): array
+    {
+        return ['regPeriksa',];
+    }
+
+    /**
      * The attributes that are used for sorting.
      *
      * @return array
@@ -59,7 +74,7 @@ class BookingRegistrasiController extends Controller
      */
     public function filterableBy(): array
     {
-        return ['tanggal_booking', 'no_rkm_medis', 'tanggal_periksa', 'kd_dokter', 'kd_poli', 'no_reg', 'kd_pj', 'limit_reg', 'waktu_kunjungan', 'status'];
+        return ['tanggal_booking', 'no_rkm_medis', 'tanggal_periksa', 'kd_dokter', 'kd_poli', 'no_reg', 'kd_pj', 'limit_reg', 'waktu_kunjungan', 'status', 'regPeriksa.tgl_registrasi', 'regPeriksa.kd_poli'];
     }
 
     /**
@@ -79,6 +94,6 @@ class BookingRegistrasiController extends Controller
      */
     public function includes(): array
     {
-        return ['dokter', 'dokter.spesialis', 'penjab', 'pasien', 'poli'];
+        return ['dokter', 'dokter.spesialis', 'penjab', 'pasien', 'poli', 'regPeriksa'];
     }
 }
