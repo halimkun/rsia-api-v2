@@ -44,7 +44,7 @@ class BookingRegistrasiController extends Controller
      */
     public function exposedScopes(): array
     {
-        return ['statusBelum'];
+        return ['statusBelum', 'tidakBatal'];
     }
 
     /**
