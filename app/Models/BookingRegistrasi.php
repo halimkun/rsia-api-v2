@@ -89,13 +89,35 @@ class BookingRegistrasi extends Model
         'waktu_kunjungan' => 'datetime',
     ];
 
-    // scope check stts on regPeriksa
+    /**
+     * Scope a query to only include booking registrasi that has status 'Belum'.
+     * 
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $no_rkm_medis
+     * @param string $tanggal_periksa
+     * */ 
     public function scopeStatusBelum($query, $no_rkm_medis, $tanggal_periksa)
     {
         return $query->whereHas('regPeriksa', function ($query) use ($no_rkm_medis, $tanggal_periksa) {
             $query->where('no_rkm_medis', $no_rkm_medis);
             $query->where('tgl_registrasi', $tanggal_periksa);
             $query->where('stts', 'Belum');
+        });
+    }
+
+    /**
+     * Scope a query to only include booking registrasi that has status 'Sudah'.
+     * 
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $no_rkm_medis
+     * @param string $tanggal_periksa
+     * */ 
+    public function scopeTidakBatal($query, $no_rkm_medis, $tanggal_periksa)
+    {
+        return $query->whereHas('regPeriksa', function ($query) use ($no_rkm_medis, $tanggal_periksa) {
+            $query->where('no_rkm_medis', $no_rkm_medis);
+            $query->where('tgl_registrasi', $tanggal_periksa);
+            $query->where('stts', '!=', 'Batal');
         });
     }
 
