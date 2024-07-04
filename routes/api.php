@@ -42,7 +42,7 @@ Route::get('/credit', function (Request $request) {
     ], 200);
 });
 
-Route::middleware(['claim:role,pegawai|dokter'])->prefix('notification')->group(function () {
+Route::middleware(['claim:role,pegawai|dokter|pasien'])->prefix('notification')->group(function () {
     Route::get('/', [\App\Http\Controllers\NotificationController::class, 'index']);
     Route::put('/{id}/read', [\App\Http\Controllers\NotificationController::class, 'read']);
     Route::patch('/{id}/read', [\App\Http\Controllers\NotificationController::class, 'read']);
@@ -50,7 +50,7 @@ Route::middleware(['claim:role,pegawai|dokter'])->prefix('notification')->group(
 
     Route::middleware(['user-aes'])->group(function () {
         Route::post('test', function(Request $request) {
-            \App\Jobs\JadwalPraktikDokter::dispatch('perubahan_jadwal_dokter', ['003300'], collect($request->all()));
+            \App\Jobs\JadwalPraktikDokter::dispatch('perubahan_jadwal_dokter', ['067989'], collect($request->all()));
         });
         Route::post('send', [\App\Http\Controllers\v2\NotificationController::class, 'send']);
         Route::post('with-template', [\App\Http\Controllers\v2\NotificationController::class, 'withTemplate']);
