@@ -60,18 +60,20 @@ class BookingRegistrasiController extends Controller
         }
 
         \Illuminate\Support\Facades\DB::transaction(function () use ($request, $booking) {
-            // get the last no_reg for the date of tanggal_periksa
-            $lastNoReg = $booking->where('tanggal_periksa', $request->tanggal_periksa)
-                ->where('kd_poli', $request->kd_poli)
-                ->where('kd_dokter', $request->kd_dokter)
-                ->max('no_reg');
+            $lastRegistrasi = \App\Models\RegPeriksa::select('no_rawat')
+                ->where('tgl_registrasi', $request->tanggal_periksa)
+                ->orderBy('no_rawat', 'desc')
+                ->first();
 
-            if (!$lastNoReg) {
-                $lastNoReg = 0;
+            if ($lastRegistrasi) {
+                $lastPasienByRegistrasi = explode('/', $lastRegistrasi->no_rawat); 
+                $lastPasienByRegistrasi = end($lastPasienByRegistrasi);
+            } else {
+                $lastPasienByRegistrasi = 0;
             }
 
             // lastNoReg example 002 + 1 = 003
-            $noReg = str_pad($lastNoReg + 1, 3, '0', STR_PAD_LEFT);
+            $pasienKe = str_pad($lastPasienByRegistrasi + 1, 6, '0', STR_PAD_LEFT);
 
             // get the current date and time
             $now = Carbon::now();
@@ -79,9 +81,9 @@ class BookingRegistrasiController extends Controller
             // append the no_reg to the request
             $request->merge([
                 'tanggal_booking' => $now->format('Y-m-d'),
-                'jam_booking' => $now->format('H:i:s'),
-                'status' => 'Terdaftar',
-                'no_reg' => $noReg,
+                'jam_booking'     => $now->format('H:i:s'),
+                'status'          => 'Terdaftar',
+                'no_reg'          => $pasienKe,
                 'waktu_kunjungan' => $now->format('Y-m-d H:i:s'),
             ]);
 
