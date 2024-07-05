@@ -60,6 +60,12 @@ class BookingRegistrasiController extends Controller
         }
 
         \Illuminate\Support\Facades\DB::transaction(function () use ($request, $booking) {
+            // get the last no_reg for the date of tanggal_periksa
+            $lastNoReg = $booking->where('tanggal_periksa', $request->tanggal_periksa)
+                ->where('kd_poli', $request->kd_poli)
+                ->where('kd_dokter', $request->kd_dokter)
+                ->max('no_reg');
+
             $lastRegistrasi = \App\Models\RegPeriksa::select('no_rawat')
                 ->where('tgl_registrasi', $request->tanggal_periksa)
                 ->orderBy('no_rawat', 'desc')
@@ -72,26 +78,30 @@ class BookingRegistrasiController extends Controller
                 $lastPasienByRegistrasi = 0;
             }
 
-            // lastNoReg example 002 + 1 = 003
+            if (!$lastNoReg) {
+                $lastNoReg = 0;
+            }
+
             $pasienKe = str_pad($lastPasienByRegistrasi + 1, 6, '0', STR_PAD_LEFT);
+            $noReg = str_pad($lastNoReg + 1, 3, '0', STR_PAD_LEFT);
 
             // get the current date and time
             $now = Carbon::now();
 
             // append the no_reg to the request
             $request->merge([
-                'tanggal_booking' => $now->format('Y-m-d'),
-                'jam_booking'     => $now->format('H:i:s'),
-                'status'          => 'Terdaftar',
-                'no_reg'          => $pasienKe,
-                'waktu_kunjungan' => $now->format('Y-m-d H:i:s'),
+                'tanggal_booking'     => $now->format('Y-m-d'),
+                'jam_booking'         => $now->format('H:i:s'),
+                'status'              => 'Terdaftar',
+                'no_reg'              => $noReg,
+                'waktu_kunjungan'     => $now->format('Y-m-d H:i:s'),
             ]);
 
             // create the booking data
             $booking->create($request->all());
 
             // build reg_periksa data
-            $regPeriksaData = $this->buildRegPeriksaData($request);
+            $regPeriksaData = $this->buildRegPeriksaData($request, $pasienKe);
 
             // create the reg_periksa data
             \App\Models\RegPeriksa::create($regPeriksaData);
@@ -174,7 +184,7 @@ class BookingRegistrasiController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return array
      * */
-    protected function buildRegPeriksaData($request)
+    protected function buildRegPeriksaData($request, $lastPasienByNoRawa)
     {
         $pasien     = \App\Models\Pasien::where('no_rkm_medis', $request->no_rkm_medis)->first();
         $poliklinik = \App\Models\Poliklinik::where('kd_poli', $request->kd_poli)->first();
@@ -186,7 +196,7 @@ class BookingRegistrasiController extends Controller
 
         return [
             'no_reg'         => $request->no_reg,
-            'no_rawat'       => $this->buildNoRawat($request),
+            'no_rawat'       => $this->buildNoRawat($request, $lastPasienByNoRawa),
             'tgl_registrasi' => $request->tanggal_periksa,
             'jam_reg'        => Carbon::now()->format('H:i:s'),
             'kd_dokter'      => $request->kd_dokter,
@@ -207,9 +217,9 @@ class BookingRegistrasiController extends Controller
         ];
     }
 
-    protected function buildNoRawat($request)
+    protected function buildNoRawat($request, $lastPasienByNoRawa)
     {
-        return Carbon::parse($request->tanggal_periksa)->format('Y/m/d') . '/' . str_pad($request->no_reg, 6, '0', STR_PAD_LEFT);
+        return Carbon::parse($request->tanggal_periksa)->format('Y/m/d') . '/' . str_pad($lastPasienByNoRawa, 6, '0', STR_PAD_LEFT);
     }
 
     protected function buildAlamatPj($pasien)
