@@ -27,8 +27,9 @@ class ParseNotificationMessage
     
             // Replace placeholder in content with the value found
             $content = str_replace(['{{ ' . $key . ' }}', '{{' . $key . '}}'], $value, $content);
-            \App\Helpers\Logger\RSIALogger::fcm('Parse notification message', 'info', ['key' => $key, 'value' => $value, 'content' => $content]);
         }
+
+        \App\Helpers\Logger\RSIALogger::fcm('Notification message parsed', 'info', ['content' => $content, 'data' => $data]);
     
         return $content;
     }    
