@@ -116,24 +116,24 @@ return [
 
         // =============== CISTOM CHANNELS
         'berkas' => [
-            'driver' => 'daily',
-            'path' => storage_path('logs/berkas.log'),
-            'level' => env('LOG_LEVEL_BERKAS', 'debug'),
-            'days' => 14,
+            'driver' => 'custom',
+            'via'    => App\Logging\CreateMonthlyLogger::class,
+            'path'   => storage_path('logs/berkas.log'),
+            'level'  => env('LOG_LEVEL_BERKAS', 'debug'),
         ],
 
         'undangan' => [
-            'driver' => 'daily',
-            'path' => storage_path('logs/undangan.log'),
-            'level' => env('LOG_LEVEL_UNDANGAN', 'debug'),
-            'days' => 14,
+            'driver' => 'custom',
+            'via'    => App\Logging\CreateMonthlyLogger::class,
+            'path'   => storage_path('logs/undangan.log'),
+            'level'  => env('LOG_LEVEL_UNDANGAN', 'debug'),
         ],
 
         'fcm' => [
-            'driver' => 'daily',
-            'path' => storage_path('logs/fcm.log'),
-            'level' => env('LOG_LEVEL_FCM', 'debug'),
-            'days' => 14,
+            'driver' => 'custom',
+            'via'    => App\Logging\CreateMonthlyLogger::class,
+            'path'   => storage_path('logs/fcm.log'),
+            'level'  => env('LOG_LEVEL_FCM', 'debug'),
         ],
     ],
 
