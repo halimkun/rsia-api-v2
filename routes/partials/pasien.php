@@ -25,6 +25,9 @@ Route::middleware(['claim:role,pegawai|dokter|pasien'])->prefix('pasien')->group
     Route::apiResource('.riwayat.obat', \App\Http\Controllers\v2\RiwayatPemberianObatController::class)
         ->parameters(['' => 'no_rkm_medis', 'riwayat' => 'no_rawat'])->only(['index']);
 
+    // ==================== DIAGNOSA
+    Orion::resource('.diagnosa', \App\Http\Controllers\Orion\DiagnosaPasienController::class)->only('search')
+        ->parameters(['' => 'base64_no_rawat']);
 
     Route::middleware(['user-aes'])->group(function () {
         // ==================== PASIEN RAWAT INAP
