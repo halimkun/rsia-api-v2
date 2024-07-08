@@ -22,4 +22,9 @@ class DiagnosaPasien extends Model
     public $timestamps = false;
 
     protected $keyType = 'string';
+
+
+    public function penyakit() {
+        return $this->belongsTo(Penyakit::class, 'kd_penyakit', 'kd_penyakit');
+    }
 }

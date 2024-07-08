@@ -61,7 +61,7 @@ class DiagnosaPasienController extends \Orion\Http\Controllers\Controller
      */
     public function alwaysIncludes(): array
     {
-        return [];
+        return ['penyakit'];
     }
 
     /**
