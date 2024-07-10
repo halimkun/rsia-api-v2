@@ -15,8 +15,9 @@ class BookingRegistrasiCollection extends ResourceCollection
     public function toArray($request)
     {
         // return parent::toArray($request);
+        $tglRegistrasi = $this->collection->isEmpty() ? \Carbon\Carbon::now()->format('Y-m-d') : $this->collection->first()->tanggal_periksa;
 
-        $regPeriksaSumData = \App\Models\RegPeriksa::where('tgl_registrasi', $this->collection->first()->tanggal_periksa)
+        $regPeriksaSumData = \App\Models\RegPeriksa::where('tgl_registrasi', $tglRegistrasi)
             ->where('stts', 'Belum')
             ->groupBy('kd_poli', 'kd_dokter')
             ->selectRaw('kd_poli, kd_dokter, count(*) as total')
@@ -38,6 +39,12 @@ class BookingRegistrasiCollection extends ResourceCollection
             ];
             
             $data = array_merge($bookingData, $item->getRelations());
+
+            $data['jadwal'] = \App\Models\JadwalPoli::select('jam_mulai', 'jam_selesai', 'hari_kerja')
+                ->where('kd_poli', $item->kd_poli)
+                ->where('kd_dokter', $item->kd_dokter)
+                ->where('hari_kerja', strtoupper(\Carbon\Carbon::parse($item->tanggal_periksa)->translatedFormat('l')))
+                ->first();
 
             // merge with regPeriksaSumData
             $data = array_merge($data, [
