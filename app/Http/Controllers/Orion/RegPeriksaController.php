@@ -57,7 +57,7 @@ class RegPeriksaController extends \Orion\Http\Controllers\Controller
      */
     public function filterableBy(): array
     {
-        return ['no_rawat', 'tgl_registrasi', 'kd_poli', 'kd_dokter', 'stts', 'stts_daftar', 'status_lanjut', 'kd_pj', 'status_bayar', 'status_poli', 'pasien.jk'];
+        return ['no_rawat', 'no_rkm_medis', 'tgl_registrasi', 'kd_poli', 'kd_dokter', 'stts', 'stts_daftar', 'status_lanjut', 'kd_pj', 'status_bayar', 'status_poli', 'pasien.jk'];
     }
 
     /**
