@@ -74,9 +74,9 @@ class RegPeriksaController extends \Orion\Http\Controllers\Controller
      * The relations that are used for including.
      * 
      * @return array
-     * */ 
+     * */
     public function includes(): array
     {
-        return ['pasien', 'dokter', 'poliklinik', 'dokter.spesialis', 'pasienBayi'];
+        return ['pasien', 'dokter', 'poliklinik', 'dokter.spesialis', 'pasienBayi', 'caraBayar'];
     }
 }
