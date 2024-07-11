@@ -17,5 +17,12 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+Route::prefix('app')->group(function () {
+    Route::prefix('notification')->group(function () {
+        Route::get('jadwal-dokter', [\App\Http\Controllers\web\JadwalDokterController::class, 'index'])->name('app.notification.jadwal-dokter');
+        Route::post('jadwal-dokter/store', [\App\Http\Controllers\web\JadwalDokterController::class, 'store'])->name('app.notification.jadwal-dokter.store');
+    });
+});
+
 Route::get('logs', [\Rap2hpoutre\LaravelLogViewer\LogViewerController::class, 'index']);
 Route::get('/horizon/{view?}', [\App\Http\Controllers\HorizonCustomHomeController::class, 'index'])->where('view', '(.*)')->name('horizon.index');

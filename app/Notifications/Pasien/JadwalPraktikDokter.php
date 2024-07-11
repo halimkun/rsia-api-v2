@@ -44,7 +44,7 @@ class JadwalPraktikDokter extends Notification
     {
         $this->topic                = $topic;
         $this->notificationTemplate = $notificationTemplate;
-        $this->messageData              = $messageData;
+        $this->messageData          = $messageData;
     }
 
     /**
