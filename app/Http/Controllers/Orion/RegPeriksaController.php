@@ -11,6 +11,8 @@ class RegPeriksaController extends \Orion\Http\Controllers\Controller
 
     protected $model = \App\Models\RegPeriksa::class;
 
+    protected $collectionResource = \App\Http\Resources\RegistrasiPeriksaCollection::class;
+
     /**
      * Runs the given query for fetching entity in show method.
      *
