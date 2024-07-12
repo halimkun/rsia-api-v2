@@ -1,8 +1,23 @@
 <?php
 
 use Monolog\Handler\NullHandler;
+use Monolog\Handler\RotatingFileHandler;
 use Monolog\Handler\StreamHandler;
 use Monolog\Handler\SyslogUdpHandler;
+
+$monthlyBaseConfig = [
+    'driver'    => 'monolog',
+    'handler'   => \App\Logging\CustomRotatingFileHandler::class,
+    'with'      => [
+        'maxFiles'       => 0,
+        'level'          => \Monolog\Logger::DEBUG,
+        'bubble'         => true,
+        'filePermission' => 0664,
+        'useLocking'     => false,
+        'filenameFormat' => '{filename}-{date}',
+        'dateFormat'     => \App\Logging\CustomRotatingFileHandler::FILE_PER_MONTH,
+    ],
+];
 
 return [
 
@@ -114,27 +129,34 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
-        // =============== CISTOM CHANNELS
-        'berkas' => [
-            'driver' => 'custom',
-            'via'    => App\Logging\CreateMonthlyLogger::class,
-            'path'   => storage_path('logs/berkas.log'),
-            'level'  => env('LOG_LEVEL_BERKAS', 'debug'),
-        ],
 
-        'undangan' => [
-            'driver' => 'custom',
-            'via'    => App\Logging\CreateMonthlyLogger::class,
-            'path'   => storage_path('logs/undangan.log'),
-            'level'  => env('LOG_LEVEL_UNDANGAN', 'debug'),
-        ],
+        // =============== CUSTOM CHANNELS
+        'monthly' => $monthlyBaseConfig,
 
-        'fcm' => [
-            'driver' => 'custom',
-            'via'    => App\Logging\CreateMonthlyLogger::class,
-            'path'   => storage_path('logs/fcm.log'),
-            'level'  => env('LOG_LEVEL_FCM', 'debug'),
-        ],
+        // Custom channels
+        'berkas' => array_merge($monthlyBaseConfig, [
+            'path'  => storage_path('logs/berkas.log'),
+            'level' => env('LOG_LEVEL_BERKAS', 'debug'),
+            'with'  => [
+                'filename' => storage_path('logs/berkas.log'),
+            ],
+        ]),
+
+        'undangan' => array_merge($monthlyBaseConfig, [
+            'path'  => storage_path('logs/undangan.log'),
+            'level' => env('LOG_LEVEL_UNDANGAN', 'debug'),
+            'with'  => [
+                'filename' => storage_path('logs/undangan.log'),
+            ],
+        ]),
+
+        'fcm' => array_merge($monthlyBaseConfig, [
+            'path'  => storage_path('logs/fcm.log'),
+            'level' => env('LOG_LEVEL_FCM', 'debug'),
+            'with'  => [
+                'filename' => storage_path('logs/fcm.log'),
+            ],
+        ]),
     ],
 
 ];

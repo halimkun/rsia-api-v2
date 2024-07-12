@@ -14,5 +14,11 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         // \App\Models\User::factory(10)->create();
+        
+        // Testing Log
+        // \Log::info('DatabaseSeeder is called');
+
+        // Testing Berkas Logger
+        \App\Helpers\Logger\RSIALogger::berkas('DatabaseSeeder is called', 'warning', ['context' => 'DatabaseSeeder is called']);
     }
 }
