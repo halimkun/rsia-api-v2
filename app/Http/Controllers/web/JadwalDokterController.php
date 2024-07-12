@@ -18,21 +18,28 @@ class JadwalDokterController extends Controller
         $dokterOnPoli = \App\Models\JadwalPoli::select('kd_dokter')->with('dokter')->groupBy('kd_dokter')->get();
         $poliklinik = \App\Models\JadwalPoli::select('kd_poli')->with('poliklinik')->groupBy('kd_poli')->get();
 
-        $query = \App\Models\RegPeriksa::with(['pasienSomeData', 'dokter', 'poliklinik'])->where('tgl_registrasi', '>=', \Carbon\Carbon::now()->toDateString());
+        $filterApplied = $request->anyFilled(['kd_dokter', 'kd_poli', 'tgl_registrasi']);
 
-        if ($request->filled('kd_dokter')) {
-            $query->where('kd_dokter', $request->kd_dokter);
+        if ($filterApplied) {
+            $query = \App\Models\RegPeriksa::with(['pasienSomeData', 'dokter', 'poliklinik'])->where('tgl_registrasi', '>=', \Carbon\Carbon::now()->toDateString());
+
+            if ($request->filled('kd_dokter')) {
+                $query->where('kd_dokter', $request->kd_dokter);
+            }
+
+            if ($request->filled('kd_poli')) {
+                $query->where('kd_poli', $request->kd_poli);
+            }
+
+            if ($request->filled('tgl_registrasi')) {
+                $query->where('tgl_registrasi', $request->tgl_registrasi);
+            }
+
+            $registrasi = $query->orderBy('tgl_registrasi', 'asc')->paginate(10);
+        } else {
+            // blank pagination data if no filter applied 
+            $registrasi =  new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10);
         }
-
-        if ($request->filled('kd_poli')) {
-            $query->where('kd_poli', $request->kd_poli);
-        }
-
-        if ($request->filled('tgl_registrasi')) {
-            $query->where('tgl_registrasi', $request->tgl_registrasi);
-        }
-
-        $registrasi = $query->orderBy('tgl_registrasi', 'asc')->paginate(10);
 
         return view('app.notification.jadwal-dokter', [
             'dokters'     => $dokterOnPoli,

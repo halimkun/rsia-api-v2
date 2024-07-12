@@ -164,15 +164,25 @@
             </tr>
           </thead>
           <tbody>
-            @foreach($registrasi as $reg)
-            <tr>
-              <td>{{ $reg->pasienSomeData->nm_pasien }}</td>
-              <td><span class="badge badge-outline badge-primary">{{ $reg->no_rkm_medis }}</span></td>
-              <td>{{ \Carbon\Carbon::parse($reg->tgl_registrasi)->translatedFormat('l, d F Y') }}</td>
-              <td>{{ $reg->dokter->nm_dokter }}</td>
-              <td>{{ $reg->poliklinik->nm_poli }}</td>
-            </tr>
-            @endforeach
+            @if($registrasi->count() > 0) 
+              @foreach($registrasi as $reg)
+              <tr>
+                <td>{{ $reg->pasienSomeData->nm_pasien }}</td>
+                <td><span class="badge badge-outline badge-primary">{{ $reg->no_rkm_medis }}</span></td>
+                <td>{{ \Carbon\Carbon::parse($reg->tgl_registrasi)->translatedFormat('l, d F Y') }}</td>
+                <td>{{ $reg->dokter->nm_dokter }}</td>
+                <td>{{ $reg->poliklinik->nm_poli }}</td>
+              </tr>
+              @endforeach
+            @else
+              <tr class="bg-gray-100/50 text-center">
+                <td colspan="5" class="text-gray-400">
+                  <div class="py-6 font-semibold">
+                    Lakukan filter data terlebih dahulu untuk menampilkan data pasien.
+                  </div>
+                </td>
+              </tr>
+            @endif
           </tbody>
         </table>
 
