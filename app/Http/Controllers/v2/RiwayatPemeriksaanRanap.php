@@ -29,7 +29,11 @@ class RiwayatPemeriksaanRanap extends Controller
             return \App\Helpers\ApiResponse::notFound("Riwayat pemeriksaan dengan no_rawat: $noRawat tidak ditemukan");
         }
 
-        $riwayat = \App\Models\PemeriksaanRanap::with('petugas')->where('no_rawat', $noRawat)->paginate(10);
+        $riwayat = \App\Models\PemeriksaanRanap::with('petugas')->where('no_rawat', $noRawat)
+            ->orderBy('no_rawat', 'desc')
+            ->orderBy('tgl_perawatan', 'desc')
+            ->orderBy('jam_rawat', 'desc')
+            ->paginate(10);
 
         return new \App\Http\Resources\RealDataCollection($riwayat);
     }
@@ -98,5 +102,38 @@ class RiwayatPemeriksaanRanap extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    /**
+     * Get tensi from riwayat pemeriksaan ranap
+     * 
+     * @param string $rm
+     * @param string $noRawat
+     * 
+     * @return \App\Helpers\ApiResponse
+     * */ 
+    public function getTensi($rm, $noRawat)
+    {
+        // check pasien exists
+        if (!\App\Models\Pasien::where('no_rkm_medis', $rm)->exists()) {
+            return \App\Helpers\ApiResponse::notFound("Pasien dengan no_rkm_medis: $rm tidak ditemukan");
+        }
+
+        try {
+            $noRawat = base64_decode($noRawat);
+        } catch (\Exception $e) {
+            return \App\Helpers\ApiResponse::notFound("Riwayat pemeriksaan dengan no_rawat: $noRawat tidak ditemukan");
+        }
+
+        if (!\App\Models\RegPeriksa::where('no_rawat', $noRawat)->exists()) {
+            return \App\Helpers\ApiResponse::notFound("Riwayat pemeriksaan dengan no_rawat: $noRawat tidak ditemukan");
+        }
+
+        $riwayat = \App\Models\PemeriksaanRanap::select('tensi')->where('no_rawat', $noRawat)
+            ->where('tensi', '!=', '')->where('tensi', '!=', '-')->where('tensi', '!=', null)
+            ->orderBy('no_rawat', 'desc')->orderBy('tgl_perawatan', 'desc')->orderBy('jam_rawat', 'desc')
+            ->first();
+
+        return new \App\Http\Resources\RealDataResource($riwayat);
     }
 }

@@ -12,9 +12,11 @@ Route::middleware(['claim:role,pegawai|dokter|pasien'])->prefix('pasien')->group
     // ==================== RIWAYAT PEMERIKSAAN PASIEN CUSTOM ROUTE
     Route::apiResource('.riwayat.ralan', \App\Http\Controllers\v2\RiwayatPemeriksaanRalan::class)
         ->parameters(['' => 'no_rkm_medis', 'riwayat' => 'no_rawat'])->only(['index']);
-
+    Route::get('{no_rkm_medis}/riwayat/{no_rawat}/ralan/get-tensi', [\App\Http\Controllers\v2\RiwayatPemeriksaanRalan::class, 'getTensi']);
+    
     Route::apiResource('.riwayat.ranap', \App\Http\Controllers\v2\RiwayatPemeriksaanRanap::class)
         ->parameters(['' => 'no_rkm_medis', 'riwayat' => 'no_rawat'])->only(['index']);
+    Route::get('{no_rkm_medis}/riwayat/{no_rawat}/ranap/get-tensi', [\App\Http\Controllers\v2\RiwayatPemeriksaanRanap::class, 'getTensi']);
 
     Route::apiResource('.riwayat.lab', \App\Http\Controllers\v2\RiwayatPeriksaLabController::class)
         ->parameters(['' => 'no_rkm_medis', 'riwayat' => 'no_rawat'])->only(['index']);
@@ -54,5 +56,4 @@ Route::middleware(['claim:role,pegawai|dokter|pasien'])->prefix('pasien')->group
     // ==================== PASIEN
     Route::apiResource('/', \App\Http\Controllers\v2\PasienController::class)->parameters(['' => 'no_rkm_medis']);
     Orion::resource('', \App\Http\Controllers\Orion\PasienController::class)->only('search')->parameters(['pasien' => 'no_rkm_medis']);
-
 });
