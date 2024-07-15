@@ -26,6 +26,17 @@ class RSIALogger
         $logger->$level($message, $context);
     }
 
+    public static function kehadiran($message, $level = 'info', $context = [])
+    {
+        // append user id to context
+        $user = \Illuminate\Support\Facades\Auth::guard('user-aes')->user();
+        $context['user'] = $user->id_user ?? 'unknown';
+
+        // log the message
+        $logger = \Illuminate\Support\Facades\Log::channel('kehadiran');
+        $logger->$level($message, $context);
+    }
+
     public static function fcm($message, $level = 'info', $context = [])
     {
         // append user id to context

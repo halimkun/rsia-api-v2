@@ -84,7 +84,7 @@ class RsiaPenerimaUndanganController extends Controller
         $invalidPenerima = array_diff($penerima, $pegawaiNik);
 
         if (!empty($invalidPenerima)) {
-            \App\Helpers\Logger\RSIALogger::undangan("Data penerima undangan tidak valid", "error", ['penerima' => $invalidPenerima]);
+            \App\Helpers\Logger\RSIALogger::undangan("INVALID RECIPIENT", "error", ['penerima' => $invalidPenerima]);
             return ApiResponse::error('Invalid data', 'Penerima undangan ' . implode(', ', $invalidPenerima) . ' tidak ditemukan', 400);
         }
 
@@ -103,11 +103,11 @@ class RsiaPenerimaUndanganController extends Controller
                 }
             });
         } catch (\Exception $e) {
-            \App\Helpers\Logger\RSIALogger::undangan("Gagal menyimpan data", "error", ['error' => $e->getMessage()]);
+            \App\Helpers\Logger\RSIALogger::undangan("ERROR SAVING RECIPIENT", "error", ['error' => $e->getMessage()]);
             return \App\Helpers\ApiResponse::error('Failed to store data', $e->getMessage(), 500);
         }
 
-        \App\Helpers\Logger\RSIALogger::undangan("Data Penerima undangan berhasil disimpan", "info", ['model' => $request->model, 'no_surat' => $no_surat, 'penerima' => $penerima, 'tipe' => $request->tipe]);
+        \App\Helpers\Logger\RSIALogger::undangan("RECIPIENT STORED", "info", ['model' => $request->model, 'no_surat' => $no_surat, 'penerima' => $penerima, 'tipe' => $request->tipe]);
         return \App\Helpers\ApiResponse::success('Data stored successfully');
     }
 

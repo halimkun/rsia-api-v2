@@ -79,7 +79,7 @@ class RsiaSuratEksternalController extends Controller
             return \App\Helpers\ApiResponse::error('Gagal menyimpan data surat eksternal', $e->getMessage(), 500);
         }
 
-        \App\Helpers\Logger\RSIALogger::berkas("data saved successfully", 'info', ['data' => $request->all()]);
+        \App\Helpers\Logger\RSIALogger::berkas("STORED", 'info', ['data' => $request->all()]);
         return \App\Helpers\ApiResponse::success('Berhasil menyimpan data surat eksternal');
     }
 
@@ -153,7 +153,7 @@ class RsiaSuratEksternalController extends Controller
             return \App\Helpers\ApiResponse::error('Gagal mengupdate data surat eksternal', $e->getMessage(), 500);
         }
 
-        \App\Helpers\Logger\RSIALogger::berkas("data updated successfully", 'info', ['data' => $request->all(), 'old_data' => $oldData]);
+        \App\Helpers\Logger\RSIALogger::berkas("UPDATED", 'info', ['data' => $request->all(), 'old_data' => $oldData]);
         return \App\Helpers\ApiResponse::success('Berhasil mengupdate data surat eksternal');
     }
 
@@ -179,7 +179,7 @@ class RsiaSuratEksternalController extends Controller
             return \App\Helpers\ApiResponse::error('Gagal menghapus data surat eksternal', $e->getMessage(), 500);
         }
 
-        \App\Helpers\Logger\RSIALogger::berkas("data deleted successfully", 'info', ['data' => $data]);
+        \App\Helpers\Logger\RSIALogger::berkas("DELETED", 'info', ['data' => $data]);
         return \App\Helpers\ApiResponse::success('Berhasil menghapus data surat eksternal');
     }
 

@@ -150,6 +150,14 @@ return [
             ],
         ]),
 
+        'kehadiran' => array_merge($monthlyBaseConfig, [
+            'path'  => storage_path('logs/kehadiran.log'),
+            'level' => env('LOG_LEVEL_kehadiran', 'debug'),
+            'with'  => [
+                'filename' => storage_path('logs/kehadiran.log'),
+            ],
+        ]),
+
         'fcm' => array_merge($monthlyBaseConfig, [
             'path'  => storage_path('logs/fcm.log'),
             'level' => env('LOG_LEVEL_FCM', 'debug'),

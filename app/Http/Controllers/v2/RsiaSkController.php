@@ -91,11 +91,11 @@ class RsiaSkController extends Controller
                 }
             });
         } catch (\Exception $e) {
-            \App\Helpers\Logger\RSIALogger::berkas("failed to save data", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
+            \App\Helpers\Logger\RSIALogger::berkas("STORE FAILED", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
             return ApiResponse::error('failed to save data', $e->getMessage(), 500);
         }
 
-        \App\Helpers\Logger\RSIALogger::berkas("data saved successfully", 'info', ['data' => $request->all()]);
+        \App\Helpers\Logger\RSIALogger::berkas("STORED", 'info', ['data' => $request->all()]);
         return ApiResponse::success('data saved successfully');
     }
 
@@ -208,11 +208,11 @@ class RsiaSkController extends Controller
                 
             });
         } catch (\Exception $e) {
-            \App\Helpers\Logger\RSIALogger::berkas("failed to save data", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
+            \App\Helpers\Logger\RSIALogger::berkas("STORE FAILED", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
             return ApiResponse::error('failed to save data', $e->getMessage(), 500);
         }
 
-        \App\Helpers\Logger\RSIALogger::berkas("data updated successfully", 'info', ['old_data' => $oldData, 'data' => $request->all()]);
+        \App\Helpers\Logger\RSIALogger::berkas("UPDATED", 'info', ['old_data' => $oldData, 'data' => $request->all()]);
         return ApiResponse::success('data updated successfully');
     }
 
@@ -245,7 +245,7 @@ class RsiaSkController extends Controller
                $data->delete();
             });
         } catch (\Exception $e) {
-            \App\Helpers\Logger\RSIALogger::berkas("failed to delete data", 'error', ['data' => $data, 'error' => $e->getMessage()]);
+            \App\Helpers\Logger\RSIALogger::berkas("DELETE FAILED", 'error', ['data' => $data, 'error' => $e->getMessage()]);
             return ApiResponse::error('failed to delete data', $e->getMessage(), 500);
         }
         
@@ -255,7 +255,7 @@ class RsiaSkController extends Controller
             $st::disk('sftp')->delete(env('DOCUMENT_SK_SAVE_LOCATION') . $data->berkas);
         }
         
-        \App\Helpers\Logger\RSIALogger::berkas("data deleted successfully", 'info', ['data' => $data]);
+        \App\Helpers\Logger\RSIALogger::berkas("DELETED", 'info', ['data' => $data]);
         return ApiResponse::success('data deleted successfully');
     }
 }

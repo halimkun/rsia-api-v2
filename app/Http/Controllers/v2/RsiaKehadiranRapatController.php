@@ -90,6 +90,13 @@ class RsiaKehadiranRapatController extends Controller
                         'no_surat' => $request->no_surat,
                     ]);
                 }
+
+                \App\Helpers\Logger\RSIALogger::kehadiran('ATTENDANCE ADDED', 'info', [
+                    'isOperator' => true,                  // 'isOperator' => 'true' or 'false
+                    'no_surat'   => $request->no_surat,
+                    'penerima'   => $request->nik,
+                    'karyawans'  => $request->karyawans,
+                ]);
             }
         } else { // request dari client (mobile) ----- user harus login mandiri, absensi tidak dapat diwakilkan
             if (!$penerimaUndangan->contains('penerima', null, $user->id_user)) {
@@ -101,6 +108,11 @@ class RsiaKehadiranRapatController extends Controller
                 ->first();
 
             if ($absen) {
+                \App\Helpers\Logger\RSIALogger::kehadiran('ATTENDED', 'warning', [
+                    'no_surat' => $request->no_surat,
+                    'penerima' => $user->id_user,
+                    'message'  => 'Anda sudah melakukan absen',
+                ]);
                 return ApiResponse::error('resource already exists', 'Anda sudah melakukan absen', 400);
             }
 
@@ -108,6 +120,12 @@ class RsiaKehadiranRapatController extends Controller
             RsiaKehadiranRapat::create([
                 'nik'      => $user->id_user,
                 'no_surat' => $request->no_surat,
+            ]);
+
+            \App\Helpers\Logger\RSIALogger::kehadiran('ATTENDANCE ADDED', 'info', [
+                'isOperator' => false,                // 'isOperator' => 'true' or 'false
+                'no_surat'   => $request->no_surat,
+                'penerima'   => $user->id_user,
             ]);
         }
 
