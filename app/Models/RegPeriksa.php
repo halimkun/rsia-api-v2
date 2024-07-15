@@ -105,7 +105,7 @@ class RegPeriksa extends Model
      * Indicates if the model should be incrementing.
      * 
      * @var bool
-     * */ 
+     * */
     public $incrementing = false;
 
     /**
@@ -117,7 +117,6 @@ class RegPeriksa extends Model
         'no_rawat' => 'string',
         'no_rkm_medis' => 'string',
     ];
-
 
     /**
      * Get the pasien that owns the registrasi.
@@ -145,7 +144,7 @@ class RegPeriksa extends Model
      * Get the dokter that owns the registrasi.
      * 
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-    */
+     */
     public function dokter()
     {
         return $this->belongsTo(Dokter::class, 'kd_dokter', 'kd_dokter')->select('kd_dokter', 'nm_dokter', 'kd_sps');
@@ -156,7 +155,7 @@ class RegPeriksa extends Model
      * 
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      * 
-    */
+     */
     public function poliklinik()
     {
         return $this->belongsTo(Poliklinik::class, 'kd_poli', 'kd_poli');
@@ -181,7 +180,7 @@ class RegPeriksa extends Model
     {
         return $this->hasMany(ResepObat::class, 'no_rawat', 'no_rawat');
     }
-
+    
     /**
      * Get the pemeriksaan ranap that owns the registrasi.
      * 
@@ -226,7 +225,7 @@ class RegPeriksa extends Model
      * Get the detail pemberian obat that owns the registrasi.
      * 
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     * */ 
+     * */
     public function detailPemberianObat()
     {
         return $this->hasMany(DetailPemberianObat::class, 'no_rawat', 'no_rawat');
@@ -234,7 +233,7 @@ class RegPeriksa extends Model
 
     public function pasienBayi()
     {
-        return $this->belongsTo(PasienBayi::class, 'no_rkm_medis', 'no_rkm_medis') 
+        return $this->belongsTo(PasienBayi::class, 'no_rkm_medis', 'no_rkm_medis')
             ->select('no_rkm_medis', 'berat_badan', 'anakke', 'keterangan', 'diagnosa');
     }
 }
