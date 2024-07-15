@@ -14,4 +14,11 @@ Route::middleware(['user-aes', 'claim:role,pegawai'])->group(function () {
   Route::resource('pegawai.berkas', \App\Http\Controllers\v2\BerkasPegawaiController::class)
     ->except(['create', 'edit'])
     ->parameters(['pegawai' => 'nik', 'berkas' => 'kode_berkas']);
+
+  // ==================== JADWAL PEGAWAI
+  Orion::resource('pegawai.jadwal', \App\Http\Controllers\Orion\JadwalPegawaiController::class)->only('search')
+    ->parameters(['pegawai' => 'nik', 'jadwal' => 'id']);
+  Route::resource('pegawai.jadwal', \App\Http\Controllers\v2\JadwalPegawaiController::class)->only(['index'])
+    ->parameters(['pegawai' => 'nik', 'jadwal' => 'id']);
+
 });

@@ -106,9 +106,6 @@ class Pegawai extends Model
 
     protected $guarded = ['id'];
 
-    protected $hidden = ['id'];
-
-
     // departemen on pegawai to dep_id on departemen
     public function dep()
     {
@@ -118,5 +115,10 @@ class Pegawai extends Model
     public function berkas()
     {
         return $this->hasMany(BerkasPegawai::class, 'nik', 'nik');
+    }
+
+    public function presensi()
+    {
+        return $this->hasMany(RekapPresensi::class, 'id', 'id');
     }
 }
