@@ -21,4 +21,8 @@ Route::middleware(['user-aes', 'claim:role,pegawai'])->group(function () {
   Route::resource('pegawai.jadwal', \App\Http\Controllers\v2\JadwalPegawaiController::class)->only(['index'])
     ->parameters(['pegawai' => 'nik', 'jadwal' => 'id']);
 
+
+  // ==================== TEMPORARY PRESENSI PEGAWAI
+  Orion::resource('pegawai.presensi-temporary', \App\Http\Controllers\v2\RsiaTemporaryPresensiController::class)->only(['index']);
+
 });
