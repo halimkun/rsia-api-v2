@@ -82,7 +82,7 @@ class JadwalPraktikDokter implements ShouldQueue
 
         // if template not found
         if (!$template) {
-            \App\Helpers\Logger\RSIALogger::fcm('Template not found', 'error', ['template' => $this->templateName]);
+            \App\Helpers\Logger\RSIALogger::fcm('TEMPLATE NOT FOUND', 'error', ['template' => $this->templateName]);
             throw new \Exception('Template notifikasi tidak ditemukan');
         }
 
@@ -109,6 +109,7 @@ class JadwalPraktikDokter implements ShouldQueue
                 'dokter' => $dokter
             ]);
 
+            \App\Helpers\Logger\RSIALogger::fcm("NOTIFICATION SENT", 'info', ['topic' => $topic, 'template' => $this->templateName]);
             $pasien->notify(new \App\Notifications\Pasien\JadwalPraktikDokter($topic, $template, $templateData));
         }
     }

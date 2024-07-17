@@ -18,7 +18,7 @@ class ParseNotificationMessage
             $value = \Illuminate\Support\Arr::get($data, $key);
             
             if (is_null($value)) {
-                \App\Helpers\Logger\RSIALogger::fcm('Key not found in data', 'error', ['key' => $key, 'data' => $data]);
+                \App\Helpers\Logger\RSIALogger::fcm("KEY DOES'T EXIST", 'error', ['key' => $key, 'data' => $data]);
                 throw new \Exception('Key ' . $key . ' not found in data');
             }
     
@@ -28,8 +28,6 @@ class ParseNotificationMessage
             // Replace placeholder in content with the value found
             $content = str_replace(['{{ ' . $key . ' }}', '{{' . $key . '}}'], $value, $content);
         }
-
-        \App\Helpers\Logger\RSIALogger::fcm('Notification message parsed', 'info', ['content' => $content, 'data' => $data]);
     
         return $content;
     }    

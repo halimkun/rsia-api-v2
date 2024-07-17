@@ -88,15 +88,15 @@ class RsiaSuratMasukController extends Controller
                 if ($file) {
                     try {
                         $st::disk('sftp')->put(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $file_name, file_get_contents($file));
-                        \App\Helpers\Logger\RSIALogger::berkas("file uploaded successfully", 'info', ['file_name' => $file_name, 'file_size' => $file->getSize(), 'data' => $request->all()]);
+                        \App\Helpers\Logger\RSIALogger::berkas("UPLOADED", 'info', ['file_name' => $file_name, 'file_size' => $file->getSize(), 'data' => $request->all()]);
                     } catch (\Exception $e) {
-                        \App\Helpers\Logger\RSIALogger::berkas("file failed to upload", 'error', ['file_name' => $file_name, 'file_size' => $file->getSize(), 'data' => $request->all(), 'error' => $e->getMessage()]);
+                        \App\Helpers\Logger\RSIALogger::berkas("UPLOAD FAILED", 'error', ['file_name' => $file_name, 'file_size' => $file->getSize(), 'data' => $request->all(), 'error' => $e->getMessage()]);
                         throw new \Exception('Failed to upload file');
                     }
                 }
             });
         } catch (\Exception $e) {
-            \App\Helpers\Logger\RSIALogger::berkas("data failed to save", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
+            \App\Helpers\Logger\RSIALogger::berkas("STORE DATA FAILED", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
             return \App\Helpers\ApiResponse::error('Failed to save data', 'store_failed', $e->getMessage(), 500);
         }
 
@@ -192,9 +192,9 @@ class RsiaSuratMasukController extends Controller
                 if ($file && $data && $oldBerkas != '' && $st::disk('sftp')->exists(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $oldBerkas)) {
                     try {
                         $st::disk('sftp')->delete(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $oldBerkas);
-                        \App\Helpers\Logger\RSIALogger::berkas("old file deleted successfully", 'info', ['file_name' => $oldBerkas]);
+                        \App\Helpers\Logger\RSIALogger::berkas("DELETED", 'info', ['file_name' => $oldBerkas]);
                     } catch (\Exception $e) {
-                        \App\Helpers\Logger\RSIALogger::berkas("failed to delete old file", 'error', ['file_name' => $oldBerkas, 'error' => $e->getMessage()]);
+                        \App\Helpers\Logger\RSIALogger::berkas("FAILED TO DELETE OLD FILE", 'error', ['file_name' => $oldBerkas, 'error' => $e->getMessage()]);
                         throw new \Exception('Failed to delete old file');
                     }
                 }
@@ -203,15 +203,15 @@ class RsiaSuratMasukController extends Controller
                 if ($file) {
                     try {
                         $st::disk('sftp')->put(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $file_name, file_get_contents($file));
-                        \App\Helpers\Logger\RSIALogger::berkas("new file uploaded successfully", 'info', ['file_name' => $file_name, 'file_size' => $file->getSize()]);
+                        \App\Helpers\Logger\RSIALogger::berkas("UPLOADED", 'info', ['file_name' => $file_name, 'file_size' => $file->getSize()]);
                     } catch (\Exception $e) {
-                        \App\Helpers\Logger\RSIALogger::berkas("failed to upload new file", 'error', ['file_name' => $file_name, 'file_size' => $file->getSize(), 'error' => $e->getMessage()]);
+                        \App\Helpers\Logger\RSIALogger::berkas("FAILED TO UPLOAD", 'error', ['file_name' => $file_name, 'file_size' => $file->getSize(), 'error' => $e->getMessage()]);
                         throw new \Exception('Failed to upload new file');
                     }
                 }
             });
         } catch (\Exception $e) {
-            \App\Helpers\Logger\RSIALogger::berkas("data failed to update", 'error', ['old_data' => $oldData, 'data' => $request->all(), 'error' => $e->getMessage()]);
+            \App\Helpers\Logger\RSIALogger::berkas("UPDATE FAILED", 'error', ['old_data' => $oldData, 'data' => $request->all(), 'error' => $e->getMessage()]);
             return \App\Helpers\ApiResponse::error('Failed to update data', 'update_failed', $e->getMessage(), 500);
         }
 
@@ -241,16 +241,16 @@ class RsiaSuratMasukController extends Controller
                 $st = new \Illuminate\Support\Facades\Storage();
                 if ($data->berkas != '' && $st::disk('sftp')->exists(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $data->berkas)) {
                     $st::disk('sftp')->delete(env('DOCUMENT_SURAT_MASUK_SAVE_LOCATION') . $data->berkas);
-                    \App\Helpers\Logger\RSIALogger::berkas("File {$data->berkas} deleted successfully", 'info');
+                    \App\Helpers\Logger\RSIALogger::berkas("DELETED", 'info', ['data' => $data]);
                 }
             });
         } catch (\Exception $e) {
             // Log the failure to delete data and return an error response
-            \App\Helpers\Logger\RSIALogger::berkas("Failed to delete data or associated file", 'error', ['error' => $e->getMessage()]);
+            \App\Helpers\Logger\RSIALogger::berkas("FAILED TO DELETE DATA OR FILES", 'error', ['error' => $e->getMessage()]);
             return \App\Helpers\ApiResponse::error('Failed to delete data', 'delete_failed', $e->getMessage(), 500);
         }
 
-        \App\Helpers\Logger\RSIALogger::berkas("Data deleted successfully", 'info', ['data' => $data]);
+        \App\Helpers\Logger\RSIALogger::berkas("DELETED", 'info', ['data' => $data]);
         return \App\Helpers\ApiResponse::success('Data deleted successfully');
     }
 

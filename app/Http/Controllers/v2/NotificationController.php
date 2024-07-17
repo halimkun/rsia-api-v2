@@ -34,10 +34,10 @@ class NotificationController extends Controller
         // FirebaseCloudMessaging::send($msg); 
         try {
             FirebaseCloudMessaging::send($msg);
-            \App\Helpers\Logger\RSIALogger::fcm('Notification sent successfully', 'info', [ 'topic' => $request->topic, 'title' => $request->title, 'body'  => $request->body, 'data'  => $request->data]);
+            \App\Helpers\Logger\RSIALogger::fcm('NOTIFICATION SENT', 'info', [ 'topic' => $request->topic, 'title' => $request->title, 'body'  => $request->body, 'data'  => $request->data]);
             return ApiResponse::success('Notification sent successfully');
         } catch (\Exception $e) {
-            \App\Helpers\Logger\RSIALogger::fcm('Failed to send notification', 'error', [ 'topic' => $request->topic, 'title' => $request->title, 'body'  => $request->body, 'data'  => $request->data, 'error' => $e->getMessage()]);
+            \App\Helpers\Logger\RSIALogger::fcm('NOTIFICATION FAILED TO SEND', 'error', [ 'topic' => $request->topic, 'title' => $request->title, 'body'  => $request->body, 'data'  => $request->data, 'error' => $e->getMessage()]);
             return ApiResponse::error('Notification Failed To Send' ,'notification_failed_to_send', $e->getMessage(), 500);
         }
     }
@@ -56,7 +56,7 @@ class NotificationController extends Controller
 
         // if template not found
         if (!$template) {
-            \App\Helpers\Logger\RSIALogger::fcm('Template not found', 'error', ['template' => $request->template]);
+            \App\Helpers\Logger\RSIALogger::fcm('TEMPLATE NOT FOUND', 'error', ['template' => $request->template]);
             return ApiResponse::error('Notification template not found', 'notification_template_not_found', null, 404);
         }
 
@@ -78,10 +78,10 @@ class NotificationController extends Controller
 
         try {
             FirebaseCloudMessaging::send($msg);
-            \App\Helpers\Logger\RSIALogger::fcm('Notification sent successfully', 'info', ['template' => $request->template, 'data' => $request->data, 'data_on_template' => $request->data_on_template, 'topic' => $template->topic ?? $request->topic, 'title' => $template->title, 'content' => $content]);
-
+            \App\Helpers\Logger\RSIALogger::fcm('NOTIFICATION SENT', 'info', ['template' => $request->template, 'data' => $request->data, 'data_on_template' => $request->data_on_template, 'topic' => $template->topic ?? $request->topic, 'title' => $template->title, 'content' => $content]);
             return ApiResponse::success('Notification sent successfully');
         } catch (\Exception $e) {
+            \App\Helpers\Logger\RSIALogger::fcm('NOTIFICATION FAILED TO SEND', 'error', ['template' => $request->template, 'data' => $request->data, 'data_on_template' => $request->data_on_template, 'topic' => $template->topic ?? $request->topic, 'title' => $template->title, 'content' => $content, 'error' => $e->getMessage()]);
             return ApiResponse::error('Notification Failed To Send' ,'notification_failed_to_send', $e->getMessage(), 500);
         }
     }
@@ -110,7 +110,7 @@ class NotificationController extends Controller
             }
 
             if (!$keyExists) {
-                \App\Helpers\Logger\RSIALogger::fcm('Key not found in data', 'error', ['key' => $key, 'data' => $data]);
+                \App\Helpers\Logger\RSIALogger::fcm("KEY DOES'T EXIST", 'error', ['key' => $key, 'data' => $data]);
                 throw new \Exception('Key ' . $key . ' not found in data');
             }
 
