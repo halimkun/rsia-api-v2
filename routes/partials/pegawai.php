@@ -21,6 +21,10 @@ Route::middleware(['user-aes', 'claim:role,pegawai'])->group(function () {
   Route::resource('pegawai.jadwal', \App\Http\Controllers\v2\JadwalPegawaiController::class)->only(['index'])
     ->parameters(['pegawai' => 'nik', 'jadwal' => 'id']);
 
+    // TODO : PRESENSI PEGAWAI
+  // ==================== PRESENSI PEGAWAI
+  // Orion::resource('pegawai.presensi', \App\Http\Controllers\Orion\PresensiKaryawanController::class)->only(['index', 'search']);
+  Orion::hasManyResource('pegawai', 'presensi', \App\Http\Controllers\Orion\PresensiKaryawanController::class)->only(['index', 'search']);
 
   // ==================== TEMPORARY PRESENSI PEGAWAI
   Orion::resource('pegawai.presensi-temporary', \App\Http\Controllers\v2\RsiaTemporaryPresensiController::class)->only(['index']);
