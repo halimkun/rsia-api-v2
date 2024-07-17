@@ -23,28 +23,28 @@ class BridgingEKlaim extends Controller
 
         $stringified = json_encode($request->all());
         $request_data = \App\Helpers\EKlaimCrypt::encrypt($stringified);
-        
+
         // Ensure request_data is correctly formatted as a single-line string
         $request_data = trim(preg_replace('/\s+/', ' ', $request_data)); // <--- This line is the key to the solution
 
         try {
             $response = Http::withHeaders([
                 'Content-Type' => 'application/x-www-form-urlencoded',
-            ])->post('http://192.168.100.45/E-Klaim/ws.php', [
+            ])->post(env("EKLAIM_BASE_URL"), [
                 $request_data
             ]);
         } catch (\Throwable $th) {
             return ApiResponse::error("Error : INACBG's invalid request", "invalid_inacbg_request", $th->getMessage(), 500);
         }
 
-        $first = strpos($response, "\n")+1;
-        $last  = strrpos($response, "\n")-1;
+        $first = strpos($response, "\n") + 1;
+        $last  = strrpos($response, "\n") - 1;
         $data  = substr($response, $first, strlen($response) - $first - $last);
 
         try {
             $resp = json_decode(\App\Helpers\EKlaimCrypt::decrypt($data));
         } catch (\Throwable $th) {
-            return ApiResponse::error('Error : '.$th->getMessage(), "invalid_inacbg_decrypt", $th->getCode(), 500);
+            return ApiResponse::error('Error : ' . $th->getMessage(), "invalid_inacbg_decrypt", $th->getCode(), 500);
         }
 
         if ($resp->metadata->code != 200) {

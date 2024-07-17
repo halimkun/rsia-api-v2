@@ -19,6 +19,6 @@ class DatabaseSeeder extends Seeder
         // \Log::info('DatabaseSeeder is called');
 
         // Testing Berkas Logger
-        \App\Helpers\Logger\RSIALogger::berkas('DatabaseSeeder is called', 'warning', ['context' => 'DatabaseSeeder is called']);
+        \App\Helpers\Logger\RSIALogger::berkas('TESTING . SEEDER CALLED', 'warning', ['context' => 'DatabaseSeeder is called']);
     }
 }

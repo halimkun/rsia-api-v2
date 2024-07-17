@@ -101,6 +101,7 @@ class JadwalDokterController extends Controller
         $pasien = $pasien->get();
         $noRkmMedis = $pasien->pluck('no_rkm_medis')->toArray();
 
+        // TODO : 1 job 1 notifikasi, jangan 1 job beberapa notifikasi. 
         \App\Jobs\JadwalPraktikDokter::dispatch('perubahan_jadwal_dokter', $noRkmMedis, $dispatchableData);
 
         return redirect()->route('app.notification.jadwal-dokter')->with('success', 'Notifikasi berhasil dikirim');
