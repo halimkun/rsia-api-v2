@@ -38,7 +38,7 @@ class NotificationController extends Controller
             return ApiResponse::success('Notification sent successfully');
         } catch (\Exception $e) {
             \App\Helpers\Logger\RSIALogger::fcm('Failed to send notification', 'error', [ 'topic' => $request->topic, 'title' => $request->title, 'body'  => $request->body, 'data'  => $request->data, 'error' => $e->getMessage()]);
-            return ApiResponse::error('Failed to send notification', $e->getMessage(), 500);
+            return ApiResponse::error('Notification Failed To Send' ,'notification_failed_to_send', $e->getMessage(), 500);
         }
     }
 
@@ -57,7 +57,7 @@ class NotificationController extends Controller
         // if template not found
         if (!$template) {
             \App\Helpers\Logger\RSIALogger::fcm('Template not found', 'error', ['template' => $request->template]);
-            return ApiResponse::error('Template not found', 'Template not found', 404);
+            return ApiResponse::error('Notification template not found', 'notification_template_not_found', null, 404);
         }
 
         // if template topic is empty or null validate topic from user
@@ -82,9 +82,7 @@ class NotificationController extends Controller
 
             return ApiResponse::success('Notification sent successfully');
         } catch (\Exception $e) {
-            \App\Helpers\Logger\RSIALogger::fcm('Failed to send notification', 'error', ['template' => $request->template, 'data' => $request->data, 'data_on_template' => $request->data_on_template, 'topic' => $template->topic ?? $request->topic, 'title' => $template->title, 'content' => $content, 'error' => $e->getMessage()]);
-
-            return ApiResponse::error('Failed to send notification', $e->getMessage(), 500);
+            return ApiResponse::error('Notification Failed To Send' ,'notification_failed_to_send', $e->getMessage(), 500);
         }
     }
 

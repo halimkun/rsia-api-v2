@@ -77,7 +77,7 @@ class RsiaBerkasKomiteKesehatanController extends Controller
             });
         } catch (\Exception $e) {
             \App\Helpers\Logger\RSIALogger::berkas("STORE FAILED", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
-            return \App\Helpers\ApiResponse::error("failed to save data", $e->getMessage(), 500);
+            return \App\Helpers\ApiResponse::error("failed to save data", 'store_failed', $e->getMessage(), 500);
         }
 
         return \App\Helpers\ApiResponse::success("data saved successfully");
@@ -94,13 +94,13 @@ class RsiaBerkasKomiteKesehatanController extends Controller
     public function show($base64NomorTglTerbit)
     {
         if (!base64_decode($base64NomorTglTerbit, true)) {
-            return \App\Helpers\ApiResponse::error("Invalid parameter", "Parameter tidak valid, pastikan parameter adalah base64 encoded dari nomor dan tanggal misal : 53.2024-03-28", 400);
+            return \App\Helpers\ApiResponse::error("Invalid parameter : pastikan parameter adalah base64 encoded dari nomor dan tanggal misal : 53.2024-03-28", "invalid_params", 400);
         }
 
         $identifier = explode('.', base64_decode($base64NomorTglTerbit));
 
         if (!\Carbon\Carbon::createFromFormat('Y-m-d', $identifier[1])) {
-            return \App\Helpers\ApiResponse::error("Invalid date format", "Format tanggal tidak valid (YYYY-MM-DD)", 400);
+            return \App\Helpers\ApiResponse::error("Invalid request : Format tanggal tidak valid (YYYY-MM-DD)", "invalid_request", null, 400);
         }
 
         $data = \App\Models\RsiaBerkasKomiteKesehatan::where('nomor', $identifier[0])
@@ -109,7 +109,7 @@ class RsiaBerkasKomiteKesehatanController extends Controller
             ->first();
 
         if (!$data) {
-            return \App\Helpers\ApiResponse::error("Resource not found", "Data dengan detail tersebut tidak ditemukan", 404);
+            return \App\Helpers\ApiResponse::error("Resource not found", "resource_not_found", null, 404);
         }
 
         return new \App\Http\Resources\Berkas\Komite\CompleteResource($data);
@@ -143,7 +143,7 @@ class RsiaBerkasKomiteKesehatanController extends Controller
     public function update(Request $request, $base64NomorTglTerbit)
     {
         if (!base64_decode($base64NomorTglTerbit, true)) {
-            return \App\Helpers\ApiResponse::error("Invalid parameter", "Parameter tidak valid, pastikan parameter adalah base64 encoded dari nomor dan tanggal misal : 53.2024-03-28", 400);
+            return \App\Helpers\ApiResponse::error("Invalid parameter : pastikan parameter adalah base64 encoded dari nomor dan tanggal misal : 53.2024-03-28", "invalid_params", 400);
         }
 
         $identifier = explode('.', base64_decode($base64NomorTglTerbit));
@@ -159,11 +159,11 @@ class RsiaBerkasKomiteKesehatanController extends Controller
         // dd($identifier, $request->all());
 
         if (!\Carbon\Carbon::createFromFormat('Y-m-d', $identifier[1])) {
-            return \App\Helpers\ApiResponse::error("Invalid date format", "Format tanggal tidak valid (YYYY-MM-DD)", 400);
+            return \App\Helpers\ApiResponse::error("Invalid request : Format tanggal tidak valid (YYYY-MM-DD)", "invalid_request", null, 400);
         }
 
         if ($identifier[0] != $request->nomor || $identifier[1] != $request->tgl_terbit) {
-            return \App\Helpers\ApiResponse::error("Invalid request", "Nomor atau tanggal terbit tidak valid", 400);
+            return \App\Helpers\ApiResponse::error("Invalid request : Nomor atau tanggal terbit tidak valid", "invalid_request", null, 400);
         }
 
         $data = \App\Models\RsiaBerkasKomiteKesehatan::where('nomor', $request->nomor)
@@ -171,7 +171,7 @@ class RsiaBerkasKomiteKesehatanController extends Controller
             ->first();
 
         if (!$data) {
-            return \App\Helpers\ApiResponse::error("Resource not found", "Data dengan detail tersebut tidak ditemukan", 404);
+            return \App\Helpers\ApiResponse::error("Resource not found", "resource_not_found", null, 404);
         }
 
         $oldData = $data->toArray();
@@ -182,10 +182,10 @@ class RsiaBerkasKomiteKesehatanController extends Controller
             });
         } catch (\Exception $e) {
             \App\Helpers\Logger\RSIALogger::berkas("UPDATE FAILED", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
-            return \App\Helpers\ApiResponse::error("failed to update data", $e->getMessage(), 500);
+            return \App\Helpers\ApiResponse::error("failed to update data", "update_failed", $e->getMessage(), 500);
         }
         
-        \App\Helpers\Logger\RSIALogger::berkas("UPDATE FAILED", 'info', ['data' => $request->all(), 'old_data' => $oldData]);
+        \App\Helpers\Logger\RSIALogger::berkas("UPDATED", 'info', ['data' => $request->all(), 'old_data' => $oldData]);
         return \App\Helpers\ApiResponse::success("data updated successfully");
     }
 
@@ -206,13 +206,13 @@ class RsiaBerkasKomiteKesehatanController extends Controller
     public function destroy($base64NomorTglTerbit)
     {
         if (!base64_decode($base64NomorTglTerbit, true)) {
-            return \App\Helpers\ApiResponse::error("Invalid parameter", "Parameter tidak valid, pastikan parameter adalah base64 encoded dari nomor dan tanggal misal : 53.2024-03-28", 400);
+            return \App\Helpers\ApiResponse::error("Invalid parameter : pastikan parameter adalah base64 encoded dari nomor dan tanggal misal : 53.2024-03-28", "invalid_params", 400);
         }
 
         $identifier = explode('.', base64_decode($base64NomorTglTerbit));
 
         if (!\Carbon\Carbon::createFromFormat('Y-m-d', $identifier[1])) {
-            return \App\Helpers\ApiResponse::error("Invalid date format", "Format tanggal tidak valid (YYYY-MM-DD)", 400);
+            return \App\Helpers\ApiResponse::error("Invalid request : Format tanggal tidak valid (YYYY-MM-DD)", "invalid_request", null, 400);
         }
 
         $data = \App\Models\RsiaBerkasKomiteKesehatan::where('nomor', $identifier[0])
@@ -220,7 +220,7 @@ class RsiaBerkasKomiteKesehatanController extends Controller
             ->first();
 
         if (!$data) {
-            return \App\Helpers\ApiResponse::error("Resource not found", "Data dengan detail tersebut tidak ditemukan", 404);
+            return \App\Helpers\ApiResponse::error("Resource not found", "resource_not_found", null, 404);
         }
 
         try {
@@ -230,7 +230,7 @@ class RsiaBerkasKomiteKesehatanController extends Controller
             });
         } catch (\Exception $e) {
             \App\Helpers\Logger\RSIALogger::berkas("DELETE FAILED", 'error', ['data' => $data, 'error' => $e->getMessage()]);
-            return \App\Helpers\ApiResponse::error("failed to delete data", $e->getMessage(), 500);
+            return \App\Helpers\ApiResponse::error("failed to delete data", "delete_failed", $e->getMessage(), 500);
         }
 
         return \App\Helpers\ApiResponse::success("data deleted successfully");

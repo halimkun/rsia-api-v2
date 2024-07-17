@@ -11,12 +11,18 @@ class ApiResponse
     ], 200);
   }
 
-  public static function error($message, $error, $status = 400)
+  public static function error($message, $error, $trace = null, $status = 400)
   {
-    return response()->json([
+    $resp = [
       'message' => $message,
       'error'   => $error,
-    ], $status);
+    ];
+
+    if ($trace) {
+      $resp['trace'] = $trace;
+    }
+
+    return response()->json($resp, $status);
   }
 
   public static function errorWithData($data, $message, $error, $status = 400)

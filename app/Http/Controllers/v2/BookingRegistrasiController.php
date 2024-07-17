@@ -56,7 +56,7 @@ class BookingRegistrasiController extends Controller
             ->first();
 
         if ($existingBooking) {
-            return ApiResponse::error('already_booked', 'Pasien sudah memiliki booking pada tanggal tersebut');
+            return ApiResponse::error('Pasien sudah memiliki booking pada tanggal tersebut', 'already_booked', null, 400);
         }
 
         \Illuminate\Support\Facades\DB::transaction(function () use ($request, $booking) {
@@ -141,7 +141,7 @@ class BookingRegistrasiController extends Controller
             return new \App\Http\Resources\RealDataResource($data);
         }
 
-        return ApiResponse::error('not_found', 'Data booking tidak ditemukan');
+        return ApiResponse::error("Data booking tidak ditemukan", "resource_not_found", null, 404);
     }
 
     /**

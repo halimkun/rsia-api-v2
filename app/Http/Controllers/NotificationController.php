@@ -51,7 +51,7 @@ class NotificationController extends Controller
             return ApiResponse::success('Notification marked as read');
         }
 
-        return ApiResponse::error('Notification not found', 404);
+        return ApiResponse::error('Resource not found', 'resource_not_found', null, 404);
     }
 
     /**
@@ -69,6 +69,6 @@ class NotificationController extends Controller
             return ApiResponse::success('Notification deleted successfully');
         }
 
-        return ApiResponse::error('Notification not found', 404);
+        return ApiResponse::error('Resource not found', 'resource_not_found', null, 404);
     }
 }

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\v2;
 
-use App\Helpers\ApiResponse;
 use App\Models\RsiaSk;
 use Illuminate\Http\Request;
+use App\Helpers\ApiResponse;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Storage;
@@ -92,7 +92,7 @@ class RsiaSkController extends Controller
             });
         } catch (\Exception $e) {
             \App\Helpers\Logger\RSIALogger::berkas("STORE FAILED", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
-            return ApiResponse::error('failed to save data', $e->getMessage(), 500);
+            return ApiResponse::error('failed to save data', 'store_failed', $e->getMessage(), 500);
         }
 
         \App\Helpers\Logger\RSIALogger::berkas("STORED", 'info', ['data' => $request->all()]);
@@ -108,7 +108,7 @@ class RsiaSkController extends Controller
     public function show($identifier)
     {
         if (!base64_decode($identifier, true)) {
-            return \App\Helpers\ApiResponse::error("Invalid parameter", "Parameter tidak valid, pastikan parameter adalah base64 encoded dari nomor, jenis dan tanggal misal : 53.B.2024-03-28", 400);
+            return ApiResponse::error("Invalid parameter : Parameter tidak valid, pastikan parameter adalah base64 encoded dari nomor, jenis dan tanggal misal : 53.B.2024-03-28", "params_invalid", null, 400);
         }
 
         $decodedId = base64_decode($identifier);
@@ -122,7 +122,7 @@ class RsiaSkController extends Controller
             }])->first();
 
         if (!$data) {
-            return ApiResponse::error('data not found', 'data with identifier ' . $identifier . ' not found', 404);
+            return ApiResponse::error('data not found -- identifier : ' . $identifier, 'resource_not_found', 404);
         }
 
         return new \App\Http\Resources\Berkas\CompleteResource($data);
@@ -157,7 +157,7 @@ class RsiaSkController extends Controller
         ]);
 
         if (!base64_decode($identifier, true)) {
-            return \App\Helpers\ApiResponse::error("Invalid parameter", "Parameter tidak valid, pastikan parameter adalah base64 encoded dari nomor, jenis dan tanggal misal : 53.B.2024-03-28", 400);
+            return ApiResponse::error("Invalid parameter : Parameter tidak valid, pastikan parameter adalah base64 encoded dari nomor, jenis dan tanggal misal : 53.B.2024-03-28", "params_invalid", null, 400);
         }
 
         $decodedId = base64_decode($identifier);
@@ -169,7 +169,7 @@ class RsiaSkController extends Controller
             ->first();
 
         if (!$data) {
-            return ApiResponse::error('data not found', 'data with identifier ' . $identifier . ' not found', 404);
+            return ApiResponse::error('data not found -- identifier : ' . $identifier, 'resource_not_found', 404);
         }
 
         $oldData   = $data->toArray();
@@ -209,7 +209,7 @@ class RsiaSkController extends Controller
             });
         } catch (\Exception $e) {
             \App\Helpers\Logger\RSIALogger::berkas("STORE FAILED", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
-            return ApiResponse::error('failed to save data', $e->getMessage(), 500);
+            return ApiResponse::error('failed to save data', 'update_failed', $e->getMessage(), 500);
         }
 
         \App\Helpers\Logger\RSIALogger::berkas("UPDATED", 'info', ['old_data' => $oldData, 'data' => $request->all()]);
@@ -225,7 +225,7 @@ class RsiaSkController extends Controller
     public function destroy($identifier)
     {
         if (!base64_decode($identifier, true)) {
-            return \App\Helpers\ApiResponse::error("Invalid parameter", "Parameter tidak valid, pastikan parameter adalah base64 encoded dari nomor, jenis dan tanggal misal : 53.B.2024-03-28", 400);
+            return ApiResponse::error("Invalid parameter : Parameter tidak valid, pastikan parameter adalah base64 encoded dari nomor, jenis dan tanggal misal : 53.B.2024-03-28", "params_invalid", null, 400);
         }
 
         $decodedId = base64_decode($identifier);
@@ -237,7 +237,7 @@ class RsiaSkController extends Controller
             ->first();
 
         if (!$data) {
-            return ApiResponse::error('data not found', 'data with identifier ' . $identifier . ' not found', 404);
+            return ApiResponse::error('data not found -- identifier : ' . $identifier, 'resource_not_found', 404);
         }
 
         try {
@@ -246,7 +246,7 @@ class RsiaSkController extends Controller
             });
         } catch (\Exception $e) {
             \App\Helpers\Logger\RSIALogger::berkas("DELETE FAILED", 'error', ['data' => $data, 'error' => $e->getMessage()]);
-            return ApiResponse::error('failed to delete data', $e->getMessage(), 500);
+            return ApiResponse::error('failed to delete data', 'delete_failed', $e->getMessage(), 500);
         }
         
         $st = new Storage();

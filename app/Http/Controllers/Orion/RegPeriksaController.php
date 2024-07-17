@@ -26,7 +26,7 @@ class RegPeriksaController extends \Orion\Http\Controllers\Controller
         try {
             $key = base64_encode(base64_decode($key)) === $key ? base64_decode($key) : $key;
         } catch (\Exception $e) {
-            return ApiResponse::error('Invalid key', 'Key must be a valid base64 string');
+            return ApiResponse::error('Invalid key, Key must be a valid base64 string', 'invalid_keys', $e->getMessage(), 400);
         }
 
         return $this->runFetchQuery($request, $q, $key);

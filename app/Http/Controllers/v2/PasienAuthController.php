@@ -23,7 +23,7 @@ class PasienAuthController extends Controller
             ->where('no_rkm_medis', $credentials['no_rkm_medis'])->where('tgl_lahir', $credentials['password'])->first();
 
         if (!$pasien) {
-            return \App\Helpers\ApiResponse::error('Gagal login, periksa kembali nomor rekam medis dan tanggal lahir anda', 'Unauthorized', 401);
+            return \App\Helpers\ApiResponse::error('Gagal login, periksa kembali nomor rekam medis dan tanggal lahir anda', 'unauthorized', null, 401);
         }
 
         // login or set user to auth guard pasien

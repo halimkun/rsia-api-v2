@@ -21,7 +21,7 @@ class RsiaTemporaryPresensiController extends Controller
 
         // check pegawai
         if (!$pegawai) {
-            return \App\Helpers\ApiResponse::error('resource_not_found', 'Resource not found');
+            return \App\Helpers\ApiResponse::error('Resource not found', 'resource_not_found', null, 404);
         }
 
         $temp = \App\Models\TemporaryPresensi::where('id', $pegawai->id)->first();

@@ -70,7 +70,7 @@ class PegawaiController extends Controller
                 \App\Models\Pegawai::create($request->all());
             });
         } catch (\Exception $e) {
-            return \App\Helpers\ApiResponse::error('Failed to save data', $e->getMessage(), 500);
+            return \App\Helpers\ApiResponse::error('Failed to save data', 'store_failed', $e->getMessage(), 500);
         }
 
         if ($file) {
@@ -149,7 +149,7 @@ class PegawaiController extends Controller
                 $pegawai->update($request->all());
             });
         } catch (\Exception $e) {
-            return \App\Helpers\ApiResponse::error('Failed to update data', $e->getMessage(), 500);
+            return \App\Helpers\ApiResponse::error('Failed to update data', 'update_failed', $e->getMessage(), 500);
         }
 
         if ($request->delete_old_photo) {
@@ -184,7 +184,7 @@ class PegawaiController extends Controller
         try {
             $pegawai->delete();
         } catch (\Exception $e) {
-            return \App\Helpers\ApiResponse::error('Failed to delete data', $e->getMessage(), 500);
+            return \App\Helpers\ApiResponse::error('Failed to delete data', 'delete_failed', $e->getMessage(), 500);
         }
 
         return \App\Helpers\ApiResponse::success('Data deleted successfully');

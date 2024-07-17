@@ -40,7 +40,7 @@ class UserAuthController extends Controller
 
         if (!$user) {
             $this->incrementAttempts($request);
-            return \App\Helpers\ApiResponse::error('User not found', 'Unauthorized', 401);
+            return \App\Helpers\ApiResponse::error('User not found', 'unauthorized', null, 401);
         }
 
         // Auth berhasil, bersihkan percobaan login
@@ -67,7 +67,7 @@ class UserAuthController extends Controller
         $user = \Illuminate\Support\Facades\Auth::guard('user-aes')->user();
 
         if (!$user) {
-            return \App\Helpers\ApiResponse::error('User not found', 'Unauthorized', 401);
+            return \App\Helpers\ApiResponse::error('User not found', 'unauthorized', null, 401);
         }
 
         $user->token()->revoke();

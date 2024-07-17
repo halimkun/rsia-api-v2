@@ -50,7 +50,7 @@ class BerkasPegawaiController  extends Controller
             // TODO : tambahkan upload file, jika file gagal diupload maka berkas tidak disimpan
             \App\Models\BerkasPegawai::create($request->all());
         } catch (\Exception $e) {
-            return \App\Helpers\ApiResponse::error('Failed to save data', $e->getMessage(), 500);
+            return \App\Helpers\ApiResponse::error('Failed to save data', 'store_failed', $e->getMessage(), 500);
         }
 
         return \App\Helpers\ApiResponse::success('Data saved successfully');
@@ -109,7 +109,7 @@ class BerkasPegawaiController  extends Controller
             // TODO : tambahkan upload file, jika file gagal diupload maka berkas tidak disimpan
             \App\Models\BerkasPegawai::where('nik', $nik)->where('kode_berkas', $kode_berkas)->update($request->all());
         } catch (\Exception $e) {
-            return \App\Helpers\ApiResponse::error('Failed to update data', $e->getMessage(), 500);
+            return \App\Helpers\ApiResponse::error('Failed to update data', 'update_failed', $e->getMessage(), 500);
         }
 
         return \App\Helpers\ApiResponse::success('Data updated successfully');
@@ -132,7 +132,7 @@ class BerkasPegawaiController  extends Controller
             // TODO : tambahkan delete file, jika file gagal dihapus maka berkas tidak dihapus
             \App\Models\BerkasPegawai::where('nik', $nik)->where('kode_berkas', $kode_berkas)->delete();
         } catch (\Exception $e) {
-            return \App\Helpers\ApiResponse::error('Failed to delete data', $e->getMessage(), 500);
+            return \App\Helpers\ApiResponse::error('Failed to delete data', 'delete_failed', $e->getMessage(), 500);
         }
 
         return \App\Helpers\ApiResponse::success('Data deleted successfully');

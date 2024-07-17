@@ -16,7 +16,7 @@ class BillingPasienController extends Controller
     {
         // check if base64_no_rawat is valid base64
         if (!base64_decode($base64_no_rawat, true)) {
-            return \App\Helpers\ApiResponse::error('Invalid parameter', 'base64_no_rawat is not a valid base64 string', 400);
+            return \App\Helpers\ApiResponse::error('Invalid parameter : base64_no_rawat is not a valid base64 string', 'invalid_params', 400);
         }
 
         $no_rawat = base64_decode($base64_no_rawat);
@@ -24,7 +24,7 @@ class BillingPasienController extends Controller
         $data = \App\Models\RegPeriksa::where('no_rawat', $no_rawat)->first();
         
         if (!$data) {
-            return \App\Helpers\ApiResponse::error('Data not found', 'Data not found', 404);
+            return \App\Helpers\ApiResponse::error('Billing Data not found', 'resource_not_found', null, 404);
         }
 
         return new \App\Http\Resources\Pasien\Ranap\Billing\BillingPasienRanap($no_rawat);

@@ -49,7 +49,7 @@ class KamarInapController extends Controller
         try {
             $key = base64_encode(base64_decode($key)) === $key ? base64_decode($key) : $key;
         } catch (\Exception $e) {
-            return \App\Helpers\ApiResponse::error('Invalid key', 'Key must be a valid base64 string');
+            return \App\Helpers\ApiResponse::error('Invalid key, Key must be a valid base64 string', 'invalid_keys', $e->getMessage(), 400);
         }
 
         $kamarInap = \App\Models\KamarInap::where('no_rawat', $key)

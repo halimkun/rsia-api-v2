@@ -18,14 +18,14 @@ class RealCostPasienRawatInap extends Controller
     {
         // check if base64_no_rawat is valid base64
         if (!base64_decode($base64_no_rawat, true)) {
-            return ApiResponse::error('Invalid parameter', 'base64_no_rawat is not a valid base64 string', 400);
+            return ApiResponse::error('Invalid key, Key must be a valid base64 string', 'invalid_keys', null, 400);
         }
 
         $no_rawat = base64_decode($base64_no_rawat);
         $data = \App\Models\RegPeriksa::where('no_rawat', $no_rawat)->first();
         
         if (!$data) {
-            return ApiResponse::error('Data not found', 'Data not found', 404);
+            return ApiResponse::error('Data not found', 'resource_not_found', null, 404);
         }
 
         return new \App\Http\Resources\Pasien\Tarif\RealCostResource($data);

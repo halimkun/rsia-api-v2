@@ -23,7 +23,7 @@ class JadwalPegawaiController extends Controller
 
         // check pegawai
         if (!$pegawai) {
-            return ApiResponse::error('resource_not_found', 'Resource not found');
+            return ApiResponse::error('Resource not found', 'resource_not_found', null, 404);
         }
 
         $currentDay = date('d');
@@ -39,7 +39,7 @@ class JadwalPegawaiController extends Controller
             ->first();
 
         if (!$jadwal) {
-            return ApiResponse::error('resource_not_found', 'Resource not found');
+            return ApiResponse::error('Resource not found', 'resource_not_found', null, 404);
         }
 
         $jam_masuk = \App\Models\JamMasuk::where('shift', $jadwal->shift)->first();

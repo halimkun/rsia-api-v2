@@ -29,7 +29,7 @@ class PasienController extends Controller
      */
     public function create()
     {
-        return ApiResponse::error("unimplemented", 501);
+        // 
     }
 
     /**
@@ -40,7 +40,7 @@ class PasienController extends Controller
      */
     public function store(Request $request)
     {
-        return ApiResponse::error("unimplemented", 501);
+        // 
     }
 
     /**
@@ -68,7 +68,7 @@ class PasienController extends Controller
      */
     public function edit($id)
     {
-        return ApiResponse::error("unimplemented", 501);
+        // 
     }
 
     /**
@@ -93,7 +93,7 @@ class PasienController extends Controller
                 $data->update($request->all());
             });
         } catch (\Exception $e) {
-            return ApiResponse::error("update failed", $e->getMessage(), 500);
+            return ApiResponse::error("update failed", 'updated_failed', $e->getMessage(), 500);
         }
 
         return ApiResponse::success("Data pasien berhasil diupdate");
@@ -107,7 +107,7 @@ class PasienController extends Controller
      */
     public function destroy($id)
     {
-        return ApiResponse::error("unimplemented", 501);
+        // 
     }
 
     private static function validationRule($withRequired = false)

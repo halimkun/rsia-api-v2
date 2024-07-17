@@ -35,7 +35,7 @@ class PasienRawatInapController extends Controller
      */
     public function create()
     {
-        return ApiResponse::error("unimplemented", 501);
+        // 
     }
 
     /**
@@ -46,7 +46,7 @@ class PasienRawatInapController extends Controller
      */
     public function store(Request $request)
     {
-        return ApiResponse::error("unimplemented", 501);
+        // 
     }
 
     /**
@@ -57,7 +57,7 @@ class PasienRawatInapController extends Controller
      */
     public function show($id)
     {
-        return ApiResponse::error("unimplemented", 501);
+        // 
     }
 
     /**
@@ -68,7 +68,7 @@ class PasienRawatInapController extends Controller
      */
     public function edit($id)
     {
-        return ApiResponse::error("unimplemented", 501);
+        // 
     }
 
     /**
@@ -80,7 +80,7 @@ class PasienRawatInapController extends Controller
      */
     public function update(Request $request, $id)
     {
-        return ApiResponse::error("unimplemented", 501);
+        // 
     }
 
     /**
@@ -91,6 +91,6 @@ class PasienRawatInapController extends Controller
      */
     public function destroy($id)
     {
-        return ApiResponse::error("unimplemented", 501);
+        // 
     }
 }

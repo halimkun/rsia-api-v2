@@ -79,7 +79,7 @@ class RsiaSuratInternalController extends Controller
             RsiaSuratInternal::create($request->except('user'));
         } catch (\Exception $e) {
             \App\Helpers\Logger\RSIALogger::berkas("data failed to save", 'error', ['data' => $request->all()]);
-            return \App\Helpers\ApiResponse::error('Failed to save data', $e->getMessage(), 500);
+            return \App\Helpers\ApiResponse::error('Failed to save data', 'store_failed', $e->getMessage(), 500);
         }
 
         \App\Helpers\Logger\RSIALogger::berkas("STORED", 'info', ['data' => $request->all()]);
@@ -167,7 +167,7 @@ class RsiaSuratInternalController extends Controller
             $data->update($request->except('user'));
         } catch (\Exception $e) {
             \App\Helpers\Logger\RSIALogger::berkas("data failed to update", 'error', ['data' => $request->all()]);
-            return \App\Helpers\ApiResponse::error('Failed to update data', $e->getMessage(), 500);
+            return \App\Helpers\ApiResponse::error('Failed to update data', 'update_failed', $e->getMessage(), 500);
         }
 
         \App\Helpers\Logger\RSIALogger::berkas("UPDATED", 'info', ['old_data' => $oldData, 'data' => $request->all()]);
@@ -193,7 +193,7 @@ class RsiaSuratInternalController extends Controller
             $data->delete();
         } catch (\Exception $e) {
             \App\Helpers\Logger\RSIALogger::berkas("data failed to delete", 'error', ['data' => $data]);
-            return \App\Helpers\ApiResponse::error('Failed to delete data', $e->getMessage(), 500);
+            return \App\Helpers\ApiResponse::error('Failed to delete data', 'delete_failed', $e->getMessage(), 500);
         }
 
         \App\Helpers\Logger\RSIALogger::berkas("DELETED", 'info', ['data' => $data]);

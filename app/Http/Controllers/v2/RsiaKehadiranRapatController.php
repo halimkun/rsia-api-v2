@@ -16,7 +16,7 @@ class RsiaKehadiranRapatController extends Controller
      */
     public function index()
     {
-        return ApiResponse::error('Action not allowed', "You're not allowed to access this endpoint", 403);
+        // 
     }
 
     /**
@@ -58,7 +58,7 @@ class RsiaKehadiranRapatController extends Controller
         // check apakah no_surat ada didalam table penerima undangan
         $penerimaUndangan = \App\Models\RsiaPenerimaUndangan::where('no_surat', $request->no_surat)->get();
         if (!$penerimaUndangan) {
-            return ApiResponse::error('resource not found', 'Kegiatan / Undangan tidak ditemukan', 404);
+            return ApiResponse::error('Kegiatan / Undangan tidak ditemukan', 'resource_not_found', null, 404);
         }
 
         if ($request->has('nik')) { // petugas yang melakukan
@@ -69,7 +69,7 @@ class RsiaKehadiranRapatController extends Controller
     
             // check if model file exists model from request is App\Models\RsiaSuratInternal
             if (!file_exists(app_path('Models/' . str_replace('App\Models\\', '', $request->model) . '.php'))) {
-                return ApiResponse::error('Model not found', 'Model ' . $request->model . ' not found', 404);
+                return ApiResponse::error('Model not found : Model ' . $request->model . ' not found', 'resource_not_found', null, 404);
             }
 
             // create or update penerima undangan
@@ -100,7 +100,7 @@ class RsiaKehadiranRapatController extends Controller
             }
         } else { // request dari client (mobile) ----- user harus login mandiri, absensi tidak dapat diwakilkan
             if (!$penerimaUndangan->contains('penerima', null, $user->id_user)) {
-                return ApiResponse::error('user not permitted', 'Anda tidak terdaftar dalam undangan ini', 403);
+                return ApiResponse::error('Anda tidak terdaftar dalam undangan ini', 'not_permitted', null, 403);
             }
 
             $absen = RsiaKehadiranRapat::where('nik', $user->id_user)
@@ -113,7 +113,7 @@ class RsiaKehadiranRapatController extends Controller
                     'penerima' => $user->id_user,
                     'message'  => 'Anda sudah melakukan absen',
                 ]);
-                return ApiResponse::error('resource already exists', 'Anda sudah melakukan absen', 400);
+                return ApiResponse::error('Anda sudah melakukan absen', 'event_attended', 400);
             }
 
             // insert kehadiran rapat
@@ -143,7 +143,7 @@ class RsiaKehadiranRapatController extends Controller
         try {
             $no_surat = base64_decode($base64_no_surat);
         } catch (\Throwable $th) {
-            return ApiResponse::error('Invalid base64', 'Invalid base64 string', 400);
+            return ApiResponse::error('Invalid key, Key must be a valid base64 string', 'invalid_keys', $th->getMessage(), 400);
         }
 
         $rsiaKehadiranRapat = RsiaKehadiranRapat::where('no_surat', $no_surat)->get();

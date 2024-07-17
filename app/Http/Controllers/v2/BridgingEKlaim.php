@@ -18,7 +18,7 @@ class BridgingEKlaim extends Controller
     {
         // check apakah didalam request terdapat metadata dan apakah didalam metadata terdapat method
         if (!$request->has('metadata') && !$request->metadata->has('method')) {
-            return ApiResponse::error('Invalid request', 'Request must have metadata and method', 400);
+            return ApiResponse::error('Request must have metadata and method', 'invalid_request', null, 400);
         }
 
         $stringified = json_encode($request->all());
@@ -34,14 +34,22 @@ class BridgingEKlaim extends Controller
                 $request_data
             ]);
         } catch (\Throwable $th) {
-            return ApiResponse::error('Error', $th->getMessage(), 500);
+            return ApiResponse::error("Error : INACBG's invalid request", "invalid_inacbg_request", $th->getMessage(), 500);
         }
 
         $first = strpos($response, "\n")+1;
-        $last = strrpos($response, "\n")-1;
-        $data = substr($response, $first, strlen($response) - $first - $last); 
+        $last  = strrpos($response, "\n")-1;
+        $data  = substr($response, $first, strlen($response) - $first - $last);
 
-        $resp = json_decode(\App\Helpers\EKlaimCrypt::decrypt($data));
+        try {
+            $resp = json_decode(\App\Helpers\EKlaimCrypt::decrypt($data));
+        } catch (\Throwable $th) {
+            return ApiResponse::error('Error : '.$th->getMessage(), "invalid_inacbg_decrypt", $th->getCode(), 500);
+        }
+
+        if ($resp->metadata->code != 200) {
+            return ApiResponse::error($resp->metadata->message, "invalid_inacbg_request", $resp, $resp->metadata->code);
+        }
 
         return $resp;
     }

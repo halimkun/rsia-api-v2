@@ -60,7 +60,7 @@ class FirebaseCloudMessaging
         // if template not found
         if (!$template) {
             \App\Helpers\Logger\RSIALogger::fcm('Template not found', 'error', ['template' => $template]);
-            return \App\Helpers\ApiResponse::error('Template not found', 'Template not found', 404);
+            return \App\Helpers\ApiResponse::error("Notification template not found", 'resource_not_found', null, 404);
         }
 
         $content = ParseNotificationMessage::run($template->content, $templateData);

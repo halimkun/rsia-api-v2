@@ -108,7 +108,7 @@ class RsiaPksController extends Controller
             }
 
             \App\Helpers\Logger\RSIALogger::berkas("STORE FAILED", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
-            return \App\Helpers\ApiResponse::error("failed to save data", $e->getMessage(), 500);
+            return \App\Helpers\ApiResponse::error("failed to save data", "store_failed", $e->getMessage(), 500);
         }
 
         return \App\Helpers\ApiResponse::success("data saved successfully");
@@ -127,7 +127,7 @@ class RsiaPksController extends Controller
             ->first();
 
         if (!$data) {
-            return \App\Helpers\ApiResponse::error("Resource not found", "Data dengan detail tersebut tidak ditemukan", 404);
+            return \App\Helpers\ApiResponse::error("Resource not found", "resource_not_found", null, 404);
         }
 
         return new \App\Http\Resources\Berkas\Komite\CompleteResource($data);
@@ -167,7 +167,7 @@ class RsiaPksController extends Controller
         $data = \App\Models\RsiaPks::find($id);
 
         if (!$data) {
-            return \App\Helpers\ApiResponse::error("Resource not found", "Data dengan detail tersebut tidak ditemukan", 404);
+            return \App\Helpers\ApiResponse::error("Resource not found", "resource_not_found", null, 404);
         }
 
         $oldData  = $data->toArray();
@@ -225,7 +225,7 @@ class RsiaPksController extends Controller
             }
 
             \App\Helpers\Logger\RSIALogger::berkas("UPDATE FAILED", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
-            return \App\Helpers\ApiResponse::error("failed to update data", $e->getMessage(), 500);
+            return \App\Helpers\ApiResponse::error("failed to update data", "updated_failed", $e->getMessage(), 500);
         }
 
         \App\Helpers\Logger\RSIALogger::berkas("UPDATED", 'info', ['data' => $request->all(), 'old_data' => $oldData]);
@@ -243,7 +243,7 @@ class RsiaPksController extends Controller
         $data = \App\Models\RsiaPks::find($id);
 
         if (!$data) {
-            return \App\Helpers\ApiResponse::error("Resource not found", "Data dengan detail tersebut tidak ditemukan", 404);
+            return \App\Helpers\ApiResponse::error("Resource not found", "resource_not_found", null, 404);
         }
 
         try {
@@ -252,7 +252,7 @@ class RsiaPksController extends Controller
             });
         } catch (\Exception $e) {
             \App\Helpers\Logger\RSIALogger::berkas("DELETE FAILED", 'error', ['data' => $data, 'error' => $e->getMessage()]);
-            return \App\Helpers\ApiResponse::error("failed to delete data", $e->getMessage(), 500);
+            return \App\Helpers\ApiResponse::error("failed to delete data", "delete_failed", $e->getMessage(), 500);
         }
 
         $st = new \Illuminate\Support\Facades\Storage();

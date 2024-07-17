@@ -19,22 +19,22 @@ class RealCostController extends Controller
     public function ranap(Request $request)
     {
         if (!$request->has('filters')) {
-            return ApiResponse::error('Failed to get data', 'Filters not found', 400);
+            return ApiResponse::error('Failed to get data', 'invalid_request', null, 400);
         }
 
         $filters = $request->filters;
-
+  
         if (!is_array($filters)) {
-            return ApiResponse::error('Failed to get data', 'Filters must be an array', 400);
+            return ApiResponse::error('Failed to get data', 'invalid_request', null, 400);
         }
 
         if (empty($filters)) {
-            return ApiResponse::error('Failed to get data', 'Filters cannot be empty', 400);
+            return ApiResponse::error('Failed to get data', 'invalid_request', null, 400);
         }
 
         foreach ($filters as $filter) {
             if (!isset($filter['field'], $filter['operator'], $filter['value']) && $filter['operator'] != 'in') {
-                return ApiResponse::error('Failed to get data', 'Filters must have field, operator, and value', 400);
+                return ApiResponse::error('Failed to get data : Filters must have field, operator, and value', 'invalid_request', null, 400);
             }
         }
 

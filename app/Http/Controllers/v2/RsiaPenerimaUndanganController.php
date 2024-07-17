@@ -17,7 +17,7 @@ class RsiaPenerimaUndanganController extends Controller
      */
     public function index(Request $request)
     {
-        return \App\Helpers\ApiResponse::error('Params not passed', 'Parameter nomor surat tidak ditemukan', 400);
+        // 
     }
 
     /**
@@ -52,7 +52,7 @@ class RsiaPenerimaUndanganController extends Controller
         // check if model file exists model from request is App\Models\RsiaSuratInternal
         if (!file_exists(app_path('Models/' . str_replace('App\Models\\', '', $request->model) . '.php'))) {
             \App\Helpers\Logger\RSIALogger::undangan("Model tidak ditemukan", "error", ['model' => $request->model]);
-            return ApiResponse::error('Model not found', 'Model ' . $request->model . ' not found -- ' . str_replace('App\Models\\', '', $request->model), 404);
+            return ApiResponse::error('Model ' . $request->model . ' not found -- ' . str_replace('App\Models\\', '', $request->model), 'resource_not_found', null, 404);
         }
 
         // check if no_surat is base64 encoded or not if base 64 decode it if not return as is
@@ -63,7 +63,7 @@ class RsiaPenerimaUndanganController extends Controller
         $surat = $model->where('no_surat', $no_surat)->first();
 
         if (!$surat) {
-            return ApiResponse::error('Data not found', 'Data surat tidak ditemukan', 404);
+            return ApiResponse::error('Data not found', 'resource_not_found', null, 404);
         }
 
         $penerima = $request->penerima ?? [];
@@ -75,7 +75,7 @@ class RsiaPenerimaUndanganController extends Controller
 
         // check if penerima is empty
         if (empty($penerima)) {
-            return ApiResponse::error('Invalid data', 'Penerima undangan tidak boleh kosong', 400);
+            return ApiResponse::error('Invalid data : Penerima undangan tidak boleh kosong', 'invalid_request', 400);
         }
 
         // validate penerima undangan is exists on pegawai table
@@ -85,7 +85,7 @@ class RsiaPenerimaUndanganController extends Controller
 
         if (!empty($invalidPenerima)) {
             \App\Helpers\Logger\RSIALogger::undangan("INVALID RECIPIENT", "error", ['penerima' => $invalidPenerima]);
-            return ApiResponse::error('Invalid data', 'Penerima undangan ' . implode(', ', $invalidPenerima) . ' tidak ditemukan', 400);
+            return ApiResponse::error('Invalid data : Penerima undangan ' . implode(', ', $invalidPenerima) . ' tidak ditemukan', 'invalid_params', null, 400);
         }
 
         // inset penerima undangan to database
@@ -104,11 +104,11 @@ class RsiaPenerimaUndanganController extends Controller
             });
         } catch (\Exception $e) {
             \App\Helpers\Logger\RSIALogger::undangan("ERROR SAVING RECIPIENT", "error", ['error' => $e->getMessage()]);
-            return \App\Helpers\ApiResponse::error('Failed to store data', $e->getMessage(), 500);
+            return ApiResponse::error('Failed to store data', 'store_failed', $e->getMessage(), 500);
         }
 
         \App\Helpers\Logger\RSIALogger::undangan("RECIPIENT STORED", "info", ['model' => $request->model, 'no_surat' => $no_surat, 'penerima' => $penerima, 'tipe' => $request->tipe]);
-        return \App\Helpers\ApiResponse::success('Data stored successfully');
+        return ApiResponse::success('Data stored successfully');
     }
 
     /**
@@ -127,7 +127,7 @@ class RsiaPenerimaUndanganController extends Controller
 
 
         if ($penerimaUndangan->isEmpty()) {
-            return \App\Helpers\ApiResponse::error('Data not found', 'Data penerima undangan tidak ditemukan', 404);
+            return ApiResponse::error('Data not found : Data penerima undangan tidak ditemukan', 'resource_not_found', null, 404);
         }
 
         return new \App\Http\Resources\Undangan\Penerima\CompleteCollection($penerimaUndangan);
@@ -154,7 +154,7 @@ class RsiaPenerimaUndanganController extends Controller
      */
     public function update(Request $request, $encodedNoSurat)
     {
-        return \App\Helpers\ApiResponse::error('Action not allowed', 'anda dapat menggunakan endpoint store untuk mengupdate data penerima undangan', 405);
+        // 
     }
 
     /**
@@ -165,6 +165,6 @@ class RsiaPenerimaUndanganController extends Controller
      */
     public function destroy($encodedNoSurat)
     {
-        return \App\Helpers\ApiResponse::error('Action not allowed', 'anda tidak dapat menghapus data penerima undangan secaara langsung, anda dapat mengupdate status penerima undangan menjadi tidak aktif', 405);
+        // 
     }
 }
