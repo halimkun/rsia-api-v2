@@ -5,9 +5,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['user-aes', 'claim:role,pegawai'])->group(function () {
   // ==================== PEGAWAI
-  Orion::resource('pegawai', \App\Http\Controllers\Orion\PegawaiController::class)->only('search');
+  Orion::resource('pegawai', \App\Http\Controllers\Orion\PegawaiController::class)->only(['search', 'show']);
   Route::resource('pegawai', \App\Http\Controllers\v2\PegawaiController::class)
-    ->except(['create', 'edit'])
+    ->except(['create', 'edit', 'show'])
     ->parameters(['pegawai' => 'nik']);
 
   // ==================== BERKAS PEGAWAI
@@ -23,10 +23,7 @@ Route::middleware(['user-aes', 'claim:role,pegawai'])->group(function () {
 
     // TODO : PRESENSI PEGAWAI
   // ==================== PRESENSI PEGAWAI
-  // Orion::resource('pegawai.presensi', \App\Http\Controllers\Orion\PresensiKaryawanController::class)->only(['index', 'search']);
-  Orion::hasManyResource('pegawai', 'presensi', \App\Http\Controllers\Orion\PresensiKaryawanController::class)->only(['index', 'search']);
-
-  // ==================== TEMPORARY PRESENSI PEGAWAI
-  Orion::resource('pegawai.presensi-temporary', \App\Http\Controllers\v2\RsiaTemporaryPresensiController::class)->only(['index']);
+  Orion::belongsToManyResource('pegawai', 'presensi', \App\Http\Controllers\Orion\PresensiKaryawanController::class)->only(['index', 'search']);
+  Route::resource('pegawai/{pegawai}/presensi/temporary', \App\Http\Controllers\v2\RsiaTemporaryPresensiController::class)->only(['index']);
 
 });

@@ -37,6 +37,7 @@ class SttsKerja extends Model
 
     public $timestamps = false;
 
+    
     public function pegawai()
     {
         return $this->hasMany(Pegawai::class, 'stts_kerja', 'stts');

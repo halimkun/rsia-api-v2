@@ -106,7 +106,8 @@ class Pegawai extends Model
 
     protected $guarded = ['id'];
 
-    // departemen on pegawai to dep_id on departemen
+    
+
     public function dep()
     {
         return $this->belongsTo(Departemen::class, 'departemen', 'dep_id');
@@ -120,5 +121,20 @@ class Pegawai extends Model
     public function presensi()
     {
         return $this->hasMany(RekapPresensi::class, 'id', 'id');
+    }
+
+    public function petugas()
+    {
+        return $this->belongsTo(Petugas::class, 'nik', 'nip');
+    }
+
+    public function email()
+    {
+        return $this->belongsTo(RsiaEmailPegawai::class, 'nik', 'nik');
+    }
+
+    public function statusKerja()
+    {
+        return $this->belongsTo(SttsKerja::class, 'stts_kerja', 'stts');
     }
 }

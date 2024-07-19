@@ -5,14 +5,14 @@ namespace App\Http\Controllers\Orion;
 use Illuminate\Http\Request;
 use Orion\Concerns\DisableAuthorization;
 
-class PresensiKaryawanController extends \Orion\Http\Controllers\Controller
+class PresensiKaryawanController extends \Orion\Http\Controllers\RelationController
 {
     use DisableAuthorization;
 
     /**
      * Fully-qualified model class name
      */
-    protected $model = \App\Models\RekapPresensi::class;
+    protected $model = \App\Models\Pegawai::class;
 
     /**
      * Name of the relationship as it is defined on the Post model
@@ -30,18 +30,14 @@ class PresensiKaryawanController extends \Orion\Http\Controllers\Controller
     }
 
     /**
-     * Runs the given query for fetching relation entities in index method.
+     * The list of available query scopes.
      *
-     * @param Request $request
-     * @param Relation $query
-     * @param Model $parentEntity
-     * @param int $paginationLimit
-     * @return Paginator|Collection
+     * @return array
      */
-    // protected function runIndexFetchQuery(\Illuminate\Http\Request $request, \Illuminate\Database\Eloquent\Relations\Relation $query, \Illuminate\Database\Eloquent\Model $parentEntity, int $paginationLimit)
-    // {
-    //     return $this->shouldPaginate($request, $paginationLimit) ? $query->paginate($paginationLimit) : $query->get();
-    // }
+    public function exposedScopes(): array
+    {
+        return ['withId', 'withDatang'];
+    }
 
     /**
      * The attributes that are used for sorting.

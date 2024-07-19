@@ -62,7 +62,7 @@ class PegawaiController extends Controller
      */
     public function includes(): array
     {
-        return ['dep'];
+        return ['dep', 'berkas', 'presensi', 'petugas', 'email', 'statusKerja'];
     }
 
     /**
