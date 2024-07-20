@@ -84,9 +84,7 @@ class ApiResponse
 
   public static function withToken($isSuccess, $token, $others = [])
   {
-    $data = [
-      'access_token' => $token,
-    ];
+    $data = [];
 
     // Check if $others is not an array
     if (!is_array($others)) {
@@ -97,6 +95,8 @@ class ApiResponse
     foreach ($others as $key => $value) {
       $data[$key] = $value;
     }
+
+    $data['access_token'] = $token;
 
     return response()->json($data, 200);
   }

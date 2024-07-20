@@ -51,12 +51,13 @@ class UserAuthController extends Controller
 
         $token = $user->createToken($credentials['username'])->accessToken;
         $token_type = 'Bearer';
-        $token_expires_at = $user->tokens->first()->expires_at;
-        $token_expores_in = $user->tokens->first()->expires_at->diffForHumans();
+        // $token_expires_at = $user->tokens->first()->expires_at;
+        // $token_expores_in = $user->tokens->first()->expires_at->diffForHumans(); get seconds
+        $token_expores_in = $user->tokens->first()->expires_at->diffInSeconds();
 
         return \App\Helpers\ApiResponse::withToken(true, $token, [
             'token_type'    => $token_type,
-            'expires_at'    => $token_expires_at,
+            // 'expires_at'    => $token_expires_at,
             'expires_in'    => $token_expores_in,
         ]);
     }
