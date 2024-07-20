@@ -17,6 +17,14 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+// ========== LARAVEL BREEZE
+Route::get('/dashboard', function () {
+    return view('dashboard');
+})->middleware(['auth'])->name('dashboard');
+
+require __DIR__.'/auth.php';
+// ========== LARAVEL BREZE END
+
 Route::prefix('app')->group(function () {
     Route::prefix('notification')->group(function () {
         Route::get('jadwal-dokter', [\App\Http\Controllers\web\JadwalDokterController::class, 'index'])->name('app.notification.jadwal-dokter');
