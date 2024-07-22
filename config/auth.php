@@ -71,9 +71,9 @@ return [
 
     'providers' => [
         'users' => [
-            'driver' => 'eloquent',
-            // TODO : fungsikan login pada middleware web agar menggunakan provider ini, dan karena usernya punya kondisi spesial pakai driver custom yaitu aes_user_provider
-            // 'driver' => 'aes_user_provider',
+            // 'driver' => 'eloquent',
+            // INFO : PANTAI DAN PELAJARI
+            'driver' => 'aes_user_provider',
             'model' => App\Models\User::class,
             'column' => ['id_user', 'password']
         ],

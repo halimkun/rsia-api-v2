@@ -74,4 +74,14 @@ class User extends Authenticatable
     {
         return null;
     }
+
+    /**
+     * Get the user's detail
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * */ 
+    public function detail()
+    {
+        return $this->hasOne(Pegawai::class, 'nik', 'id_user');
+    }
 }
