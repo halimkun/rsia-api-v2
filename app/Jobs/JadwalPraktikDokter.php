@@ -16,7 +16,7 @@ class JadwalPraktikDokter implements ShouldQueue
     /**
      * Topics to send the notification
      * 
-     * @var array
+     * @var string
      * */
     protected $topics;
 
@@ -53,7 +53,7 @@ class JadwalPraktikDokter implements ShouldQueue
      *
      * @return void
      */
-    public function __construct($templateName, array $topics, \Illuminate\Support\Collection $request = null)
+    public function __construct($templateName, string $topics, \Illuminate\Support\Collection $request = null)
     {
         $this->topics       = $topics;
         $this->templateName = $templateName;
@@ -86,31 +86,16 @@ class JadwalPraktikDokter implements ShouldQueue
             throw new \Exception('Template notifikasi tidak ditemukan');
         }
 
-        // check is topic is array
-        if (!is_array($this->topics)) {
-            throw new \Exception('Topics harus berupa array');
-        }
+        $pasien        = \App\Models\Pasien::where('no_rkm_medis', $this->topics)->first();
+        $dokter        = $this->request->get('nik') ? \App\Models\Dokter::where('kd_dokter', $this->request->get('nik'))->first() : collect([]);
+        $parsedRequest = $this->request->get('parse') ? collect($this->request->get('parse')) : collect([]);
 
-        foreach ($this->topics as $index => $topic) {
-            if (empty($topic)) {
-                continue;
-            }
+        $templateData = $parsedRequest->merge([
+            'pasien' => $pasien,
+            'dokter' => $dokter
+        ]);
 
-            if ($index > 0) {
-                sleep(3);
-            }
-
-            $pasien        = \App\Models\Pasien::where('no_rkm_medis', $topic)->first();
-            $dokter        = $this->request->get('nik') ? \App\Models\Dokter::where('kd_dokter', $this->request->get('nik'))->first() : collect([]);
-            $parsedRequest = $this->request->get('parse') ? collect($this->request->get('parse')) : collect([]);
-
-            $templateData = $parsedRequest->merge([
-                'pasien' => $pasien,
-                'dokter' => $dokter
-            ]);
-
-            \App\Helpers\Logger\RSIALogger::fcm("NOTIFICATION SENT", 'info', ['topic' => $topic, 'template' => $this->templateName]);
-            $pasien->notify(new \App\Notifications\Pasien\JadwalPraktikDokter($topic, $template, $templateData));
-        }
+        \App\Helpers\Logger\RSIALogger::fcm("NOTIFICATION SENT", 'info', ['topic' => $this->topics, 'template' => $this->templateName]);
+        $pasien->notify(new \App\Notifications\Pasien\JadwalPraktikDokter($this->topics, $template, $templateData));
     }
 }

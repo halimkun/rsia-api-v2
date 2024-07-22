@@ -17,9 +17,5 @@
         </div>
     </x-slot>
 
-    <x-sections.notifikasi.pasien.default />
-    
-    @if (request()->has('action') && request('action') == 'perubahan-jadwal-dokter')
-        <x-sections.notifikasi.pasien.perubahan-jadwal-dokter :dokters="$dokters" :polikliniks="$polikliniks" :registrasi="$registrasi" />
-    @endif
+    <x-sections.notifikasi.pasien.perubahan-jadwal-dokter :dokters="$dokters" :polikliniks="$polikliniks" :registrasi="$registrasi" />
 </x-app-layout>

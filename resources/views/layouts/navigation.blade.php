@@ -16,7 +16,8 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
-                    <x-nav-link :href="route('notifikasi.pasien', ['action' => 'default'])" :active="request()->routeIs('notifikasi.pasien')">
+                    {{-- request url has notifikasi/pasien on url --}}
+                    <x-nav-link :href="route('notifikasi.pasien')" :active="strpos(request()->url(), 'notifikasi/pasien')">
                         {{ __('Notifikasi Pasien') }}
                     </x-nav-link>
                 </div>

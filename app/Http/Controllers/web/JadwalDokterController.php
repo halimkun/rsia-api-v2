@@ -41,7 +41,7 @@ class JadwalDokterController extends Controller
             $registrasi =  new \Illuminate\Pagination\LengthAwarePaginator([], 0, 10);
         }
 
-        return view('app.notification.jadwal-dokter', [
+        return view('notifikasi.pasien.jadwal-dokter', [
             'dokters'     => $dokterOnPoli,
             'polikliniks' => $poliklinik,
             'registrasi'  => $registrasi
@@ -86,7 +86,7 @@ class JadwalDokterController extends Controller
         ]);
 
         $pasien = \App\Models\RegPeriksa::select('no_rkm_medis');
-        if ($request->filled('kd_dokter')) {
+        if ($request->filled('kd_dokter') && !in_array($request->kd_dokter, ['all', '', '-', null])) {
             $pasien->where('kd_dokter', $request->kd_dokter);
         }
 
@@ -101,8 +101,9 @@ class JadwalDokterController extends Controller
         $pasien = $pasien->get();
         $noRkmMedis = $pasien->pluck('no_rkm_medis')->toArray();
 
-        // TODO : 1 job 1 notifikasi, jangan 1 job beberapa notifikasi. 
-        \App\Jobs\JadwalPraktikDokter::dispatch('perubahan_jadwal_dokter', $noRkmMedis, $dispatchableData);
+        foreach ($noRkmMedis as $rm) {
+            \App\Jobs\JadwalPraktikDokter::dispatch('perubahan_jadwal_dokter', $rm, $dispatchableData);
+        }
 
         return redirect()->route('app.notification.jadwal-dokter')->with('success', 'Notifikasi berhasil dikirim');
     }
