@@ -105,7 +105,7 @@ class JadwalDokterController extends Controller
             \App\Jobs\JadwalPraktikDokter::dispatch('perubahan_jadwal_dokter', $rm, $dispatchableData);
         }
 
-        return redirect()->route('app.notification.jadwal-dokter')->with('success', 'Notifikasi berhasil dikirim');
+        return redirect()->route('notifikasi.pasien.jadwal-dokter')->with('success', 'Notifikasi berhasil dikirim');
     }
 
     /**
