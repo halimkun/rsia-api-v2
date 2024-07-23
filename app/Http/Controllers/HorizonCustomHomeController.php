@@ -22,15 +22,15 @@ class HorizonCustomHomeController extends Controller
      *
      * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function index(Request $request)
-    {
-        $horizon = Horizon::scriptVariables();
-        $horizon['path'] = env('APP_NAME', 'laravel') . '/' . env('HORIZON_PATH', 'horizon');
+    // public function index(Request $request)
+    // {
+    //     $horizon = Horizon::scriptVariables();
+    //     $horizon['path'] = env('APP_NAME', 'laravel') . '/' . env('HORIZON_PATH', 'horizon');
 
-        return view('horizon::layout', [
-            'assetsAreCurrent'       => Horizon::assetsAreCurrent(),
-            'horizonScriptVariables' => $horizon,
-            'isDownForMaintenance'   => App::isDownForMaintenance(),
-        ]);
-    }
+    //     return view('horizon::layout', [
+    //         'assetsAreCurrent'       => Horizon::assetsAreCurrent(),
+    //         'horizonScriptVariables' => $horizon,
+    //         'isDownForMaintenance'   => App::isDownForMaintenance(),
+    //     ]);
+    // }
 }
