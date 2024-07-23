@@ -36,7 +36,8 @@
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
+            "Database\\Seeders\\": "database/seeders/",
+            "FaisalHalim\\LaravelEklaimApi\\": "packages/faisal-halim/laravel-eklaim-api/src/"
         }
     },
     "autoload-dev": {

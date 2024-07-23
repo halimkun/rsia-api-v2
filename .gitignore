@@ -21,3 +21,9 @@ _ide_helper.php
 # firebase credentils
 firebase-credentials**
 firebase_credentials**
+
+# packages vendor
+packages/**/vendor
+
+# ==== build styles and scripts 
+/public/css
