@@ -6,7 +6,7 @@
                     <form action="{{ route('notifikasi.pasien.jadwal-dokter.send') }}" method="post">
                         @csrf
                         {{-- card header with border bottom --}}
-                        <div class="card-header borber-b-2 border-b border-gray-200 pb-2">
+                        <div class="borber-b-2 border-b border-gray-200 pb-2">
                             <h2 class="font-semibold text-primary">Jadwal Baru Dokter</h2>
                         </div>
 
@@ -94,11 +94,11 @@
             </div>
 
             {{-- table --}}
-            <div class="flex w-full flex-col gap-3">
+            <div class="flex w-full flex-col gap-3 sm:rounded-lg">
                 <div class="w-full overflow-hidden bg-white shadow-sm sm:rounded-lg">
                     <div class="border-b border-gray-200 bg-white p-4">
                         {{-- filter data --}}
-                        <div class="card-header borber-b-2 mb-4 border-b border-gray-200 pb-2">
+                        <div class="borber-b-2 mb-4 border-b border-gray-200 pb-2">
                             <h2 class="font-semibold text-primary">Filter Pasien</h2>
                         </div>
 
@@ -143,9 +143,10 @@
                         </form>
                     </div>
                 </div>
+
                 <div class="w-full overflow-hidden bg-white shadow-sm sm:rounded-lg">
-                    <div class="card bg-white p-6 shadow">
-                        <div class="card-header borber-b-2 mb-4 border-b border-gray-200 pb-2">
+                    <div class="bg-white p-6 shadow">
+                        <div class="borber-b-2 mb-4 border-b border-gray-200 pb-2">
                             <h2 class="font-semibold text-primary">Data Pasien</h2>
                         </div>
 

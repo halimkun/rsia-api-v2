@@ -23,6 +23,7 @@ firebase-credentials**
 firebase_credentials**
 
 # packages vendor
+packages/
 packages/**/vendor
 
 # ==== build styles and scripts 
