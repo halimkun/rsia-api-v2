@@ -58,11 +58,26 @@ class RsiaPenerimaUndangan extends Model
         return $this->morphTo('no_surat', 'model', 'no_surat', 'no_surat');
     }
 
-    // Query Scope untuk Pencarian
     public function scopeSearchByRelatedModel($query, $searchTerm)
     {
         return $query->whereHas('relatedModel', function ($query) use ($searchTerm) {
             $query->where('perihal', 'like', "%{$searchTerm}%");
         });
+    }
+
+    public function scopeWhereBetweenDate($query, $start, $end)
+    {
+        if ($start == null || $end == null) {
+            return $query->whereHas('relatedModel');
+        } else {
+            return $query->whereHas('relatedModel', function ($query) use ($start, $end) {
+                $query->whereBetween('tanggal', [$start, $end]);
+            });
+        }
+    }
+
+    public function scopeWithDetail($query)
+    {
+        return $query->with(['relatedModel', 'detail']);
     }
 }

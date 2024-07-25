@@ -37,7 +37,7 @@ class RsiaUndanganController extends Controller
     {
         $query = parent::buildIndexFetchQuery($request, $requestedRelations);
         $query->select(['no_surat', 'model'])->groupBy('no_surat', 'model');
-
+        
         return $query;
     }
 
@@ -54,7 +54,7 @@ class RsiaUndanganController extends Controller
     {
         $searchTerm = $request->input('search.value', '');
         $query      = $query->searchByRelatedModel($searchTerm);
-        
+
         return $this->shouldPaginate($request, $paginationLimit) ? $query->paginate($paginationLimit) : $query->get();
     }
 
@@ -85,7 +85,7 @@ class RsiaUndanganController extends Controller
      */
     public function filterableBy(): array
     {
-        return ['tipe'];
+        return ['tipe', 'penerima'];
     }
 
     /**
@@ -95,9 +95,7 @@ class RsiaUndanganController extends Controller
      */
     public function sortableBy(): array
     {
-        return [
-            'no_surat'
-        ];
+        return ['no_surat'];
     }
 
     /**
@@ -127,9 +125,7 @@ class RsiaUndanganController extends Controller
      */
     public function includes(): array
     {
-        return [
-            'undangan'
-        ];
+        return ['undangan'];
     }
 
     /**

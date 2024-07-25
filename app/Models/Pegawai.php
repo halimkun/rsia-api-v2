@@ -137,4 +137,9 @@ class Pegawai extends Model
     {
         return $this->belongsTo(SttsKerja::class, 'stts_kerja', 'stts');
     }
+
+    public function undangan()
+    {
+        return $this->hasMany(RsiaPenerimaUndangan::class, 'penerima', 'nik');
+    }
 }
