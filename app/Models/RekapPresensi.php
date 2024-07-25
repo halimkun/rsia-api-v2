@@ -23,14 +23,24 @@ class RekapPresensi extends Model
         $id      = $pegawai->id;
 
         $q = $query->where('id', $id);
+        return $q;
     }
 
     public function scopeWithDatang($query, $date)
     {
-        $q = $query->whereDate('jam_datang', $date);
-        return $q;
+        return $query->whereDate('jam_datang', $date);
     }
 
+    public function scopeWithPulang($query, $date)
+    {
+        return $query->whereDate('jam_pulang', $date);
+    }
+
+    // beetwen
+    public function scopeWithRange($query, $start, $end)
+    {
+        return $query->whereBetween('jam_datang', [$start, $end]);
+    }
     
     public function pegawai()
     {

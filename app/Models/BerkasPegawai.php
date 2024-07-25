@@ -38,6 +38,11 @@ class BerkasPegawai extends Model
 
     public $timestamps = false;
     
+    public function masterBerkasPegawai()
+    {
+        return $this->belongsTo(MasterBerkasPegawai::class, 'kode_berkas', 'kode');
+    }
+
     public function pegawai()
     {
         return $this->belongsTo(Pegawai::class, 'nik', 'nik');

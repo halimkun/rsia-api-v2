@@ -18,7 +18,7 @@ class BerkasPegawaiController  extends Controller
         $page = $request->query('page', 1);
         $select = $request->query('select', '*');
 
-        $berkas = \App\Models\BerkasPegawai::where('nik', $nik)->paginate(10, explode(',', $select), 'page', $page);
+        $berkas = \App\Models\BerkasPegawai::where('nik', $nik)->with('masterBerkasPegawai')->paginate(10, explode(',', $select), 'page', $page);
 
         return new \App\Http\Resources\Berkas\CompleteCollection($berkas);
     }

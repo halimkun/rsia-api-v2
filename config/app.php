@@ -165,6 +165,11 @@ return [
         /*
          * Package Service Providers...
          */
+        Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class,
+        Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider::class,
+        Kreait\Laravel\Firebase\ServiceProvider::class,
+        Illuminate\Notifications\NotificationServiceProvider::class,
+        FaisalHalim\LaravelEklaimApi\Providers\EKlaimServiceProvider::class,
 
         /*
          * Application Service Providers...

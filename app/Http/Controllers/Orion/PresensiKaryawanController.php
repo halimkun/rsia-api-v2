@@ -36,7 +36,7 @@ class PresensiKaryawanController extends \Orion\Http\Controllers\RelationControl
      */
     public function exposedScopes(): array
     {
-        return ['withId', 'withDatang'];
+        return ['withId', 'withDatang', 'withPulang', 'withRange'];
     }
 
     /**

@@ -76,7 +76,7 @@ class PegawaiController extends Controller
         if ($file) {
             $st::disk('sftp')->put(env('FOTO_PEGAWAI_SAVE_LOCATION') . $file_name, file_get_contents($file));
         }
-      
+
         return \App\Helpers\ApiResponse::success('Data saved successfully');
     }
 
@@ -188,6 +188,45 @@ class PegawaiController extends Controller
         }
 
         return \App\Helpers\ApiResponse::success('Data deleted successfully');
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'email'   => 'required|email',
+            'alamat'  => 'required|string',
+            'no_telp' => 'required|numeric|digits_between:11,13'
+        ]);
+
+        $user = \Illuminate\Support\Facades\Auth::guard('user-aes')->user();
+
+        $pegawai = \App\Models\Pegawai::where('nik', $user->id_user)->first();
+        $petugas = \App\Models\Petugas::where('nip', $user->id_user)->first();
+
+        if (!$pegawai || !$petugas) {
+            return \App\Helpers\ApiResponse::notFound('Resource not found');
+        }
+
+        try {
+            \DB::transaction(function () use ($request, $pegawai, $petugas) {
+                \App\Models\Petugas::where('nip', $petugas->nip)->update([
+                    'alamat'  => $request->alamat,
+                    'no_telp' => $request->no_telp,
+                ]);
+
+                \App\Models\RsiaEmailPegawai::updateOrCreate([ 'nik' => $pegawai->nik ], [
+                    'email' => $request->email,
+                ]);
+
+                \App\Models\Pegawai::whereNik($pegawai->nik)->update([
+                    'alamat' => $request->alamat,
+                ]);
+            });
+        } catch (\Exception $e) {
+            return \App\Helpers\ApiResponse::error('Failed to update data', 'update_failed', $e->getMessage(), 500);
+        }
+
+        return \App\Helpers\ApiResponse::success('Data updated successfully');
     }
 
     private static function validationRule($withRequired = true)
