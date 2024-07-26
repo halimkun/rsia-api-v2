@@ -23,6 +23,6 @@ Route::middleware(['user-aes', 'claim:role,pegawai'])->group(function () {
     Orion::resource('undangan', \App\Http\Controllers\Orion\RsiaUndanganController::class)
         ->only('search'); // INFO : selesai
 
-    Route::resource('agenda', \App\Http\Controllers\api\AgendaController::class)
+    Route::resource('agenda', \App\Http\Controllers\v2\AgendaController::class)
         ->only(['index']);
 });
