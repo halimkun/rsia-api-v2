@@ -146,8 +146,18 @@ class RsiaSuratEksternalController extends Controller
 
         $oldData = $data->toArray();
 
+        if ($request->tgl_terbit != $data->tgl_terbit) {
+            $exp_nomor = explode('/', $data->no_surat);
+            $exp_nomor[3] = \Carbon\Carbon::parse($request->tgl_terbit)->format('dmy');
+            
+            $request->merge([
+                'no_surat' => implode('/', $exp_nomor),
+            ]);
+        }
+
         try {
-            $data->update($request->all());
+            // $data->update($request->all());
+            RsiaSuratEksternal::where('no_surat', $decoded_no_surat)->update($request->all());
         } catch (\Exception $e) {
             \App\Helpers\Logger\RSIALogger::berkas("UPDATE FAILED", 'error', ['data' => $request->all()]);
             return \App\Helpers\ApiResponse::error('Gagal mengupdate data surat eksternal', 'update_failed', $e->getMessage(), 500);
