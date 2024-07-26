@@ -158,7 +158,7 @@ return [
             ],
         ]),
 
-        'fcm' => array_merge($monthlyBaseConfig, [
+        'notifications' => array_merge($monthlyBaseConfig, [
             'path'  => storage_path('logs/fcm.log'),
             'level' => env('LOG_LEVEL_FCM', 'debug'),
             'with'  => [
