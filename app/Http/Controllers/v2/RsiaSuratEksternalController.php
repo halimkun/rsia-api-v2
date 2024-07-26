@@ -157,7 +157,7 @@ class RsiaSuratEksternalController extends Controller
 
         try {
             // $data->update($request->all());
-            RsiaSuratEksternal::where('no_surat', $decoded_no_surat)->update($request->all());
+            RsiaSuratEksternal::where('no_surat', $oldData['no_surat'])->update($request->except('_method'));
         } catch (\Exception $e) {
             \App\Helpers\Logger\RSIALogger::berkas("UPDATE FAILED", 'error', ['data' => $request->all()]);
             return \App\Helpers\ApiResponse::error('Gagal mengupdate data surat eksternal', 'update_failed', $e->getMessage(), 500);
