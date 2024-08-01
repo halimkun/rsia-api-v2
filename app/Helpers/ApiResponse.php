@@ -11,6 +11,14 @@ class ApiResponse
     ], 200);
   }
 
+  public static function successWithData($data, $message = null)
+  {
+    return response()->json([
+      'message' => $message,
+      'data'    => $data,
+    ], 200);
+  }
+
   public static function error($message, $error, $trace = null, $status = 400)
   {
     $resp = [
