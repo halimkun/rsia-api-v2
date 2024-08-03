@@ -9,7 +9,7 @@ class RsiaCoderNik extends Model
 {
     use HasFactory;
 
-    protected $table = 'rsia_coder_nik';
+    protected $table = 'inacbg_coder_nik';
 
     protected $guarded = [];
 
