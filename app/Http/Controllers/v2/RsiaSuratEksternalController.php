@@ -75,7 +75,7 @@ class RsiaSuratEksternalController extends Controller
         try {
             RsiaSuratEksternal::create($request->all());
         } catch (\Exception $e) {
-            \App\Helpers\Logger\RSIALogger::berkas("STORE DATA FAILED", 'error', ['data' => $request->all()]);
+            \App\Helpers\Logger\RSIALogger::berkas("STORE DATA FAILED", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
             return \App\Helpers\ApiResponse::error('Gagal menyimpan data surat eksternal', 'store_failed', $e->getMessage(), 500);
         }
 
