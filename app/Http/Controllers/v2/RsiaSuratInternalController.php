@@ -78,7 +78,7 @@ class RsiaSuratInternalController extends Controller
         try {
             RsiaSuratInternal::create($request->except('user'));
         } catch (\Exception $e) {
-            \App\Helpers\Logger\RSIALogger::berkas("STORE DATA FAILED", 'error', ['data' => $request->all()]);
+            \App\Helpers\Logger\RSIALogger::berkas("STORE DATA FAILED", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
             return \App\Helpers\ApiResponse::error('Failed to save data', 'store_failed', $e->getMessage(), 500);
         }
 
