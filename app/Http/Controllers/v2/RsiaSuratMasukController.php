@@ -211,7 +211,7 @@ class RsiaSuratMasukController extends Controller
                 }
             });
         } catch (\Exception $e) {
-            \App\Helpers\Logger\RSIALogger::berkas("UPDATE FAILED", 'error', ['old_data' => $oldData, 'data' => $request->all(), 'error' => $e->getMessage()]);
+            \App\Helpers\Logger\RSIALogger::berkas("UPDATE FAILED", 'error', ['data' => $request->all(), 'error' => $e->getMessage(), 'old_data' => $oldData]);
             return \App\Helpers\ApiResponse::error('Failed to update data', 'update_failed', $e->getMessage(), 500);
         }
 

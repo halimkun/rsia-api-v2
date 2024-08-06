@@ -181,7 +181,7 @@ class RsiaBerkasKomiteKeperawatanController extends Controller
                 $data->update($request->except(['nomor', 'tgl_terbit']));
             });
         } catch (\Exception $e) {
-            \App\Helpers\Logger\RSIALogger::berkas("UPDATE FAILED", 'error', ['data' => $request->all(), 'error' => $e->getMessage()]);
+            \App\Helpers\Logger\RSIALogger::berkas("UPDATE FAILED", 'error', ['data' => $request->all(), 'error' => $e->getMessage(), 'old_data' => $oldData]);
             return \App\Helpers\ApiResponse::error("failed to update data", "update_failed", $e->getMessage(), 500);
         }
         
