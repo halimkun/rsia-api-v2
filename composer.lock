@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "2c715a06e3bc3ac500aac8f07ba3f0a1",
+    "content-hash": "b909f444b15f1e5e1ace70a42def2902",
     "packages": [
         {
             "name": "asm89/stack-cors",
@@ -2328,6 +2328,75 @@
                 }
             ],
             "time": "2024-07-18T11:15:46+00:00"
+        },
+        {
+            "name": "halim/laravel-eklaim-api",
+            "version": "v1.0.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/halimkun/laravel-eklaim-api.git",
+                "reference": "d379ebc7dc564393e8a2d24c5f654e94f8d5647d"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/halimkun/laravel-eklaim-api/zipball/d379ebc7dc564393e8a2d24c5f654e94f8d5647d",
+                "reference": "d379ebc7dc564393e8a2d24c5f654e94f8d5647d",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/console": ">=5.7",
+                "illuminate/http": ">=5.7",
+                "illuminate/support": ">=5.7",
+                "php": "^7.3|^8.0|^8.1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Halim\\EKlaim\\Providers\\EKlaimServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Halim\\EKlaim\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Faisal Halim",
+                    "email": "ffaisalhalim@gmail.com",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Ferry Ardiansyah",
+                    "email": "ferard.diansyah@gmail.com"
+                },
+                {
+                    "name": "Muchron Syafiqih",
+                    "email": "msfiqih@gmail.com"
+                }
+            ],
+            "description": "A Laravel package to simplify the integration with BPJS e-Klaim web service. This package helps developers build APIs to interact with the e-Klaim system, providing features such as custom SHA-256 encryption and decryption, type-checking for incoming data, and more.",
+            "keywords": [
+                "api",
+                "bpjs",
+                "e-klaim",
+                "eklaim",
+                "healthcare",
+                "laravel",
+                "php",
+                "webservice"
+            ],
+            "support": {
+                "issues": "https://github.com/halimkun/laravel-eklaim-api/issues",
+                "source": "https://github.com/halimkun/laravel-eklaim-api/tree/v1.0.2"
+            },
+            "time": "2024-08-07T06:36:47+00:00"
         },
         {
             "name": "kreait/firebase-php",

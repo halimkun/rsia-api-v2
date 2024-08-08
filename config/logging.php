@@ -165,6 +165,14 @@ return [
                 'filename' => storage_path('logs/fcm.log'),
             ],
         ]),
+        
+        'inacbg_cost_compare' => array_merge($monthlyBaseConfig, [
+            'path'  => storage_path('logs/inacbg_cost_compare.log'),
+            'level' => env('LOG_LEVEL_FCM', 'debug'),
+            'with'  => [
+                'filename' => storage_path('logs/inacbg_cost_compare.log'),
+            ],
+        ]),
     ],
 
 ];

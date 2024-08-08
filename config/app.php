@@ -169,7 +169,7 @@ return [
         Rap2hpoutre\LaravelLogViewer\LaravelLogViewerServiceProvider::class,
         Kreait\Laravel\Firebase\ServiceProvider::class,
         Illuminate\Notifications\NotificationServiceProvider::class,
-        // FaisalHalim\LaravelEklaimApi\Providers\EKlaimServiceProvider::class,
+        Halim\EKlaim\Providers\EKlaimServiceProvider::class,
 
         /*
          * Application Service Providers...

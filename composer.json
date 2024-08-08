@@ -10,6 +10,7 @@
         "corbosman/laravel-passport-claims": "^3.0",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
+        "halim/laravel-eklaim-api": "^1.0",
         "kreait/firebase-php": "^6.9",
         "kreait/laravel-firebase": "^4.2",
         "laravel-notification-channels/fcm": "^2.7",
