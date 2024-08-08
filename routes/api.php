@@ -49,7 +49,7 @@ Route::middleware(['claim:role,pegawai|dokter|pasien'])->prefix('notification')-
     Route::delete('/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy']);
 
     Route::middleware(['user-aes'])->group(function () {
-        Route::post('test', function(Request $request) {
+        Route::post('test', function (Request $request) {
             \App\Jobs\JadwalPraktikDokter::dispatch('perubahan_jadwal_dokter', ['067989'], collect($request->all()));
         });
         Route::post('send', [\App\Http\Controllers\v2\NotificationController::class, 'send']);
@@ -65,3 +65,5 @@ foreach ($files as $file) {
         require_once __DIR__ . '/partials/' . $file;
     }
 }
+
+require_once __DIR__ . '/eklaim-api.php';
