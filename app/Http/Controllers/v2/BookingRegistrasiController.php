@@ -59,6 +59,38 @@ class BookingRegistrasiController extends Controller
             return ApiResponse::error('Pasien sudah memiliki booking pada tanggal tersebut', 'already_booked', null, 400);
         }
 
+        $jadwal = new \App\Models\JadwalPoli();
+
+        // check limit kuota
+        $countBooking = $booking->where('tanggal_periksa', $request->tanggal_periksa)
+            ->where('kd_poli', $request->kd_poli)
+            ->where('kd_dokter', $request->kd_dokter)
+            ->count();
+
+        // get hari in indonesia from tgl_periksa
+        $hari = Carbon::parse($request->tanggal_periksa)->translatedFormat('l');
+
+        $dataJadwal = $jadwal->where('kd_dokter', $request->kd_dokter)
+            ->where('kd_poli', $request->kd_poli)
+            ->where('hari_kerja', strtoupper($hari))
+            ->first();
+
+        if ($dataJadwal->kuota == 0) {
+            return ApiResponse::error('Kuota pemeriksaan sudah habis, anda bisa booking di jadwal berbeda.', 'kuota_empty', null, 400);
+        }
+
+        if ($countBooking >= $dataJadwal->kuota) {
+            return ApiResponse::error('Kuota pemeriksaan sudah penuh, anda bisa booking di jadwal berbeda.', 'kuota_full', null, 400);
+        }
+
+        // check diff jam
+        $now = Carbon::now();
+        $jamPraktek = Carbon::parse($dataJadwal->jam_mulai);
+
+        if ($now->diffInHours($jamPraktek) >= 6) {
+            return ApiResponse::error("Maksimal booking 6 jam sebelum mulai praktik ( $dataJadwal->jam_mulai WIB).", 'time_limit', null, 400);
+        }
+
         \Illuminate\Support\Facades\DB::transaction(function () use ($request, $booking) {
             // get the last no_reg for the date of tanggal_periksa
             $lastNoReg = $booking->where('tanggal_periksa', $request->tanggal_periksa)
@@ -72,7 +104,7 @@ class BookingRegistrasiController extends Controller
                 ->first();
 
             if ($lastRegistrasi) {
-                $lastPasienByRegistrasi = explode('/', $lastRegistrasi->no_rawat); 
+                $lastPasienByRegistrasi = explode('/', $lastRegistrasi->no_rawat);
                 $lastPasienByRegistrasi = end($lastPasienByRegistrasi);
             } else {
                 $lastPasienByRegistrasi = 0;
