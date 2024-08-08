@@ -141,4 +141,9 @@ class BridgingSep extends Model
     {
         return $this->belongsTo(KamarInap::class, 'no_rawat', 'no_rawat')->select('no_rawat', '');
     }
+
+    public function pasien()
+    {
+        return $this->belongsTo(Pasien::class, 'nomr', 'no_rkm_medis')->select('no_rkm_medis', 'nm_pasien', 'tgl_lahir', 'jk', 'no_peserta', 'kd_pj');
+    }
 }
