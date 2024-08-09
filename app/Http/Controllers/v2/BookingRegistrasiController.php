@@ -51,8 +51,11 @@ class BookingRegistrasiController extends Controller
         $booking = new \App\Models\BookingRegistrasi();
 
         // check if the patient already has a booking
-        $existingBooking = $booking->where('no_rkm_medis', $request->no_rkm_medis)
+        $existingBooking = $booking->with('regPeriksa')->where('no_rkm_medis', $request->no_rkm_medis)
             ->where('tanggal_periksa', $request->tanggal_periksa)
+            ->whereHas('regPeriksa', function ($query) {
+                $query->whereNotIn('stts', ['Batal', 'Dirujuk', 'Meninggal']);
+            })
             ->first();
 
         if ($existingBooking) {
@@ -84,10 +87,11 @@ class BookingRegistrasiController extends Controller
         }
 
         // check diff jam
-        $now = Carbon::now();
-        $jamPraktek = Carbon::parse($dataJadwal->jam_mulai);
+        $now         = Carbon::now();
+        $jamPraktek  = Carbon::parse($request->tanggal_periksa . ' ' . $dataJadwal->jam_mulai);
 
-        if ($now->diffInHours($jamPraktek) >= 6) {
+        // jika sekarang lebih dari jam praktek atau lebih dari 6 jam sebelum jam praktek
+        if ($now->gt($jamPraktek) || $now->diffInHours($jamPraktek) <= 6) {
             return ApiResponse::error("Maksimal booking 6 jam sebelum mulai praktik ( $dataJadwal->jam_mulai WIB).", 'time_limit', null, 400);
         }
 
@@ -208,6 +212,42 @@ class BookingRegistrasiController extends Controller
     public function destroy($id)
     {
         // 
+    }
+
+    public function batal(Request $request)
+    {
+        $request->validate([
+            'no_rawat' => 'required|exists:reg_periksa,no_rawat',
+        ]);
+
+        $user       = $request->user();
+        $regPeriksa = \App\Models\RegPeriksa::where('no_rawat', $request->no_rawat)->where('stts', "<>", "Batal")->first();
+
+        if (!$regPeriksa) {
+            return ApiResponse::error('Data booking tidak ditemukan', 'resource_not_found', null, 404);
+        }
+
+        if ($user->no_rkm_medis !== $regPeriksa->no_rkm_medis) {
+            return ApiResponse::error('Anda tidak memiliki akses untuk membatalkan booking ini', 'unauthorized', null, 401);
+        }
+
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($request, $regPeriksa) {
+                $regPeriksa->update(['stts' => 'Batal']);
+                
+                \App\Models\BookingRegistrasi::where('no_rkm_medis', $regPeriksa->no_rkm_medis)
+                    ->where('tanggal_periksa', $regPeriksa->tgl_registrasi)
+                    ->delete();
+                    
+            }, 5);
+
+            // NEED LOGS HERE
+        } catch (\Exception $e) {
+            // NEED LOGS HERE
+            return ApiResponse::error('Gagal membatalkan booking', 'failed', null, 500);
+        }
+
+        return ApiResponse::success('Booking berhasil dibatalkan');
     }
 
     /**
