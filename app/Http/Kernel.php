@@ -71,9 +71,12 @@ class Kernel extends HttpKernel
 
         // Laravel Passport Claim Middleware
         'claim'             => \App\Http\Middleware\CheckForClaim::class,
-        
-        // Pasien Middleware
+
+        // User & Pasien Middleware
         'pasien'            => \App\Http\Middleware\PasienMiddleware::class,
         'user-aes'          => \App\Http\Middleware\UserMiddleware::class,
+
+        // Custom User Middleware
+        'custom-user'       => \App\Http\Middleware\CustomUserMiddleware::class,
     ];
 }
