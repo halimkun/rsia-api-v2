@@ -2,11 +2,15 @@
     "name": "laravel/laravel",
     "type": "project",
     "description": "The Laravel Framework.",
-    "keywords": ["framework", "laravel"],
+    "keywords": [
+        "framework",
+        "laravel"
+    ],
     "license": "MIT",
     "require": {
         "php": "^7.3|^8.0",
         "awobaz/compoships": "^2.3",
+        "barryvdh/laravel-dompdf": "^2.2",
         "corbosman/laravel-passport-claims": "^3.0",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
