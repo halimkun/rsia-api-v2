@@ -106,40 +106,84 @@ class Pegawai extends Model
 
     protected $guarded = ['id'];
 
-    
 
+    /**
+     * Departemen data
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * */
     public function dep()
     {
         return $this->belongsTo(Departemen::class, 'departemen', 'dep_id');
     }
 
+    /**
+     * Berkas data
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * */
     public function berkas()
     {
         return $this->hasMany(BerkasPegawai::class, 'nik', 'nik');
     }
 
+    /**
+     * Rekap presensi data
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * */
     public function presensi()
     {
         return $this->hasMany(RekapPresensi::class, 'id', 'id');
     }
 
+    /**
+     * Petugas data
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * */
     public function petugas()
     {
         return $this->belongsTo(Petugas::class, 'nik', 'nip');
     }
 
+    /**
+     * Email pegawai data
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * */
     public function email()
     {
         return $this->belongsTo(RsiaEmailPegawai::class, 'nik', 'nik');
     }
 
+    /**
+     * Status kerja data
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * */
     public function statusKerja()
     {
         return $this->belongsTo(SttsKerja::class, 'stts_kerja', 'stts');
     }
 
+    /**
+     * Undangan pegawai data
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * */
     public function undangan()
     {
         return $this->hasMany(RsiaPenerimaUndangan::class, 'penerima', 'nik');
+    }
+
+    /**
+     * Cuti pegawai data
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * */
+    public function cuti()
+    {
+        return $this->hasMany(RsiaCuti::class, 'nik', 'nik');
     }
 }
