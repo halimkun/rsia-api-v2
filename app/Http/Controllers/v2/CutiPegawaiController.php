@@ -54,6 +54,10 @@ class CutiPegawaiController extends Controller
 
         $pegawai = \App\Models\Pegawai::where('nik', $nik)->first();
 
+        if (!$pegawai) {
+            return ApiResponse::error('Pegawai tidak ditemukan', "resource_not_found", null, 404);
+        }
+
         $data = [
             'id_pegawai'        => $pegawai->id_pegawai,
             'nik'               => $nik,
