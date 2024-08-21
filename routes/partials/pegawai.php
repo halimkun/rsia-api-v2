@@ -10,6 +10,13 @@ Route::middleware(['user-aes', 'claim:role,pegawai'])->group(function () {
     ->parameters(['pegawai' => 'nik']);
 
   // ==================== UPDATE PROFILE PEGAWAI
+  Orion::belongsToManyResource('pegawai', 'cuti', \App\Http\Controllers\Orion\CutiPegawaiController::class)->only(['search'])->parameters(['pegawai' => 'nik', 'cuti' => 'id_cuti']);
+  Route::get('pegawai/{nik}/cuti/counter', [\App\Http\Controllers\v2\CutiPegawaiController::class, 'counterCuti'])
+    ->name('pegawai.cuti.counter');
+  Route::apiResource('pegawai.cuti', \App\Http\Controllers\v2\CutiPegawaiController::class)->except(['create', 'edit'])
+    ->parameters(['pegawai' => 'nik', 'cuti' => 'id_cuti']);
+
+  // ==================== UPDATE PROFILE PEGAWAI
   Route::post('pegawai/{pegawai}/profile', [\App\Http\Controllers\v2\PegawaiController::class, 'updateProfile'])
     ->name('pegawai.update-profile');
 
@@ -27,5 +34,4 @@ Route::middleware(['user-aes', 'claim:role,pegawai'])->group(function () {
   // ==================== PRESENSI PEGAWAI
   Orion::belongsToManyResource('pegawai', 'presensi', \App\Http\Controllers\Orion\PresensiKaryawanController::class)->only(['index', 'search']);
   Route::resource('pegawai/{pegawai}/presensi/temporary', \App\Http\Controllers\v2\RsiaTemporaryPresensiController::class)->only(['index']);
-
 });
