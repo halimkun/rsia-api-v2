@@ -18,7 +18,7 @@ class RsiaFileManagerController extends Controller
      */
     public function index()
     {
-        $data = RsiaFileManager::paginate(10);
+        $data = RsiaFileManager::paginate(25);
         return new \App\Http\Resources\RealDataCollection($data);
     }
 
