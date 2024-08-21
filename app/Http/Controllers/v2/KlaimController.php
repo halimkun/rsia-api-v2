@@ -91,9 +91,10 @@ class KlaimController extends Controller
 
         // ==================================================== PARSE DATA
 
+        // random no_ik from rsia_coder_nik
         $required = [
             "nomor_sep"     => $sep,
-            "coder_nik"     => $request->coder_nik,
+            "coder_nik"     => $request->coder_nik ?? \App\Models\RsiaCoderNik::all()->random()->no_ik,
             "payor_id"      => $request->payor_id,
             "payor_cd"      => $request->payor_cd
         ];
