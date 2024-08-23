@@ -17,27 +17,39 @@ class RsiaOtpController extends Controller
     public function createOtp(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'app_id' => 'required|string|max:100',
-            'nik'    => 'required|string|max:50',
+            'app_id' => 'required|exists:oauth_clients,id',
         ]);
 
         if ($validator->fails()) {
             return ApiResponse::validationError($validator->errors());
         }
 
+        $client = \DB::table('oauth_clients')->where('id', $request->app_id)->first();
+
+        if ($client->revoked) {
+            return ApiResponse::error("Client revoked", "client_revoked", null, 422);
+        }
+
+        if ($client->password_client) {
+            return ApiResponse::error("Client is confidential", "client_confidential", null, 422);
+        }
+
         // Generate 6-digit OTP
         $otpCode = random_int(100000, 999999);
+
+        // TODO : Send OTP via SMS or email or whatever
+        \Log::info("OTP: $otpCode");
 
         // Create OTP
         $otp = RsiaOtp::createOtp([
             'app_id'     => $request->app_id,
-            'nik'        => $request->nik,
+            'nik'        => $request->user()->id_user,
             'otp'        => $otpCode,
             'expired_at' => now()->addHour(),
         ]);
 
         // Return OTP for demonstration purposes (in production, send it via SMS/email)
-        return ApiResponse::successWithData(['otp_code' => $otpCode, 'expired_at' => $otp->expired_at], "OTP created successfully");
+        return \App\Http\Resources\RealDataResource::make($otp);
     }
 
     /**
@@ -46,9 +58,8 @@ class RsiaOtpController extends Controller
     public function verifyOtp(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'app_id' => 'required|string|max:100',
-            'nik'    => 'required|string|max:50',
-            'otp'    => 'required|string|max:6',
+            'app_id' => 'required|max:100',
+            'otp'    => 'required|max:6',
         ]);
 
         if ($validator->fails()) {
@@ -57,11 +68,12 @@ class RsiaOtpController extends Controller
 
         // Get the OTP record
         $otp = RsiaOtp::where('app_id', $request->app_id)
-            ->where('nik', $request->nik)
+            ->where('nik', $request->user()->id_user)
+            ->orderBy('created_at', 'desc')
             ->first();
 
         if (!$otp) {
-            return ApiResponse::notFound("OTP not found or invalid");
+            return ApiResponse::notFound("OTP invalid");
         }
 
         // Check if the OTP is valid
@@ -88,8 +100,7 @@ class RsiaOtpController extends Controller
     public function resendOtp(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'app_id' => 'required|string|max:100',
-            'nik'    => 'required|string|max:50',
+            'app_id' => 'required|exists:oauth_clients,id',
         ]);
 
         if ($validator->fails()) {
@@ -98,11 +109,12 @@ class RsiaOtpController extends Controller
 
         // Find existing OTP
         $otp = RsiaOtp::where('app_id', $request->app_id)
-            ->where('nik', $request->nik)
+            ->where('nik', $request->user()->id_user)
             ->where('is_used', false)
             ->first();
 
         if ($otp && $otp->expired_at > now()) {
+            // TODO : Resend OTP via SMS or email or whatever
             return ApiResponse::error("An OTP is already active", "otp_active", null, 422);
         }
 

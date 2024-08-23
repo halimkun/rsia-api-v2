@@ -17,7 +17,7 @@ class RsiaOtp extends Migration
             $table->id();
             $table->string('app_id', 100);
             $table->string('nik', 50);
-            $table->string('otp', 6);
+            $table->string('otp', 255);
             $table->timestamp('expired_at');
             $table->boolean('is_used')->default(false);
             $table->timestamps();

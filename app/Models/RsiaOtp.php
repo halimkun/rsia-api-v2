@@ -27,6 +27,8 @@ class RsiaOtp extends Model
         'is_used',
     ];
 
+    protected $hidden = ['id'];
+
     /**
      * The attributes that should be cast.
      *

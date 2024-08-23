@@ -1,8 +1,8 @@
 <?php
 
-use App\Jobs\SendFcmNotificationTemplate;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\v2\RsiaOtpController;
 
 /*
 |--------------------------------------------------------------------------
@@ -56,6 +56,15 @@ Route::middleware(['claim:role,pegawai|dokter|pasien'])->prefix('notification')-
         Route::post('with-template', [\App\Http\Controllers\v2\NotificationController::class, 'withTemplate']);
     });
 });
+
+// ========== OTP ==========
+Route::prefix('otp')->middleware(['custom-user', 'claim:role,pegawai|dokter|pasien'])->group(function () {
+    Route::post('create', [RsiaOtpController::class, 'createOtp']);
+    Route::post('verify', [RsiaOtpController::class, 'verifyOtp']);
+    Route::post('resend', [RsiaOtpController::class, 'resendOtp']);
+    Route::middleware(['claim:dep,IT'])->post('invalidate-expired', [RsiaOtpController::class, 'invalidateExpiredOtps']);
+});
+// ======== END OTP ========
 
 $files = scandir(__DIR__ . '/partials');
 foreach ($files as $file) {
