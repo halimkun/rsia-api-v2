@@ -34,18 +34,24 @@ class RsiaOtpController extends Controller
             return ApiResponse::error("Client is confidential", "client_confidential", null, 422);
         }
 
+        $petugas = \App\Models\Petugas::where('nip', $request->user()->id_user)->first();
+
+        if (!$petugas) {
+            return ApiResponse::error("Petugas not found", "petugas_not_found", null, 404);
+        }
+
         // Generate 6-digit OTP
         $otpCode = random_int(100000, 999999);
+        $message = "Ini adalah kode OTP anda dari aplikasi *MESSA* untuk mengakses menu _jasa pelayanan_ (JASPEL) RSIA Aisyiyah Pekajangan, \n*KODE :* `$otpCode` \n\nKode ini hanya berlaku 5 menit, jangan berikan kode ini kepada siapapun.";
 
-        // TODO : Send OTP via SMS or email or whatever
-        \Log::info("OTP: $otpCode");
+        \App\Jobs\SendWhatsApp::dispatch($this->buildNumberWithCountryCode($petugas->no_telp), $message)->onQueue('otp')->delay(now()->addSeconds(random_int(10, 60)));
 
         // Create OTP
         $otp = RsiaOtp::createOtp([
             'app_id'     => $request->app_id,
             'nik'        => $request->user()->id_user,
             'otp'        => $otpCode,
-            'expired_at' => now()->addHour(),
+            'expired_at' => now()->addMinutes(10),
         ]);
 
         // Return OTP for demonstration purposes (in production, send it via SMS/email)
@@ -107,18 +113,27 @@ class RsiaOtpController extends Controller
             return ApiResponse::validationError($validator->errors());
         }
 
-        // Find existing OTP
-        $otp = RsiaOtp::where('app_id', $request->app_id)
-            ->where('nik', $request->user()->id_user)
-            ->where('is_used', false)
-            ->first();
+        // // Find existing OTP
+        // $otp = RsiaOtp::where('app_id', $request->app_id)
+        //     ->where('nik', $request->user()->id_user)
+        //     ->where('is_used', false)
+        //     ->first();
 
-        if ($otp && $otp->expired_at > now()) {
-            // TODO : Resend OTP via SMS or email or whatever
-            return ApiResponse::error("An OTP is already active", "otp_active", null, 422);
-        }
+        // if ($otp && $otp->expired_at > now()) {
+        //     return ApiResponse::error("An OTP is already active", "otp_active", null, 422);
+        // }
 
         // Generate a new OTP
         return $this->createOtp($request);
+    }
+
+    private function buildNumberWithCountryCode($number)
+    {
+        if (strlen($number) < 10 || strlen($number) > 13) {
+            \Log::error("Invalid phone number: " . $number);
+            throw new \Exception("Invalid phone number");
+        }
+
+        return Str::startsWith($number, '0') ? '62' . substr($number, 1) : $number;
     }
 }
