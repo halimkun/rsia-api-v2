@@ -206,7 +206,7 @@ class RsiaSpoController extends \Orion\Http\Controllers\Controller
         ];
 
         \Illuminate\Support\Facades\DB::transaction(function () use ($entity, $detailData) {
-            $entity->detail()->update($detailData);
+            $entity->detail()->updateOrCreate(['nomor' => $entity->nomor], $detailData);
         }, 5);
     }
 
