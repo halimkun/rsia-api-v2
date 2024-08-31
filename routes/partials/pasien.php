@@ -31,6 +31,10 @@ Route::middleware(['claim:role,pegawai|dokter|pasien'])->prefix('pasien')->group
     Orion::resource('diagnosa', \App\Http\Controllers\Orion\DiagnosaPasienController::class)->only('search')
         ->parameters(['' => 'base64_no_rawat']);
 
+    // ==================== PROSEDUR
+    Orion::resource('prosedur', \App\Http\Controllers\Orion\ProsedurPasienController::class)->only('search')
+        ->parameters(['' => 'base64_no_rawat']);
+
     Route::middleware(['user-aes'])->group(function () {
         // ==================== PASIEN RAWAT INAP
         Route::resource('ranap', \App\Http\Controllers\v2\PasienRawatInapController::class)->only('index');
