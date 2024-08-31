@@ -25,7 +25,7 @@ class ShowKamarInapCollection extends ResourceCollection
         // Hitung selisih waktu dalam menit
         $diffMinutes = $masuk->diffInMinutes($keluar);
         
-        $days   = ceil($diffMinutes / (60 * 24));
+        $days   = ceil($diffMinutes / (60 * 24)) + 1;
         $durasi = sprintf("%02d:%02d", floor($diffMinutes / 60), $diffMinutes % 60);
 
         // map the collection to get the data
