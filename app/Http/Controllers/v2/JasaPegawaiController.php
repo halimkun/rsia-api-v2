@@ -9,6 +9,12 @@ class JasaPegawaiController extends Controller
 {
     public function jm($nik, Request $request)
     {
+        if ($nik != $request->user()->id_user) {
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
         $jasaMedis = \App\Models\JasaMedis::with(['pegawai' => function ($q) {
             $q->select('nik', 'nama');
         }])->where('kd_dokter', $nik)
@@ -21,6 +27,12 @@ class JasaPegawaiController extends Controller
 
     public function jaspel($nik, Request $request)
     {
+        if ($nik != $request->user()->id_user) {
+            return response()->json([
+                'message' => 'Unauthorized'
+            ], 401);
+        }
+
         $jasaPelayanan = \App\Models\JasaPelayanan::with(['pegawai' => function ($q) {
             $q->select('nik', 'nama');
         }, 'jasa_pelayanan_akun' => function ($q) {
