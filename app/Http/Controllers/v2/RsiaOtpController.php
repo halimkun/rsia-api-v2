@@ -41,8 +41,8 @@ class RsiaOtpController extends Controller
         }
 
         // Generate 6-digit OTP
-        $otpCode = random_int(100000, 999999);
-        $message = "Ini adalah kode OTP anda dari aplikasi *MESSA* untuk mengakses menu _jasa pelayanan_ (JASPEL) RSIA Aisyiyah Pekajangan, \n*KODE :* `$otpCode` \n\nKode ini hanya berlaku 5 menit, jangan berikan kode ini kepada siapapun.";
+        $otpCode = random_int(1000, 9999);
+        $message = "Ini adalah kode OTP anda dari aplikasi *MESSA* untuk mengakses menu _jasa pelayanan_ (JASPEL) RSIA Aisyiyah Pekajangan, \n*KODE :* `$otpCode` \n\nKode ini hanya berlaku 8 menit, jangan berikan kode ini kepada siapapun.";
 
         \App\Jobs\SendWhatsApp::dispatch($this->buildNumberWithCountryCode($petugas->no_telp), $message)->onQueue('otp')->delay(now()->addSeconds(random_int(10, 60)));
 
@@ -51,7 +51,7 @@ class RsiaOtpController extends Controller
             'app_id'     => $request->app_id,
             'nik'        => $request->user()->id_user,
             'otp'        => $otpCode,
-            'expired_at' => now()->addMinutes(10),
+            'expired_at' => now()->addMinutes(15),
         ]);
 
         // Return OTP for demonstration purposes (in production, send it via SMS/email)
