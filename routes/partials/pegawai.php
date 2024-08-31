@@ -25,6 +25,10 @@ Route::middleware(['user-aes', 'claim:role,pegawai'])->group(function () {
     ->except(['create', 'edit'])
     ->parameters(['pegawai' => 'nik', 'berkas' => 'kode_berkas']);
 
+  // ==================== JASA PEGAWAI
+  Route::get('pegawai/{nik}/jasa/medis', [\App\Http\Controllers\v2\JasaPegawaiController::class, 'jm'])->middleware(['custom-user'])->name('pegawai.jasa-medis');
+  Route::get('pegawai/{nik}/jasa/pelayanan', [\App\Http\Controllers\v2\JasaPegawaiController::class, 'jaspel'])->middleware(['custom-user'])->name('pegawai.jasa-pelayanan');
+
   // ==================== JADWAL PEGAWAI
   Orion::resource('pegawai.jadwal', \App\Http\Controllers\Orion\JadwalPegawaiController::class)->only('search')
     ->parameters(['pegawai' => 'nik', 'jadwal' => 'id']);
