@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers\v2;
 
-use App\Helpers\ApiResponse;
-use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Halim\EKlaim\Builders\BodyBuilder;
 use Halim\EKlaim\Services\EklaimService;
@@ -104,7 +102,7 @@ class KlaimController extends Controller
         BodyBuilder::setMetadata('set_claim_data', ["nomor_sep" => $sep]);
         BodyBuilder::setData($data);
 
-        return EklaimService::send(BodyBuilder::prepared())->then(function ($response) use ($sep) {
+        return EklaimService::send(BodyBuilder::prepared())->then(function ($response) use ($sep, $data) {
             \Log::channel(config('eklaim.log_channel'))->info("Set klaim data success", [
                 "sep"      => $sep,
                 "data"     => json_decode(json_encode(BodyBuilder::prepared()), true),
@@ -140,7 +138,12 @@ class KlaimController extends Controller
                 $hasilGrouping = $gr2->getData();
             }
             // ==================================================== END OF GROUPING STAGE 1 & 2
-            
+
+            // ==================================================== SAVE DATAS
+            $this->saveDiagnosaAndProcedures($data);
+            $this->saveChunksData($data);
+            // ==================================================== END OF SAVE DATAS
+
             try {
                 $groupingData = [
                     "no_sep"    => $sep,
@@ -190,5 +193,62 @@ class KlaimController extends Controller
                 "data"     => $dataToSave
             ]);
         }
+    }
+
+    private function saveChunksData($klaim_data)
+    {
+        \Illuminate\Support\Facades\DB::transaction(function () use ($klaim_data) {
+            \App\Models\RsiaGroupingChunks::updateOrCreate(['no_sep' => $klaim_data['nomor_sep']], [
+                'cara_masuk'      => $klaim_data['cara_masuk'],
+                'usia_kehamilan'  => $klaim_data['persalinan']['usia_kehamilan'] ?? null,
+                'onset_kontraksi' => $klaim_data['persalinan']['onset_kontraksi'],
+            ]);
+        }, 5);
+    }
+
+    private function saveDiagnosaAndProcedures($klaim_data)
+    {
+        $explodedDiagnosa = explode("#", $klaim_data['diagnosa']);
+        $explodedProcedures = explode("#", $klaim_data['procedure']);
+
+        $no_rawat = \App\Models\BridgingSep::where('no_sep', $klaim_data['nomor_sep'])->first()->no_rawat;
+
+        if (!$no_rawat) {
+            \Log::channel(config('eklaim.log_channel'))->error("No rawat not found", [
+                "no_sep"     => $klaim_data['nomor_sep'],
+                "diag"       => $explodedDiagnosa,
+                "procedures" => $explodedProcedures
+            ]);
+            return;
+        }
+
+        // save diagnosa on transaction, first delete all diagnosa, then insert new diagnosa with priority. priority is the index + 1 of the array
+        \Illuminate\Support\Facades\DB::transaction(function () use ($explodedDiagnosa, $no_rawat, $klaim_data) {
+            \App\Models\DiagnosaPasien::where('no_rawat', $no_rawat)->delete();
+
+            foreach ($explodedDiagnosa as $key => $diagnosa) {
+                \App\Models\DiagnosaPasien::create([
+                    "no_rawat"    => $no_rawat,
+                    "kd_penyakit" => $diagnosa,
+                    "status"      => $klaim_data['jenis_rawat'] == 1 ? "Ranap" : "Ralan",
+                    "prioritas"   => $key + 1
+                ]);
+            }
+        }, 5);
+
+
+        // save procedures on transaction, first delete all procedures, then insert new procedures with priority. priority is the index + 1 of the array
+        \Illuminate\Support\Facades\DB::transaction(function () use ($explodedProcedures, $no_rawat, $klaim_data) {
+            \App\Models\ProsedurPasien::where('no_rawat', $no_rawat)->delete();
+
+            foreach ($explodedProcedures as $key => $procedure) {
+                \App\Models\ProsedurPasien::create([
+                    "no_rawat"  => $no_rawat,
+                    "kode"      => $procedure,
+                    "status"    => $klaim_data['jenis_rawat'] == 1 ? "Ranap" : "Ralan",
+                    "prioritas" => $key + 1
+                ]);
+            }
+        }, 5);
     }
 }

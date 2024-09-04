@@ -119,31 +119,80 @@ use Illuminate\Database\Eloquent\Model;
  */
 class BridgingSep extends Model
 {
+    /**
+     * The table associated with the model
+     * 
+     * @var string
+     * */
     protected $table = 'bridging_sep';
 
+    /**
+     * The primary key associated with the table
+     * 
+     * @var string
+     * */
     protected $primaryKey = 'no_sep';
 
+    /**
+     * Indicates if the model's ID is auto-incrementing
+     * 
+     * @var bool
+     * */
     public $incrementing = false;
 
+    /**
+     * Indicates if the model should be timestamped
+     * 
+     * @var bool
+     * */
     public $timestamps = false;
 
+    /**
+     * The attributes that are mass assignable
+     * 
+     * @var array
+     * */
     protected $casts = [
         'no_rawat' => 'string',
     ];
 
-    
+    /**
+     * Get the reg_periksa that owns the BridgingSep
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * */
     public function reg_periksa()
     {
         return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'tgl_registrasi', 'jam_reg');
     }
 
+    /**
+     * Get the kamar_inap that owns the BridgingSep
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * */
     public function kamar_inap()
     {
         return $this->belongsTo(KamarInap::class, 'no_rawat', 'no_rawat')->select('no_rawat', '');
     }
 
+    /**
+     * Get the pasien that owns the BridgingSep
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * */
     public function pasien()
     {
         return $this->belongsTo(Pasien::class, 'nomr', 'no_rkm_medis')->select('no_rkm_medis', 'nm_pasien', 'tgl_lahir', 'jk', 'no_peserta', 'kd_pj');
+    }
+
+    /**
+     * Get the rsia_grouping_chunks that owns the BridgingSep
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * */
+    public function chunk()
+    {
+        return $this->belongsTo(RsiaGroupingChunks::class, 'no_sep', 'no_sep');
     }
 }
