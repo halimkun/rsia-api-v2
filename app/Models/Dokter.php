@@ -64,7 +64,6 @@ class Dokter extends Model
 
     public $timestamps = false;
 
-
     public function jadwal()
     {
         return $this->hasMany(JadwalPoli::class, 'kd_dokter', 'kd_dokter');
@@ -77,7 +76,6 @@ class Dokter extends Model
 
     public function pegawai()
     {
-        return $this->belongsTo(Pegawai::class, 'kd_dokter', 'nik')
-            ->select('nik', 'nama', 'jk' ,'photo');
+        return $this->belongsTo(Pegawai::class, 'kd_dokter', 'nik')->select('id', 'nik', 'nama', 'jk' ,'photo');
     }
 }

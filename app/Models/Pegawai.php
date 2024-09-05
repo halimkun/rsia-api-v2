@@ -186,4 +186,9 @@ class Pegawai extends Model
     {
         return $this->hasMany(RsiaCuti::class, 'nik', 'nik');
     }
+
+    public function sidikjari()
+    {
+        return $this->hasOne(SidikJari::class, 'id', 'id');
+    }
 }
