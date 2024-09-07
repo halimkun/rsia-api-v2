@@ -110,9 +110,24 @@ class RsiaUndanganController extends Controller
     {
         try {
             $no_surat = base64_decode($base64_no_surat);
+            $undangan = RsiaPenerimaUndangan::where('no_surat', $no_surat)->first();
+
+            if (!$undangan) {
+                return response()->json(['message' => 'Data tidak ditemukan'], 404);
+            }
+
+            $model = new $undangan->model;
+            $undangan = $model->find($no_surat);
+
+            if (!$undangan) {
+                return response()->json(['message' => 'Data tidak ditemukan'], 404);
+            }
+
             $notulen = RsiaNotulen::where('no_surat', $no_surat)->with('notulis')->first();
+
+            $undangan->notulen = $notulen;
             
-            return new \App\Http\Resources\RealDataResource($notulen);
+            return new \App\Http\Resources\RealDataResource($undangan);
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()], 500);
         }
