@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Awobaz\Compoships\Compoships;
 use Illuminate\Database\Eloquent\Model;
 use Thiagoprz\CompositeKey\HasCompositeKey;
 
@@ -26,7 +27,7 @@ use Thiagoprz\CompositeKey\HasCompositeKey;
  */
 class RsiaPenerimaUndangan extends Model
 {
-    use HasCompositeKey;
+    use HasCompositeKey, Compoships;
 
     protected $table = 'rsia_penerima_undangan';
 
@@ -41,12 +42,16 @@ class RsiaPenerimaUndangan extends Model
     protected $casts = [
         'no_surat' => 'string',
         'penerima' => 'string',
-        'tipe' => 'string',
-        'model' => 'string',
+        'tipe'     => 'string',
+        'model'    => 'string',
     ];
 
 
-    // detail penerima
+    public function pegawai()
+    {
+        return $this->belongsTo(Pegawai::class, 'penerima', 'nik')->select('nik', 'nama', 'jbtn', 'departemen', 'bidang');
+    }
+    
     public function detail()
     {
         return $this->belongsTo(Pegawai::class, 'penerima', 'nik')->select('nik', 'nama', 'jbtn', 'departemen', 'bidang');
@@ -79,5 +84,10 @@ class RsiaPenerimaUndangan extends Model
     public function scopeWithDetail($query)
     {
         return $query->with(['relatedModel', 'detail']);
+    }
+
+    public function kehadiran()
+    {
+        return $this->hasOne(RsiaKehadiranRapat::class, ['no_surat', 'nik'], ['no_surat', 'penerima'])->without('pegawai');
     }
 }
