@@ -117,7 +117,9 @@ class RsiaUndanganController extends Controller
             }
 
             $model = new $undangan->model;
-            $undangan = $model->find($no_surat);
+            $undangan = $model->with(['penanggungJawab' => function($qq) {
+                return $qq->select('nik', 'nama');
+            }])->find($no_surat);
 
             if (!$undangan) {
                 return response()->json(['message' => 'Data tidak ditemukan'], 404);
