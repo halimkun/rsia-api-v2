@@ -95,7 +95,7 @@ class RsiaUndanganController extends Controller
      */
     public function sortableBy(): array
     {
-        return ['no_surat'];
+        return ['no_surat', 'created_at', 'updated_at'];
     }
 
     /**
