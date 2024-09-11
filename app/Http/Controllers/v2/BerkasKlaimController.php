@@ -24,6 +24,13 @@ class BerkasKlaimController extends Controller
      */
     protected $orientation = 'portrait';
 
+    protected $koorByDepartemen = [
+        'Anak'      => 'Anak',
+        'Kandungan' => 'Nifas',
+        'BY'        => 'PERINATOLOGI',
+        'VK'        => 'VK'
+    ];
+
     /**
      * Objek merger
      * 
@@ -46,11 +53,24 @@ class BerkasKlaimController extends Controller
     public function print($sep, Request $request)
     {
         // ========== BERKAS DATA
-        $bSep     = \App\Models\BridgingSep::with(['pasien', 'reg_periksa', 'dokter.pegawai.sidikjari' => function($q) {
+        $bSep              = \App\Models\BridgingSep::with(['pasien', 'reg_periksa', 'dokter.pegawai.sidikjari' => function ($q) {
             $q->select('id', \DB::raw('SHA1(sidikjari) as sidikjari'));
         }])->where('no_sep', $sep)->first();
-        $diagnosa = \App\Models\DiagnosaPasien::with('penyakit')->where('no_rawat', $bSep->no_rawat)->orderBy('prioritas', 'asc')->get();
-        $prosedur = \App\Models\ProsedurPasien::with('penyakit')->where('no_rawat', $bSep->no_rawat)->orderBy('prioritas', 'asc')->get();
+
+        $diagnosa          = \App\Models\DiagnosaPasien::with('penyakit')->where('no_rawat', $bSep->no_rawat)->orderBy('prioritas', 'asc')->get();
+        $prosedur          = \App\Models\ProsedurPasien::with('penyakit')->where('no_rawat', $bSep->no_rawat)->orderBy('prioritas', 'asc')->get();
+        $pasien            = \App\Models\Pasien::where('no_rkm_medis', $bSep->nomr)->first();
+        $regPeriksa        = \App\Models\RegPeriksa::where('no_rawat', $bSep->no_rawat)->first();
+        $kamarInap         = \App\Models\KamarInap::with('kamar.bangsal')->where('no_rawat', $bSep->no_rawat)->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
+        $resumePasienRanap = \App\Models\ResumePasienRanap::where('no_rawat', $bSep->no_rawat)->first();
+        $ttdPasien         = \App\Models\RsiaVerifSep::where('no_sep', $sep)->first();
+        
+        $ttdResume         = \App\Models\Pegawai::with(['sidikjari' => function ($q) {
+            $q->select('id', \DB::raw('SHA1(sidikjari) as sidikjari'));
+        }, 'dep'])->whereHas('dep', function ($q) use ($kamarInap) {
+            return $q->where('nama', \Illuminate\Support\Str::upper($this->getDepartemen($kamarInap)));
+        })->where('status_koor', '1')->first();
+
 
         // ========== BERKAS
         $berkasSep = Pdf::loadView('berkas-klaim.partials.sep', [
@@ -58,19 +78,27 @@ class BerkasKlaimController extends Controller
             'diagnosa' => $diagnosa,
             'prosedur' => $prosedur,
         ])->setPaper($this->f4, $this->orientation);
+        $resumeMedis = Pdf::loadView('berkas-klaim.partials.resume-medis', [
+            'sep'        => $bSep->withoutRelations(),
+            'pasien'     => $pasien,
+            'regPeriksa' => $regPeriksa,
+            'kamarInap'  => $kamarInap,
+            'resume'     => $resumePasienRanap,
+            'ttdResume'  => $ttdResume,
+            'ttdDpjp'    => $bSep->dokter->pegawai,
+            'ttdPasien'  => $ttdPasien,
+        ])->setPaper($this->f4, $this->orientation);
 
-        // return view('berkas-klaim.partials.sep', [
-        //     'sep'      => $bSep,
-        //     'diagnosa' => $diagnosa,
-        //     'prosedur' => $prosedur,
-        // ]);
 
         // ========== MERGER PREPARE
         $this->oMerger->addString($berkasSep->output(), 'all');
+        $this->oMerger->addString($resumeMedis->output(), 'all');
+
 
         // ========== MERGE FINAL
         $this->oMerger->merge();
         $this->oMerger->setFileName('berkas-klaim-' . $sep . '.pdf');
+
 
         // ========== RESPONSE
         return response($this->oMerger->stream())
@@ -79,37 +107,14 @@ class BerkasKlaimController extends Controller
             ->header('Expires', '0');
     }
 
+    private function getDepartemen($kamarInap)
+    {
+        $filteredKeys = array_filter(array_keys($this->koorByDepartemen), function ($key) use ($kamarInap) {
+            return strpos($kamarInap[0]->kd_kamar, $key) !== false;
+        });
 
-    // public function test($sep, Request $request)
-    // {
-    //     $pdfMerger = PDFMerger::init();
-    //     $htmls = [
-    //         '<h1>Test 1</h1>',
-    //         '<h1>Test 2</h1>',
-    //         '<h1>Test 3</h1>',
-    //         '<h1>Test 4</h1>',
-    //         '<h1>Test 5</h1>',
-    //     ];
+        $values = array_values(array_intersect_key($this->koorByDepartemen, array_flip($filteredKeys)));
 
-    //     foreach ($htmls as $html) {
-    //         $pdf = App::make('dompdf.wrapper');
-    //         $pdf->loadHTML($html);
-    //         $pdfMerger->addString($pdf->output(), 'all');
-    //     }
-
-    //     $pdfMerger->merge();
-
-    //     // $pdf1 = App::make('dompdf.wrapper');
-    //     // $pdf1->loadHTML('<h1>Test 1</h1>');
-
-    //     // $pdf2 = App::make('dompdf.wrapper');
-    //     // $pdf2->loadHTML('<h1>Test 2</h1>');
-
-    //     // $pdfMerger->addString($pdf1->output(), 'all');
-    //     // $pdfMerger->addString($pdf2->output(), 'all');
-
-    //     // $pdfMerger->merge();
-
-    //     return response($pdfMerger->stream())->header('Content-Type', 'application/pdf')->header('Content-Disposition', 'inline; filename="test.pdf"')->header('Cache-Control', 'no-cache, no-store, must-revalidate')->header('Pragma', 'no-cache')->header('Expires', '0');
-    // }
+        return $values[0] ?? null;  // Return the first value or null if empty         
+    }
 }

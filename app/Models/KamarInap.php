@@ -92,4 +92,9 @@ class KamarInap extends Model
     public function sepSimple() {
         return $this->hasOne(BridgingSep::class, 'no_rawat', 'no_rawat')->select('no_sep', 'no_rawat', 'diagawal', 'klsrawat');
     }
+
+    public function kamar()
+    {
+        return $this->belongsTo(\App\Models\Kamar::class, 'kd_kamar', 'kd_kamar')->select("kd_kamar", 'kd_bangsal', 'status');
+    }
 }
