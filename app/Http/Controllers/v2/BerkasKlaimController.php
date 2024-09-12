@@ -63,8 +63,10 @@ class BerkasKlaimController extends Controller
         $regPeriksa        = \App\Models\RegPeriksa::where('no_rawat', $bSep->no_rawat)->first();
         $kamarInap         = \App\Models\KamarInap::with('kamar.bangsal')->where('no_rawat', $bSep->no_rawat)->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
         $resumePasienRanap = \App\Models\ResumePasienRanap::where('no_rawat', $bSep->no_rawat)->first();
+        $spri             = \App\Models\BridgingSuratPriBpjs::where('no_rawat', $bSep->no_rawat)->first();
+
+        // TTD DATA
         $ttdPasien         = \App\Models\RsiaVerifSep::where('no_sep', $sep)->first();
-        
         $ttdResume         = \App\Models\Pegawai::with(['sidikjari' => function ($q) {
             $q->select('id', \DB::raw('SHA1(sidikjari) as sidikjari'));
         }, 'dep'])->whereHas('dep', function ($q) use ($kamarInap) {
@@ -88,12 +90,18 @@ class BerkasKlaimController extends Controller
             'ttdDpjp'    => $bSep->dokter->pegawai,
             'ttdPasien'  => $ttdPasien,
         ])->setPaper($this->f4, $this->orientation);
+        $pri = Pdf::loadView('berkas-klaim.partials.spri', [
+            'sep'    => $bSep,
+            'pasien' => $pasien,
+            'spri'   => $spri,
+        ])->setPaper($this->f4, $this->orientation);
 
 
         // ========== MERGER PREPARE
         $this->oMerger->addString($berkasSep->output(), 'all');
         $this->oMerger->addString($resumeMedis->output(), 'all');
-
+        $this->oMerger->addString($pri->output(), 'all');
+        
 
         // ========== MERGE FINAL
         $this->oMerger->merge();
