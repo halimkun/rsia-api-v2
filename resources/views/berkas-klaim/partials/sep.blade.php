@@ -3,7 +3,7 @@
     <header>
         <table class="table w-full table-auto mb-2"> 
             <tr>
-                <td class="w-full"><img src="{{ public_path('assets/images/logo-bpjs.png') }}" width="280" /></td>
+                <td class="w-full"><img src="{{ public_path('assets/images/logo-bpjs.png') }}" width="250" /></td>
                 <td class="text-center" style="width: 85%">
                     <h4 class="text-center text-xl font-bold leading-none">SURAT ELEGIBILITAS PESERTA</h4>
                     <p class="text-center leading-none">RSIA Aisyiyah Pekajangan</p>
