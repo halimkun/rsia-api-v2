@@ -193,7 +193,7 @@
                 <tr>
                     <td class="overflow-visible inline-table">
                         <div class="leading-none p-0 m-0 overflow-visible">
-                            <input type="checkbox" onclick="return false;"/><span class="pl-2 -mt-2">Rujukan Terlampir</span>
+                            <span class="font-dejavu">&#9744;</span> <span class="pl-1">Rujukan Terlampir</span>
                         </div>
                     </td>                
                 </tr>

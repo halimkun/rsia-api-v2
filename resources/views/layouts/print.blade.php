@@ -4,12 +4,18 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
     <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Styles -->
     <link rel="stylesheet" href="{{ asset('css/print.css') }}">
+
+    <style>
+        .font-dejavu {
+            font-family: 'DejaVu Sans', sans-serif;
+        }
+    </style>
 
     @stack('styles')
 

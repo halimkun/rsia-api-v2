@@ -162,7 +162,7 @@
                     <p class="mb-1 font-bold leading-none">DIAGNOSA AKHIR</p>
                     <table class="w-full">
                         <tr>
-                            <td width="171"></td>
+                            <td width="169"></td>
                             <td></td>
                             <td></td>
                             <td width="70" class="font-bold">ICD-10</td>
@@ -243,6 +243,14 @@
             <tr>
                 <td colspan="3" class="border p-1" style="border-color: #333;">
                     <p class="mb-1 font-bold leading-none">KONDISI PULANG</p>
+                    <table class="table w-full">
+                        <tr>
+                            <td class="leading-none p-0 m-0"><span class="font-dejavu text-xl leading-none">&#9725;</span> Membaik</td>
+                            <td class="leading-none p-0 m-0"><span class="font-dejavu text-xl leading-none">&#9726;</span> Pulang Atas Permintaan Sendiri</td>
+                            <td class="leading-none p-0 m-0"><span class="font-dejavu text-xl leading-none">&#9725;</span> Meninggal</td>
+                            <td class="leading-none p-0 m-0"><span class="font-dejavu text-xl leading-none">&#9725;</span> Rujuk</td>
+                        </tr>
+                    </table>
                 </td>
             </tr>
             <tr>
