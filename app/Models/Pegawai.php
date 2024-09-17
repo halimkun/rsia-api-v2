@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * App\Models\Pegawai
@@ -187,8 +188,14 @@ class Pegawai extends Model
         return $this->hasMany(RsiaCuti::class, 'nik', 'nik');
     }
 
+    /**
+     * Jadwal pegawai data
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * */
     public function sidikjari()
     {
-        return $this->hasOne(SidikJari::class, 'id', 'id');
+        return $this->hasOne(SidikJari::class, 'id', 'id')
+            ->select('id', DB::raw('SHA1(sidikjari) as sidikjari'));
     }
 }
