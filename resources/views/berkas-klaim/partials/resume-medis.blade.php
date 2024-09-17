@@ -68,14 +68,20 @@
     @endpush
 
     @php
-        $tglKeluar = $kamarInap[0]->tgl_keluar;
-        $jamKeluar = $kamarInap[0]->jam_keluar;
+        if (!$kamarInap->isEmpty()) {
+            $tglKeluar = $kamarInap[0]->tgl_keluar;
+            $jamKeluar = $kamarInap[0]->jam_keluar;
 
-        $diff = \Carbon\Carbon::parse($regPeriksa->tgl_registrasi . ' ' . $regPeriksa->jam_reg)->diffInMinutes(\Carbon\Carbon::parse($tglKeluar . ' ' . $jamKeluar));
-        $los = ceil($diff / (60 * 24)) + 1;
+            $diff = \Carbon\Carbon::parse($regPeriksa->tgl_registrasi . ' ' . $regPeriksa->jam_reg)->diffInMinutes(\Carbon\Carbon::parse($tglKeluar . ' ' . $jamKeluar));
+            $los = ceil($diff / (60 * 24)) + 1;
+        } else {
+            $tglKeluar = null;
+            $jamKeluar = null;
+            $los = null;
+        }
 
         $QRDokter = "Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh " . $sep?->nmdpdjp . ". ID : " . $ttdDpjp?->sidikjari->sidikjari;
-        $QRKoor   = "Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh " . $ttdResume->nama . ". ID : " . $ttdResume?->sidikjari->sidikjari;
+        $QRKoor   = "Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh " . $ttdResume?->nama . ". ID : " . $ttdResume?->sidikjari->sidikjari;
     @endphp
 
     <main style="margin-top: 125px;">
@@ -87,7 +93,7 @@
                             'Tanggal Masuk' => $regPeriksa?->tgl_registrasi,
                             'Tanggal Keluar' => $tglKeluar,
                             'Lama Rawat' => $los . ' Hari',
-                            'Ruang Rawat' => $kamarInap[0]->kamar->bangsal->nm_bangsal,
+                            'Ruang Rawat' => !$kamarInap->isEmpty() ? $kamarInap[0]->kamar->bangsal->nm_bangsal : '-',
                         ] as $k => $v)
                             <tr>
                                 <td class="text-nowrap whitespace-nowrap leading-none">{{ Str::title($k) }}</td>
@@ -113,8 +119,8 @@
                     <table class="table table-auto">
                         @foreach ([
                             'Cara Bayar' => $sep?->peserta,
-                            'Indikasi Rawat' => $resume->alasan,
-                            'Diagnosa Awal' => $resume->diagnosa_awal,
+                            'Indikasi Rawat' => $resume?->alasan,
+                            'Diagnosa Awal' => $resume?->diagnosa_awal,
                             'DPJP' => $sep?->nmdpdjp,
                         ] as $k => $v)
                             <tr>
@@ -170,14 +176,14 @@
                         <tr>
                             <td>Diagnosa Utama</td>
                             <td>:</td>
-                            <td>{{ $resume->diagnosa_utama }}</td>
-                            <td>{{ $resume->kd_diagnosa_utama }}</td>
+                            <td>{{ $resume?->diagnosa_utama }}</td>
+                            <td>{{ $resume?->kd_diagnosa_utama }}</td>
                         </tr>
                         <tr>
                             <td>Diagnosa Sekunder</td>
                             <td>:</td>
-                            <td>1. {{ $resume->diagnosa_sekunder }}</td>
-                            <td>{{ $resume->kd_diagnosa_sekunder }}</td>
+                            <td>1. {{ $resume?->diagnosa_sekunder }}</td>
+                            <td>{{ $resume?->kd_diagnosa_sekunder }}</td>
                         </tr>
                     
                         @for ($i = 2; $i <= 7; $i++)
@@ -188,8 +194,8 @@
                             <tr>
                                 <td></td>
                                 <td></td>
-                                <td>{{ $i }}. {{ $resume->$diagnosa }}</td>
-                                <td>{{ $resume->$kd_diagnosa }}</td>
+                                <td>{{ $i }}. {{ $resume?->$diagnosa }}</td>
+                                <td>{{ $resume?->$kd_diagnosa }}</td>
                             </tr>
                         @endfor
                     </table>
@@ -208,8 +214,8 @@
                         <tr>
                             <td></td>
                             <td></td>
-                            <td>1. {{ $resume->prosedur_utama }}</td>
-                            <td>{{ $resume->kd_prosedur_utama }}</td>
+                            <td>1. {{ $resume?->prosedur_utama }}</td>
+                            <td>{{ $resume?->kd_prosedur_utama }}</td>
                         </tr>
                     
                         @for ($i = 2; $i <= 4; $i++)
@@ -220,8 +226,8 @@
                             <tr>
                                 <td></td>
                                 <td></td>
-                                <td>{{ $i }}. {{ $resume->$prosedur }}</td>
-                                <td>{{ $resume->$kd_prosedur }}</td>
+                                <td>{{ $i }}. {{ $resume?->$prosedur }}</td>
+                                <td>{{ $resume?->$kd_prosedur }}</td>
                             </tr>
                         @endfor
                     </table>
@@ -270,8 +276,8 @@
                     <p class="mb-1 font-bold leading-none">SHK</p>
                     <table>
                         <tr>
-                            <td>{{ $resume->shk }}</td>
-                            <td>{{ $resume->shk_keterangan }}</td>
+                            <td>{{ $resume?->shk }}</td>
+                            <td>{{ $resume?->shk_keterangan }}</td>
                         </tr>
                     </table>
                 </td>
@@ -283,7 +289,7 @@
                         <tr>
                             <td>
                                 @php
-                                    switch ($resume->dilanjutkan) {
+                                    switch ($resume?->dilanjutkan) {
                                         case 'Kembali Ke RS':
                                             $text = 'Kontrol';
                                             break;
@@ -303,7 +309,7 @@
                             </td>
                             <td>:</td>
                             {{-- <td>{{ \Carbon\Carbon::parse($resume->kontrol)->isoFormat('dddd, D MMMM Y') }}</td> --}}
-                            <td>{{ \Carbon\Carbon::parse($resume->kontrol)->format('d-m-Y') }}</td>
+                            <td>{{ $resume?->kontrol ? \Carbon\Carbon::parse($resume?->kontrol)->format('d-m-Y') : '' }}</td>
                         </tr>
                     </table>
                 </td>
@@ -330,7 +336,9 @@
                                 </div>
                             </td>
                             <td class="text-center">
-                                <img src="http://192.168.100.31/rsiap/file/verif_sep/<?=@$ttdPasien->verifikasi?>" width="70%" />
+                                @if ($ttdPasien && $ttdPasien->verifikasi)
+                                    <img src="http://192.168.100.31/rsiap/file/verif_sep/<?=$ttdPasien?->verifikasi?>" width="70%" />
+                                @endif
                             </td>
                             <td class="text-center">
                                 <div class="relative inline-block h-28 w-28">
@@ -340,7 +348,7 @@
                             </td>
                         </tr>
                         <tr>
-                            <td class="text-center">{{ $ttdResume->nama }}</td>
+                            <td class="text-center">{{ $ttdResume?->nama }}</td>
                             <td class="text-center"></td>
                             <td class="text-center">{{ $sep?->nmdpdjp }}</td>
                         </tr>

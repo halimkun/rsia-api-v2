@@ -18,7 +18,7 @@
     @endpush
 
     @php
-        $QRText = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $spri?->nm_dokter_bpjs . '. ID : ' . $sep?->dokter?->pegawai?->sidikjari->sdk;
+        $QRText = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $spri?->nm_dokter_bpjs . '. ID : ' . $sep?->dokter?->pegawai?->sidikjari?->sdk;
     @endphp
 
     <main style="margin-top: 30px">
@@ -27,7 +27,11 @@
                 <td class="text-nowrap whitespace-nowrap">Kepada Yth</td>
                 <td class="px-2" style="width: 5px"></td>
                 <td class="text-nowrap whitespace-nowrap">{{ $spri?->nm_dokter_bpjs }}</td>
-                <td class="pl-2" style="width:250px;"><img src="data:image/png;base64,{{ DNS1D::getBarcodePNG($spri->no_surat ?? 0, 'C128') }}" alt="barcode" class="h-10 w-auto" /></td>
+                <td class="pl-2" style="width:250px;">
+                    @if ($spri && $spri->no_surat)
+                        <img src="data:image/png;base64,{{ DNS1D::getBarcodePNG($spri->no_surat, 'C128') }}" alt="barcode" class="h-10 w-auto" />
+                    @endif
+                </td>
             </tr>
             <tr class="align-top">
                 <td class="leading-8" colspan="3">Mohon Pemeriksaan dan Penanganan Lebih Lanjut :</td>
@@ -58,7 +62,7 @@
             </tr>
             <tr>
                 <td class="w-full text-left" colspan="3">
-                    <div class="text-sm">Tgl. Cetak <?= date('d-m-Y', strtotime($sep->tglsep)) . ' ' . date('H:i:s') ?></div>
+                    <div class="text-sm">Tgl. Cetak <?= date('d-m-Y', strtotime($sep?->tglsep)) . ' ' . date('H:i:s') ?></div>
                 </td>
                 <td class="w-full text-center">
                     <div class="relative inline-block h-28 w-28">
