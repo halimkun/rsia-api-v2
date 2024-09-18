@@ -28,3 +28,6 @@ packages/**/vendor
 
 # ==== build styles and scripts 
 /public/css
+
+**/storage/tmp/*
+!**/storage/tmp/*.html
