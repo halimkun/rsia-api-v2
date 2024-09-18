@@ -173,6 +173,8 @@ return [
         Webklex\PDFMerger\Providers\PDFMergerServiceProvider::class,
         Milon\Barcode\BarcodeServiceProvider::class,
 
+        Clockwork\Support\Laravel\ClockworkServiceProvider::class,
+
         /*
          * Application Service Providers...
          */
