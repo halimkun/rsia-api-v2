@@ -3,7 +3,7 @@
         <style>
             @page {
                 /* meaning top, right, bottom, left */
-                margin: 155px 50px 50px 50pxp;
+                margin: 155px 50px 50px 50px;
             }
 
             @page :first {
@@ -77,7 +77,7 @@
 			</table>
 		</div>
 	
-		<div class="mt-5">
+		<div class="mt-3">
 			<table class="table w-full">
 				<thead>
 					<tr class="border-b border-t text-center align-middle" style="background-color: lightgoldenrodyellow; border-top: 0.5px solid #333; border-bottom: 0.5px solid #333;">

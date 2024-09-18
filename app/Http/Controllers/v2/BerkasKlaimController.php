@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers\v2;
 
+use App\Helpers\PDFHelper;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
@@ -39,24 +39,14 @@ class BerkasKlaimController extends Controller
     ];
 
     /**
-     * Objek merger
+     * PDF Merger
      * 
      * @var \Webklex\PDFMerger\PDFMerger
      */
-    protected $oMerger;
-
     protected $berkasPendukung = [
         ["surat rujukan", "usg"],
         ["laborat"],
     ];
-
-    /**
-     * BerkasKlaimController constructor
-     */
-    public function __construct()
-    {
-        $this->oMerger = PDFMerger::init();
-    }
 
     /**
      * Cetak berkas klaim
@@ -67,20 +57,26 @@ class BerkasKlaimController extends Controller
      */
     public function print($sep, Request $request)
     {
-        $bSep              = \App\Models\BridgingSep::with(['pasien', 'reg_periksa', 'dokter.pegawai.sidikjari'])->where('no_sep', $sep)->first();
+        $bSep = \Illuminate\Support\Facades\Cache::remember("bsep_{$sep}", 3600, function () use ($sep) {
+            return \App\Models\BridgingSep::with(['pasien', 'reg_periksa', 'dokter.pegawai.sidikjari'])->where('no_sep', $sep)->first();
+        });
 
-        $diagnosa          = \App\Models\DiagnosaPasien::with('penyakit')->where('no_rawat', $bSep->no_rawat)->orderBy('prioritas', 'asc')->get();
-        $prosedur          = \App\Models\ProsedurPasien::with('penyakit')->where('no_rawat', $bSep->no_rawat)->orderBy('prioritas', 'asc')->get();
-        $pasien            = \App\Models\Pasien::where('no_rkm_medis', $bSep->nomr)->first();
-        $regPeriksa        = \App\Models\RegPeriksa::where('no_rawat', $bSep->no_rawat)->first();
+        $regPeriksa        = \Illuminate\Support\Facades\Cache::remember("regPeriksa_{$sep}", 3600, function () use ($bSep) {
+            return \App\Models\RegPeriksa::with(['pasien', 'diagnosaPasien.penyakit', 'prosedurPasien.penyakit'])->where('no_rawat', $bSep->no_rawat)->first();
+        });
+
         $kamarInap         = \App\Models\KamarInap::with('kamar.bangsal')->where('no_rawat', $bSep->no_rawat)->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
         $resumePasienRanap = \App\Models\ResumePasienRanap::where('no_rawat', $bSep->no_rawat)->first();
         $spri              = \App\Models\BridgingSuratPriBpjs::where('no_rawat', $bSep->no_rawat)->first();
-        
-        $lab               = $this->groupPeriksaLabData(
-            \App\Models\PeriksaLab::with('pegawai.sidikjari', 'dokter.sidikjari', 'perujuk', 'jenisPerawatan', 'detailPeriksaLab.template')
-                ->whereIn('no_rawat', $this->getRegisterLabDouble($regPeriksa->kd_poli, $bSep->no_rawat, $bSep->nomr))->get()
-        );
+
+        $lab               = \Illuminate\Support\Facades\Cache::remember("lab_{$sep}", 3600, function () use ($regPeriksa, $bSep) {
+            return $this->groupPeriksaLabData(
+                \App\Models\PeriksaLab::with('pegawai.sidikjari', 'dokter.sidikjari', 'perujuk', 'jenisPerawatan', 'detailPeriksaLab.template')
+                    ->whereIn('no_rawat', $this->getRegisterLabDouble($regPeriksa->kd_poli, $bSep->no_rawat, $bSep->nomr))->get()
+            );
+        });
+
+        $obat              = $this->groupDetailPemberianObat(\App\Models\DetailPemberianObat::select('tgl_perawatan', 'jam', 'no_rawat', 'kode_brng', 'jml')->with('obat')->whereIn('no_rawat', $this->cekGabung($bSep->no_rawat))->get());
 
         $berkasPendukung   = \App\Models\RsiaUpload::where('no_rawat', $bSep->no_rawat)->get()->map(function ($item) {
             $item->kategori = strtolower($item->kategori);
@@ -92,115 +88,246 @@ class BerkasKlaimController extends Controller
             return $q->where('nama', \Illuminate\Support\Str::upper($this->getDepartemen($kamarInap)));
         })->where('status_koor', '1')->first();
 
-        // +==========+==========+==========+==========+==========+==========+==========+==========+
+        // +==========+==========+==========+
 
-        $berkasSep = $this->generatePdf('berkas-klaim.partials.sep', [
-            'sep'      => $bSep,
-            'diagnosa' => $diagnosa,
-            'prosedur' => $prosedur,
-        ]);
-        $resumeMedis = $this->generatePdf('berkas-klaim.partials.resume-medis', [
-            'sep'        => $bSep->withoutRelations(),
-            'pasien'     => $pasien,
-            'regPeriksa' => $regPeriksa,
-            'kamarInap'  => $kamarInap,
-            'resume'     => $resumePasienRanap,
-            'ttdResume'  => $ttdResume,
-            'ttdDpjp'    => $bSep->dokter->pegawai,
-            'ttdPasien'  => $ttdPasien,
-        ]);
-        $pri = $this->generatePdf('berkas-klaim.partials.spri', [
-            'sep'    => $bSep,
-            'pasien' => $pasien,
-            'spri'   => $spri,
-        ]);
+        $pdfs = [
+            $this->genSep($bSep, $regPeriksa->diagnosaPasien, $regPeriksa->prosedurPasien),
+            $this->genResumeMedis($bSep, $regPeriksa->pasien, $regPeriksa, $kamarInap, $resumePasienRanap, $ttdResume, $bSep->dokter->pegawai, $ttdPasien),
+            $this->genSuratPerintahRawatInap($bSep, $regPeriksa->pasien, $spri),
+            ...$this->genBerkasPendukung($this->berkasPendukung[0], $berkasPendukung),
+            ...$this->genHasilLab($bSep, $regPeriksa, $lab),
+            ...$this->genBerkasPendukung($this->berkasPendukung[1], $berkasPendukung),
+            ...$this->genBerkasPendukung(array_merge($this->berkasPendukung[0], $this->berkasPendukung[1]), $berkasPendukung, true),
+            ...$this->genDetailObat($obat, $regPeriksa),
+        ];
 
-        $pendukung0 = [];
-        foreach ($this->berkasPendukung[0] as $key => $value) {
-            $pendukung0[$value] = $this->generatePdf('berkas-klaim.partials.image', [
-                'image' => $berkasPendukung->where('kategori', $value)->first()?->file,
-                'alt'   => Str::title($value),
-            ]);
+        $inacbgReport = $this->genInacbgReport($sep);
+        if ($inacbgReport) {
+            $pdfs[] = $inacbgReport;
         }
 
-        $hasilLab = [];
-        foreach ($lab as $key => $value) {
-            if ($value->isEmpty()) {
-                continue;
-            }
+        $pdf = PDFHelper::merge($pdfs);
 
-            $hasilLab[$key] = $this->generatePdf('berkas-klaim.partials.hasil-lab', [
-                'sep'        => $bSep,
-                'regPeriksa' => $regPeriksa,
-                'lab'        => $value,
-            ]);
-        }
+        // +==========+==========+==========+
 
-        $pendukung1 = [];
-        foreach ($this->berkasPendukung[1] as $key => $value) {
-            $pendukung1[$value] = $this->generatePdf('berkas-klaim.partials.image', [
-                'image' => $berkasPendukung->where('kategori', $value)->first()?->file,
-                'alt'   => Str::title($value),
-            ]);
-        }
+        $pdf->setFileName('berkas-klaim-' . $sep . '.pdf');
 
-        $pendukungLainnya = [];
-        $mergedPendukungkategori = array_merge($this->berkasPendukung[0], $this->berkasPendukung[1]);
-        foreach ($berkasPendukung as $key => $value) {
-            if (!in_array($value->kategori, $mergedPendukungkategori)) {
-                $pendukungLainnya[$value->kategori] = $this->generatePdf('berkas-klaim.partials.image', [
-                    'image' => $value->file,
-                    'alt'   => Str::title($value->kategori),
-                ]);
-            }
-        }
+        // +==========+==========+==========+
 
-        // +==========+==========+==========+==========+==========+==========+==========+==========+
-
-        $this->oMerger->addString($berkasSep->output(), 'all');
-        $this->oMerger->addString($resumeMedis->output(), 'all');
-        $this->oMerger->addString($pri->output(), 'all');
-        
-        foreach ($pendukung0 as $key => $value) {
-            $this->oMerger->addString($value->output(), 'all');
-        }
-        
-        foreach ($hasilLab as $key => $value) {
-            $this->oMerger->addString($value->output(), 'all');
-        }
-        
-        foreach ($pendukung1 as $key => $value) {
-            $this->oMerger->addString($value->output(), 'all');
-        }
-
-        foreach ($pendukungLainnya as $key => $value) {
-            $this->oMerger->addString($value->output(), 'all');
-        }
-
-        // +==========+==========+==========+==========+==========+==========+==========+==========+
-
-        $this->oMerger->merge();
-        $this->oMerger->setFileName('berkas-klaim-' . $sep . '.pdf');
-
-        // +==========+==========+==========+==========+==========+==========+==========+==========+
-
-        return response($this->oMerger->stream())
+        return response($pdf->stream(), 200)
             ->header('Content-Type', 'application/pdf')
             ->header('Pragma', 'no-cache')
             ->header('Expires', '0');
     }
 
+    /**
+     * Generate INACBG report
+     * 
+     * @param string $sep
+     * @return string
+     */
+    public function genInacbgReport($sep)
+    {
+        \Halim\EKlaim\Builders\BodyBuilder::setMetadata('claim_print');
+        \Halim\EKlaim\Builders\BodyBuilder::setData([
+            "nomor_sep"     => $sep,
+        ]);
+
+        $response = \Halim\EKlaim\Services\EklaimService::send(\Halim\EKlaim\Builders\BodyBuilder::prepared());
+
+        if ($response->getStatusCode() == 200) {
+            $resp = $response->getData();
+
+            if (!$resp->data) {
+                \Log::channel(config('eklaim.log_channel'))->error('Berkas Klaim Print - Failed to generate INACBG report', [
+                    'sep' => $sep,
+                    'response' => $resp,
+                ]);
+
+                return null;
+            }
+
+            return base64_decode($resp->data);
+        }
+
+        \Log::channel(config('eklaim.log_channel'))->error('Berkas Klaim Print - Failed to generate INACBG report', [
+            'sep'      => $sep,
+            'response' => $response->getData(),
+        ]);
+        return null;
+    }
 
     /**
-     * Generate PDF
+     * Generate SEP PDF
      * 
-     * @param string $view
-     * @param array $data
+     * @param \App\Models\BridgingSep $brigdingSep
+     * @param \Illuminate\Support\Collection $diagnosa
+     * @param \Illuminate\Support\Collection $prosedur
+     * 
      * @return \Barryvdh\DomPDF\PDF
      */
-    function generatePdf($view, $data)
+    public function genSep($brigdingSep, $diagnosa, $prosedur)
     {
-        return Pdf::loadView($view, $data)->setPaper($this->f4, $this->orientation);
+        $berkasSep = PDFHelper::generate('berkas-klaim.partials.sep', [
+            'sep'      => $brigdingSep,
+            'diagnosa' => $diagnosa,
+            'prosedur' => $prosedur,
+        ]);
+
+        return $berkasSep;
+    }
+
+    /**
+     * Generate Resume Medis PDF
+     * 
+     * @param \App\Models\BridgingSep $brigdingSep
+     * @param \App\Models\Pasien $pasien
+     * @param \App\Models\RegPeriksa $regPeriksa
+     * @param \Illuminate\Support\Collection $kamarInap
+     * @param \App\Models\ResumePasienRanap $resume
+     * @param \App\Models\Pegawai $ttdResume
+     * @param \App\Models\Pegawai $ttdDpjp
+     * @param \App\Models\RsiaVerifSep $ttdPasien
+     * 
+     * @return \Barryvdh\DomPDF\PDF
+     */
+    public function genResumeMedis($brigdingSep, $pasien, $regPeriksa, $kamarInap, $resume, $ttdResume, $ttdDpjp, $ttdPasien)
+    {
+        $resumeMedis = PDFHelper::generate('berkas-klaim.partials.resume-medis', [
+            'sep'        => $brigdingSep->withoutRelations(),
+            'pasien'     => $pasien,
+            'regPeriksa' => $regPeriksa,
+            'kamarInap'  => $kamarInap,
+            'resume'     => $resume,
+            'ttdResume'  => $ttdResume,
+            'ttdDpjp'    => $ttdDpjp,
+            'ttdPasien'  => $ttdPasien,
+        ]);
+
+        return $resumeMedis;
+    }
+
+    /**
+     * Generate Surat Perintah Rawat Inap PDF
+     * 
+     * @param \App\Models\BridgingSep $brigdingSep
+     * @param \App\Models\Pasien $pasien
+     * @param \App\Models\BridgingSuratPriBpjs $spri
+     * 
+     * @return \Barryvdh\DomPDF\PDF
+     */
+    public function genSuratPerintahRawatInap($brigdingSep, $pasien, $spri)
+    {
+        $pri = PDFHelper::generate('berkas-klaim.partials.spri', [
+            'sep'    => $brigdingSep,
+            'pasien' => $pasien,
+            'spri'   => $spri,
+        ]);
+
+        return $pri;
+    }
+
+    /**
+     * Generate Hasil Lab PDF
+     * 
+     * @param \App\Models\BridgingSep $sep
+     * @param \App\Models\RegPeriksa $regPeriksa
+     * @param \Illuminate\Support\Collection $lab
+     * 
+     * @return array
+     */
+    public function genHasilLab($sep, $regPeriksa, $lab)
+    {
+        $hasilLab = [];
+
+        foreach ($lab as $key => $value) {
+            if ($value->isEmpty()) {
+                continue;
+            }
+
+            $hasilLab[$key] = PDFHelper::generate('berkas-klaim.partials.hasil-lab', [
+                'sep'        => $sep,
+                'regPeriksa' => $regPeriksa,
+                'lab'        => $value,
+            ]);
+        }
+
+        return $hasilLab;
+    }
+
+    public function genDetailObat($obat, $regPeriksa)
+    {
+        $detailObat = [];
+
+        // Eager load the related models to avoid N+1 problem
+        $regPeriksa = $regPeriksa->whereIn('no_rawat', array_keys($obat->toArray()))->get()->keyBy('no_rawat');
+
+        foreach ($obat as $key => $value) {
+            $detailObat[$key] = PDFHelper::generate('berkas-klaim.partials.obat', [
+                'regPeriksa' => $regPeriksa->get($key),
+                'obat'       => $value,
+            ]);
+        }
+
+        return $detailObat;
+    }
+
+    /**
+     * Generate Berkas Pendukung PDF
+     * 
+     * @param array $kategori
+     * @param \Illuminate\Support\Collection $berkasPendukung
+     * @param bool $notInKategori
+     * 
+     * @return array
+     */
+    public function genBerkasPendukung(array $kategori, $berkasPendukung, bool $notInKategori = false)
+    {
+        $pendukung = [];
+
+        if ($notInKategori) {
+            foreach ($berkasPendukung as $key => $value) {
+                if (!in_array($value->kategori, $kategori)) {
+                    $pendukung[] = PDFHelper::generate('berkas-klaim.partials.image', [
+                        'image' => $value->file,
+                        'alt'   => Str::title($value->kategori),
+                    ]);
+                }
+            }
+
+            return $pendukung;
+        }
+
+        foreach ($kategori as $key => $value) {
+            $pendukung[] = PDFHelper::generate('berkas-klaim.partials.image', [
+                'image' => $berkasPendukung->where('kategori', $value)->first()?->file,
+                'alt'   => Str::title($value),
+            ]);
+        }
+
+        return $pendukung;
+    }
+
+    // +==========+==========+==========+==========+==========+==========+==========+==========+==========+
+
+    /**
+     * Cek gabung
+     * 
+     * Cek pasien rawat gabung atau tidak
+     * 
+     * @param string $no_rawat
+     * @return array
+     */
+    private function cekGabung($no_rawat)
+    {
+        $ranapGabung = \App\Models\RanapGabung::where('no_rawat', $no_rawat)->first();
+
+        if ($ranapGabung) {
+            $ranapGabung = array_values($ranapGabung->toArray());
+            return $ranapGabung;
+        }
+
+        return [$no_rawat];
     }
 
     /**
@@ -240,6 +367,23 @@ class BerkasKlaimController extends Controller
     }
 
     /**
+     * Group detail pemberian obat data
+     * 
+     * Group the periksa lab data by tgl_perawatan and jam
+     * 
+     * @param \Illuminate\Support\Collection $data
+     * @return \Illuminate\Support\Collection
+     */
+    private function groupDetailPemberianObat(Collection $data): Collection
+    {
+        return $data->groupBy('no_rawat')->map(function ($grouped) {
+            return $grouped->groupBy(function ($item) {
+                return $item->tgl_perawatan . ' ' . $item->jam;
+            });
+        });
+    }
+
+    /**
      * Get the register lab double
      * 
      * @param string $kd_poli
@@ -254,13 +398,12 @@ class BerkasKlaimController extends Controller
 
         // Check if the kd_poli is in the filter
         if (in_array($kd_poli, $filterPoli)) {
-            $registrasiData = \App\Models\RegPeriksa::select('no_rawat', 'no_rkm_medis')
-                ->where('no_rkm_medis', $no_rkm_medis)
-                ->orderBy('no_rawat', 'desc')->limit(2)->get();
+            $registrasiData = \App\Models\RegPeriksa::where('no_rkm_medis', $no_rkm_medis)
+                ->orderBy('no_rawat', 'desc')
+                ->limit(2)
+                ->pluck('no_rawat');
 
-            $noRawat = $registrasiData->pluck('no_rawat')->toArray();
-
-            return $noRawat;
+            return $registrasiData->toArray();
         }
 
         // Return the no_rawat if not in the filter
