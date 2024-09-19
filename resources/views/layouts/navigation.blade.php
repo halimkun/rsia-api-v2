@@ -16,9 +16,12 @@
                         {{ __('Dashboard') }}
                     </x-nav-link>
 
-                    {{-- request url has notifikasi/pasien on url --}}
                     <x-nav-link :href="route('notifikasi.pasien')" :active="strpos(request()->url(), 'notifikasi/pasien')">
                         {{ __('Notifikasi Pasien') }}
+                    </x-nav-link>
+                    
+                    <x-nav-link :href="route('oauth.client.index')" :active="strpos(request()->url(), 'app/')">
+                        {{ __('OAuth Data') }}
                     </x-nav-link>
                 </div>
             </div>
