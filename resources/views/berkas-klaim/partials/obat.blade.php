@@ -53,9 +53,9 @@
             </table>
         </div>
 
-        <table class="table w-full">
+        <table class="table" style="width: 45% !important;">
             <thead>
-                <tr class="border-b border-t align-middle" style="background-color: lightcyan; border-top: 0.5px solid #333; border-bottom: 0.5px solid #333;">
+                <tr class="border-b border-t align-middle" style="background-color: lightcoral; border-top: 0.5px solid #333; border-bottom: 0.5px solid #333;">
                     <th class="py-1 leading-none text-center" style="width: 60px">No.</th>
                     <th class="py-1 leading-none text-left">Obat</th>
                     <th class="py-1 leading-none text-center" style="width: 80px">Qty</th>
