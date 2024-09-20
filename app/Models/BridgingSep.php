@@ -201,4 +201,9 @@ class BridgingSep extends Model
     {
         return $this->belongsTo(RsiaGroupingChunks::class, 'no_sep', 'no_sep');
     }
+
+    public function surat_kontrol()
+    {
+        return $this->hasOne(BridgingSuratKontrolBpjs::class, 'no_surat', 'noskdp');
+    }
 }

@@ -44,7 +44,8 @@ class BerkasKlaimController extends Controller
      * @var \Webklex\PDFMerger\PDFMerger
      */
     protected $berkasPendukung = [
-        ["surat rujukan", "usg"],
+        ["surat rujukan"],
+        ["usg"],
         ["laborat"],
     ];
 
@@ -57,13 +58,21 @@ class BerkasKlaimController extends Controller
      */
     public function print($sep, Request $request)
     {
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+        
         $bSep = \Illuminate\Support\Facades\Cache::remember("bsep_{$sep}", 3600, function () use ($sep) {
-            return \App\Models\BridgingSep::with(['pasien', 'reg_periksa', 'dokter.pegawai.sidikjari'])->where('no_sep', $sep)->first();
+            return \App\Models\BridgingSep::with(['pasien', 'reg_periksa', 'dokter.pegawai.sidikjari', 'surat_kontrol'])->where('no_sep', $sep)->first();
         });
 
         $regPeriksa        = \Illuminate\Support\Facades\Cache::remember("regPeriksa_{$sep}", 3600, function () use ($bSep) {
-            return \App\Models\RegPeriksa::with(['pasien', 'diagnosaPasien.penyakit', 'prosedurPasien.penyakit'])->where('no_rawat', $bSep->no_rawat)->first();
+            return \App\Models\RegPeriksa::with(['pasien', 'diagnosaPasien.penyakit', 'prosedurPasien.penyakit', 'catatanPerawatan'])->where('no_rawat', $bSep->no_rawat)->first();
         });
+
+        $triase            = \Illuminate\Support\Facades\Cache::remember("triase_{$sep}", 3600, function () use ($bSep) {
+            return \App\Models\RsiaTriaseUgd::where('no_rawat', $bSep->no_rawat)->first();
+        });
+
+        dd($triase->toArray());
 
         $kamarInap         = \App\Models\KamarInap::with('kamar.bangsal')->where('no_rawat', $bSep->no_rawat)->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
         $resumePasienRanap = \App\Models\ResumePasienRanap::where('no_rawat', $bSep->no_rawat)->first();
@@ -90,14 +99,19 @@ class BerkasKlaimController extends Controller
 
         // +==========+==========+==========+
 
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+
         $pdfs = [
             $this->genSep($bSep, $regPeriksa->diagnosaPasien, $regPeriksa->prosedurPasien),
-            $this->genResumeMedis($bSep, $regPeriksa->pasien, $regPeriksa, $kamarInap, $resumePasienRanap, $ttdResume, $bSep->dokter->pegawai, $ttdPasien),
-            $this->genSuratPerintahRawatInap($bSep, $regPeriksa->pasien, $spri),
+            !$resumePasienRanap ?: $this->genResumeMedis($bSep, $regPeriksa->pasien, $regPeriksa, $kamarInap, $resumePasienRanap, $ttdResume, $bSep->dokter->pegawai, $ttdPasien),
+            !$spri ?: $this->genSuratPerintahRawatInap($bSep, $regPeriksa->pasien, $spri),
+            !$bSep->surat_kontrol ?: $this->genSuratRencanaKontrol($bSep, $regPeriksa),
             ...$this->genBerkasPendukung($this->berkasPendukung[0], $berkasPendukung),
-            ...$this->genHasilLab($bSep, $regPeriksa, $lab),
+            !$regPeriksa->catatanPerawatan ?: $this->genHasilPemeriksaanUsg($bSep, $regPeriksa->pasien, $regPeriksa),
             ...$this->genBerkasPendukung($this->berkasPendukung[1], $berkasPendukung),
-            ...$this->genBerkasPendukung(array_merge($this->berkasPendukung[0], $this->berkasPendukung[1]), $berkasPendukung, true),
+            ...$this->genHasilLab($bSep, $regPeriksa, $lab),
+            ...$this->genBerkasPendukung($this->berkasPendukung[2], $berkasPendukung),
+            ...$this->genBerkasPendukung(array_merge($this->berkasPendukung[0], $this->berkasPendukung[1], $this->berkasPendukung[2]), $berkasPendukung, true),
             ...$this->genDetailObat($obat, $regPeriksa),
         ];
 
@@ -154,6 +168,7 @@ class BerkasKlaimController extends Controller
             'sep'      => $sep,
             'response' => $response->getData(),
         ]);
+
         return null;
     }
 
@@ -206,6 +221,18 @@ class BerkasKlaimController extends Controller
 
         return $resumeMedis;
     }
+    
+    public function genHasilPemeriksaanUsg($brigdingSep, $pasien, $regPeriksa)
+    {
+        $resumeMedis = PDFHelper::generate('berkas-klaim.partials.hasil-usg', [
+            'sep'        => $brigdingSep->withoutRelations(),
+            'pasien'     => $pasien,
+            'regPeriksa' => $regPeriksa->withoutRelations(),
+            'usg'        => $regPeriksa->catatanPerawatan,
+        ]);
+
+        return $resumeMedis;
+    }
 
     /**
      * Generate Surat Perintah Rawat Inap PDF
@@ -225,6 +252,16 @@ class BerkasKlaimController extends Controller
         ]);
 
         return $pri;
+    }
+
+    public function genSuratRencanaKontrol($sep, $regPeriksa)
+    {
+        $kontrol = PDFHelper::generate('berkas-klaim.partials.kontrol', [
+            'sep'        => $sep,
+            'regPeriksa' => $regPeriksa,
+        ]);
+
+        return $kontrol;
     }
 
     /**
@@ -283,10 +320,18 @@ class BerkasKlaimController extends Controller
      */
     public function genBerkasPendukung(array $kategori, $berkasPendukung, bool $notInKategori = false)
     {
+        if ($berkasPendukung->isEmpty()) {
+            return [];
+        }
+
         $pendukung = [];
 
         if ($notInKategori) {
             foreach ($berkasPendukung as $key => $value) {
+                if (!$berkasPendukung->where('kategori', $value->kategori)->first()) {
+                    continue;
+                }
+
                 if (!in_array($value->kategori, $kategori)) {
                     $pendukung[] = PDFHelper::generate('berkas-klaim.partials.image', [
                         'image' => $value->file,
@@ -299,10 +344,19 @@ class BerkasKlaimController extends Controller
         }
 
         foreach ($kategori as $key => $value) {
-            $pendukung[] = PDFHelper::generate('berkas-klaim.partials.image', [
-                'image' => $berkasPendukung->where('kategori', $value)->first()?->file,
-                'alt'   => Str::title($value),
-            ]);
+            if (!$berkasPendukung->where('kategori', $value)->first()) {
+                continue;
+            }
+            
+            $file = $berkasPendukung->where('kategori', $value)->first()?->file;
+            $files = explode(',', $file);
+
+            foreach ($files as $file) {
+                $pendukung[] = PDFHelper::generate('berkas-klaim.partials.image', [
+                    'image' => $file,
+                    'alt'   => Str::title($value),
+                ]);
+            }
         }
 
         return $pendukung;

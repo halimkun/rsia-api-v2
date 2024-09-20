@@ -261,4 +261,9 @@ class RegPeriksa extends Model
     {
         return $this->hasMany(ProsedurPasien::class, 'no_rawat', 'no_rawat');
     }
+
+    public function catatanPerawatan()
+    {
+        return $this->belongsTo(CatatanPerawatan::class, 'no_rawat', 'no_rawat');
+    }
 }
