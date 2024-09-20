@@ -11,7 +11,7 @@ class BridgingSuratPriBpjs extends Model
 
     protected $table = 'bridging_surat_pri_bpjs';
 
-    protected $primaryKey = 'no_rawat';
+    protected $primaryKey = 'no_surat';
 
     protected $guarded = [];
 

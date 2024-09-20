@@ -45,7 +45,7 @@ class PDFHelper
             } else if (is_string($pdf)) {
                 $merger->addString($pdf, 'all');
             } else {
-                throw new \Exception('Invalid PDF object');
+                continue;
             }
 
         }
