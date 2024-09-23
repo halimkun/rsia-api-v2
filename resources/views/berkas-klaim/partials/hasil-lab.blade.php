@@ -17,7 +17,7 @@
 
     @push('header')
         <header> 
-			<table class="table w-full border-b" style="border-bottom: 1px solid #000;">
+			<table class="table w-full border-b" style="border-bottom: 1px solid #333;">
 				<tr>
 					<td style="width: 60px" class="p-2 py-4 text-center align-middle">
 						<img src="{{ public_path('assets/images/logo.png') }}" width="60" />
@@ -76,6 +76,12 @@
 				</tr>
 			</table>
 		</div>
+
+		@php
+			$QRDokter = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $lab->first()?->dokter?->nm_dokter . '. ID : ' . $lab->first()?->dokter?->sidikjari?->sidikjari;
+			$QRPetugas = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $lab->first()?->pegawai?->nama . '. ID : ' . $lab->first()?->pegawai?->sidikjari?->sidikjari;
+			$tglCetak = null;
+		@endphp
 	
 		<div class="mt-3">
 			<table class="table w-full">
@@ -89,6 +95,11 @@
 					</tr>
 				</thead>
 				@foreach ($lab as $sk1 => $sv1)
+
+					@php
+						$tglCetak = $sv1?->tgl_periksa . ' ' . $sv1?->jam;
+					@endphp
+
 					<tr class="border-b align-middle" style="border-bottom-color: #313131;">
 						<td colspan="5" class="py-1 font-bold leading-none">{{ $sv1?->jenisPerawatan?->nm_perawatan }}</td>
 					</tr>
@@ -106,11 +117,6 @@
 			</table>
 		</div>
 	
-		@php
-			$QRDokter = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $lab->first()?->dokter?->nm_dokter . '. ID : ' . $lab->first()?->dokter?->sidikjari?->sidikjari;
-			$QRPetugas = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $lab->first()?->pegawai?->nama . '. ID : ' . $lab->first()?->pegawai?->sidikjari?->sidikjari;
-		@endphp
-	
 		<div class="mt-5">
 			<table class="table w-full">
 				<tr>
@@ -124,7 +130,9 @@
 						<div class="mt-2">{{ $lab->first()?->dokter?->nm_dokter }}</div>
 					</td>
 					<td class="text-center">
-						<div class="text-base leading-none">Tgl. Cetak : <?= date('d/m/Y', strtotime($sep?->tglsep)) . ' ' . date('H:i:s') ?></div>
+						@if ($tglCetak)
+							<div class="text-base leading-none">Tgl. Cetak : {{ date('d/m/Y H:i:s', strtotime($tglCetak)) }}</div>
+						@endif
 						<div class="mb-2">Petugas Laboratorium</div>
 						<div class="relative inline-block h-28 w-28">
 							<img src="data:image/png;base64,{{ DNS2D::getBarcodePNG($QRPetugas, 'QRCODE') }}" alt="barcode" class="h-2w-28 w-28" />

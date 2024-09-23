@@ -168,7 +168,7 @@
                     <p class="mb-1 font-bold leading-none">DIAGNOSA AKHIR</p>
                     <table class="w-full">
                         <tr>
-                            <td width="169"></td>
+                            <td width="150" style="width: 150px !important;"></td>
                             <td></td>
                             <td></td>
                             <td width="70" class="font-bold">ICD-10</td>
@@ -206,7 +206,7 @@
                     <p class="mb-1 font-bold leading-none">TINDAKAN / OPERASI</p>
                     <table class="w-full">
                         <tr>
-                            <td width="180"></td>
+                            <td width="150" style="width: 129px !important;"></td>
                             <td></td>                    
                             <td></td>                    
                             <td width="70" class="font-bold">ICD-9-CM</td>
