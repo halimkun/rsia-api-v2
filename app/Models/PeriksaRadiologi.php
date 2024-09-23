@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Awobaz\Compoships\Compoships;
 use Illuminate\Database\Eloquent\Model;
 use Thiagoprz\CompositeKey\HasCompositeKey;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -69,7 +70,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class PeriksaRadiologi extends Model
 {
-    use HasFactory, HasCompositeKey;
+    use HasFactory, HasCompositeKey, Compoships;
 
     protected $table = 'periksa_radiologi';
 
@@ -103,7 +104,12 @@ class PeriksaRadiologi extends Model
      * */ 
     public function petugas()
     {
-        return $this->belongsTo(Petugas::class, 'nip', 'nip')->select('nip', 'nama');
+        return $this->belongsTo(Pegawai::class, 'nip', 'nik')->select('id', 'nik', 'nama');
+    }
+
+    public function hasilRadiologi()
+    {
+        return $this->hasOne(HasilRadiologi::class, ['tgl_periksa', 'jam'], ['tgl_periksa', 'jam']);
     }
 
     /**
@@ -123,7 +129,7 @@ class PeriksaRadiologi extends Model
      * */ 
     public function dokterPerujuk()
     {
-        return $this->belongsTo(Dokter::class, 'kd_dokter', 'kd_dokter')->select('kd_dokter', 'nm_dokter');
+        return $this->belongsTo(Dokter::class, 'dokter_perujuk', 'kd_dokter')->select('kd_dokter', 'nm_dokter');
     }
 
     /**
