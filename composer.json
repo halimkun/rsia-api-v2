@@ -23,6 +23,7 @@
         "laravel/tinker": "^2.5",
         "league/flysystem-sftp": "*",
         "milon/barcode": "^11.0",
+        "mpdf/mpdf": "^8.2",
         "rap2hpoutre/laravel-log-viewer": "^2.4",
         "stevebauman/purify": "^6.2",
         "tailflow/laravel-orion": "^2.22",

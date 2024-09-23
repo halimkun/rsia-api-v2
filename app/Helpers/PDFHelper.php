@@ -37,17 +37,19 @@ class PDFHelper
      */
     public static function merge(array $pdfs)
     {
+        $else = [];
+
         // merge the PDFs to a single PDF
         $merger = PDFMerger::init();
-        foreach ($pdfs as $pdf) {
+        foreach ($pdfs as $key => $pdf) {
             if ($pdf instanceof \Barryvdh\DomPDF\PDF) {
                 $merger->addString($pdf->output(), 'all');
             } else if (is_string($pdf)) {
                 $merger->addString($pdf, 'all');
             } else {
+                $else[] = $key;
                 continue;
             }
-
         }
 
         // finalize the PDF

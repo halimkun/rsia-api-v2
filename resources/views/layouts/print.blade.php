@@ -35,7 +35,7 @@
     
 </head>
 
-<body class="font-serif antialiased">
+<body class="font-serif antialiased" style="font-family: 'Times New Roman', Times, serif;">
     @stack('header')
     
     {{ $slot }}
