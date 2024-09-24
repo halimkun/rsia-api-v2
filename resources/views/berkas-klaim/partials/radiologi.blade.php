@@ -77,6 +77,12 @@
 			</table>
 		</div>
 
+		<div class="mt-5 w-full">
+			<div class="w-full p-3 border-t border-b" style="border-top: 1px solid #333; border-bottom: 1px solid #333;">
+				{!! nl2br($radiologi->hasilRadiologi->hasil) !!}
+			</div>
+		</div>
+
 		@php
 			$QRDokter = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $radiologi->dokter?->nm_dokter . '. ID : ' . \Hash::make($radiologi->dokter?->kd_dokter);
 			$QRPetugas = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $radiologi->petugas?->nama . '. ID : ' . $radiologi->petugas?->sidikjari?->sidikjari;
