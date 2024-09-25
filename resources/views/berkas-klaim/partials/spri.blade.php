@@ -44,10 +44,10 @@
                 'Diagnosa Awal' => $spri?->diagnosa,
                 'Tgl. Entry' => $spri?->tgl_surat,
             ] as $key => $value)
-              <tr>
+              <tr class="align-top">
                   <td class="text-nowrap whitespace-nowrap leading-5">{{ $key }}</td>
                   <td class="leading-5">:</td>
-                  <td class="text-nowrap whitespace-nowrap leading-5">{{ $value }}</td>
+                  <td class="leading-5">{{ $value }}</td>
                   <td class="leading-5"></td>
               </tr>
             @endforeach

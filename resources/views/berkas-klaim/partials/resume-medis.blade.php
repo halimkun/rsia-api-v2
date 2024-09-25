@@ -3,7 +3,7 @@
         <style>
             @page {
                 /* meaning top, right, bottom, left */
-                margin: 175px 50px 50px 50pxp;
+                margin: 175px 50px 50px 50px;
             }
 
             @page :first {
@@ -90,10 +90,10 @@
                 <td colspan="2" class="border p-1" style="border-color: #333;">
                     <table class="table table-auto">
                         @foreach ([
-                            'Tanggal Masuk' => $regPeriksa?->tgl_registrasi,
+                            'Tanggal Masuk'  => $regPeriksa?->tgl_registrasi,
                             'Tanggal Keluar' => $tglKeluar,
-                            'Lama Rawat' => $los . ' Hari',
-                            'Ruang Rawat' => !$kamarInap->isEmpty() ? $kamarInap[0]->kamar->bangsal->nm_bangsal : '-',
+                            'Lama Rawat'     => $los . ' Hari',
+                            'Ruang Rawat'    => !$kamarInap->isEmpty() ? $kamarInap[0]->kamar->bangsal->nm_bangsal : '-',
                         ] as $k => $v)
                             <tr>
                                 <td class="text-nowrap whitespace-nowrap leading-none">{{ Str::title($k) }}</td>
@@ -118,7 +118,7 @@
                 <td class="border p-1" style="border-color: #333;">
                     <table class="table table-auto">
                         @foreach ([
-                            'Cara Bayar' => $sep?->peserta,
+                            'Cara Bayar' => $regPeriksa?->caraBayar?->png_jawab,
                             'Indikasi Rawat' => $resume?->alasan,
                             'Diagnosa Awal' => $resume?->diagnosa_awal,
                             'DPJP' => $sep?->nmdpdjp,
@@ -147,20 +147,20 @@
             <tr>
                 <td colspan="3" class="border p-1" style="border-color: #333;">
                     <p class="mb-1 font-bold leading-none">ANAMNESIS</p>
-                    <p class="leading-4">{!! nl2br(Str::replace(' ', '&nbsp;', $resume?->keluhan_utama)) !!}</p>
+                    <p class="leading-4">{!! nl2br($resume?->keluhan_utama) !!}</p>
                 </td>
             </tr>
             <tr>
                 <td colspan="3" class="border p-1" style="border-color: #333;">
                     <p class="mb-1 font-bold leading-none">PEMERIKSAAN FISIK</p>
-                    <p class="leading-4">{!! nl2br(Str::replace(' ', '&nbsp;', $resume?->pemeriksaan_fisik)) !!}</p>
+                    <p class="leading-4">{!! nl2br($resume?->pemeriksaan_fisik) !!}</p>
                 </td>
             </tr>
             <tr>
                 <td colspan="3" class="border p-1" style="border-color: #333;">
                     <p class="mb-1 font-bold leading-none">PEMERIKSAAN PENUNJANG</p>
-                    <p class="leading-4">{!! nl2br(Str::replace(' ', ' &nbsp;', $resume?->hasil_laborat)) !!}</p>
-                    <p class="leading-4">{!! nl2br(Str::replace(' ', ' &nbsp;', $resume?->pemeriksaan_penunjang)) !!}</p>
+                    <p class="leading-4">{!! nl2br($resume?->hasil_laborat) !!}</p>
+                    <p class="leading-4">{!! nl2br($resume?->pemeriksaan_penunjang) !!}</p>
                 </td>
             </tr>
             <tr>
@@ -237,13 +237,13 @@
             <tr>
                 <td colspan="3" class="border p-1" style="border-color: #333;">
                     <p class="mb-1 font-bold leading-none">PENGOBATAN / TERAPI</p>
-                    <p class="leading-4">{!! nl2br(Str::replace(' ', '&nbsp;', $resume?->obat_di_rs)) !!}</p>
+                    <p class="leading-4">{!! nl2br($resume?->obat_di_rs) !!}</p>
                 </td>
             </tr>
             <tr>
                 <td colspan="3" class="border p-1" style="border-color: #333;">
                     <p class="mb-1 font-bold leading-none">PROGNOSIS</p>
-                    <p class="leading-4">{!! nl2br(Str::replace(' ', '&nbsp;', $resume?->ket_keadaan)) !!}</p>
+                    <p class="leading-4">{!! nl2br($resume?->ket_keadaan) !!}</p>
                 </td>
             </tr>
             <tr>
@@ -262,13 +262,13 @@
             <tr>
                 <td colspan="3" class="border p-1" style="border-color: #333;">
                     <p class="mb-1 font-bold leading-none">OBAT PULANG</p>
-                    <p class="leading-4">{!! nl2br(Str::replace(' ', '&nbsp;', $resume?->obat_pulang)) !!}</p>
+                    <p class="leading-4">{!! nl2br($resume?->obat_pulang) !!}</p>
                 </td>
             </tr>
             <tr>
                 <td colspan="3" class="border p-1" style="border-color: #333;">
                     <p class="mb-1 font-bold leading-none">EDUKASI</p>
-                    <p class="leading-4">{!! nl2br(Str::replace(' ', '&nbsp;', $resume?->edukasi)) !!}</p>
+                    <p class="leading-4">{!! nl2br($resume?->edukasi) !!}</p>
                 </td>
             </tr>
             <tr>

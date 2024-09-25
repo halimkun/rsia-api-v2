@@ -22,7 +22,7 @@
     {{-- <style>
         @page {
             /* meaning top, right, bottom, left */
-            margin: 100px 50px 50px 50pxp; /* Default margins for all pages */
+            margin: 100px 50px 50px 50px; /* Default margins for all pages */
         }
 
         @page :first {
