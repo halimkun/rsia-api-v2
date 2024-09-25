@@ -65,32 +65,34 @@ class BerkasKlaimController extends Controller
             return \App\Models\BridgingSep::with(['pasien', 'reg_periksa', 'dokter.pegawai.sidikjari', 'surat_kontrol'])->where('no_sep', $sep)->first();
         });
 
-        $regPeriksa        = \Illuminate\Support\Facades\Cache::remember("regPeriksa_{$sep}", 3600, function () use ($bSep) {
+        $regPeriksa = \Illuminate\Support\Facades\Cache::remember("regPeriksa_{$sep}", 3600, function () use ($bSep) {
             return \App\Models\RegPeriksa::with(['pasien', 'diagnosaPasien.penyakit', 'prosedurPasien.penyakit', 'catatanPerawatan'])->where('no_rawat', $bSep->no_rawat)->first();
         });
 
-        $triase            = \Illuminate\Support\Facades\Cache::remember("triase_{$sep}", 3600, function () use ($bSep) {
+        $triase = \Illuminate\Support\Facades\Cache::remember("triase_{$sep}", 3600, function () use ($bSep) {
             return \App\Models\RsiaTriaseUgd::where('no_rawat', $bSep->no_rawat)->first();
         });
 
-        $kamarInap         = \App\Models\KamarInap::with('kamar.bangsal')
-            ->where('no_rawat', $bSep->no_rawat)->where('stts_pulang', '<>', 'Pindah Kamar')
-            ->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
-
-        $operasi           = \App\Models\RsiaOperasiSafe::withAllRelations()->where('no_rawat', $bSep->no_rawat)->get();
+        $kamarInap = \App\Models\KamarInap::with('kamar.bangsal')->where('no_rawat', $bSep->no_rawat)->where('stts_pulang', '<>', 'Pindah Kamar')->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
+        $operasi = \App\Models\RsiaOperasiSafe::withAllRelations()->where('no_rawat', $bSep->no_rawat)->get();
         $resumePasienRanap = \App\Models\ResumePasienRanap::where('no_rawat', $bSep->no_rawat)->first();
-        $spri              = \App\Models\BridgingSuratPriBpjs::where('no_surat', $bSep->noskdp)->first();
-        $radiologi         = \App\Models\PeriksaRadiologi::select('no_rawat', 'nip', 'kd_jenis_prw', 'tgl_periksa', 'jam', 'dokter_perujuk', 'kd_dokter', 'status')->with(['dokter.sidikjari', 'dokterPerujuk', 'hasilRadiologi', 'jenisPerawatan', 'petugas.sidikjari'])->where('no_rawat', $bSep->no_rawat)->orderBy('tgl_periksa', 'ASC')->orderBy('jam', 'ASC')->get();
+        $spri = \App\Models\BridgingSuratPriBpjs::where('no_surat', $bSep->noskdp)->first();
+        $obat = $this->groupDetailPemberianObat(\App\Models\DetailPemberianObat::select('tgl_perawatan', 'jam', 'no_rawat', 'kode_brng', 'jml')->with('obat')->whereIn('no_rawat', $this->cekGabung($bSep->no_rawat))->get());
+        
+        $radiologi = \Illuminate\Support\Facades\Cache::remember("radiologi_{$sep}", 3600, function () use ($bSep) {
+            $radiologiSelect = ['no_rawat', 'nip', 'kd_jenis_prw', 'tgl_periksa', 'jam', 'dokter_perujuk', 'kd_dokter', 'status'];
+            $radiologiWith = ['dokter.sidikjari', 'dokterPerujuk', 'hasilRadiologi', 'jenisPerawatan', 'petugas.sidikjari'];
 
-        $lab               = \Illuminate\Support\Facades\Cache::remember("lab_{$sep}", 3600, function () use ($regPeriksa, $bSep) {
-            return $this->groupPeriksaLabData(
-                \App\Models\PeriksaLab::with('pegawai.sidikjari', 'dokter.sidikjari', 'perujuk', 'jenisPerawatan', 'detailPeriksaLab.template')
-                    ->whereIn('no_rawat', $this->getRegisterLabDouble($regPeriksa->kd_poli, $bSep->no_rawat, $bSep->nomr))
-                    ->orderBy('tgl_periksa', 'ASC')->orderBy('jam', 'ASC')->get()
-            );
+            return \App\Models\PeriksaRadiologi::select($radiologiSelect)->with($radiologiWith)->where('no_rawat', $bSep->no_rawat)->orderBy('tgl_periksa', 'ASC')->orderBy('jam', 'ASC')->get();
         });
+        
+        $lab = \Illuminate\Support\Facades\Cache::remember("lab_{$sep}", 3600, function () use ($regPeriksa, $bSep) {
+            $labWih = ['pegawai.sidikjari', 'dokter.sidikjari', 'perujuk', 'jenisPerawatan', 'detailPeriksaLab.template'];
 
-        $obat              = $this->groupDetailPemberianObat(\App\Models\DetailPemberianObat::select('tgl_perawatan', 'jam', 'no_rawat', 'kode_brng', 'jml')->with('obat')->whereIn('no_rawat', $this->cekGabung($bSep->no_rawat))->get());
+            $labData = \App\Models\PeriksaLab::with($labWih)->whereIn('no_rawat', $this->getRegisterLabDouble($regPeriksa->kd_poli, $bSep->no_rawat, $bSep->nomr))->orderBy('tgl_periksa', 'ASC')->orderBy('jam', 'ASC')->get();
+            
+            return $this->groupPeriksaLabData($labData);
+        });
 
         $berkasPendukung   = \App\Models\RsiaUpload::where('no_rawat', $bSep->no_rawat)->get()->map(function ($item) {
             $item->kategori = strtolower($item->kategori);
