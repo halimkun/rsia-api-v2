@@ -162,41 +162,43 @@ class BerkasKlaimController extends Controller
             $detailObat = [];
             foreach ($obat as $key => $value) {
                 foreach ($value as $sk => $sv) {
+                    // table obat
                     $detailObat[$key] = \Illuminate\Support\Facades\View::make('berkas-klaim.partials.obat', [
                         'obat'       => $value,
                     ]);
                 }
             }
 
-            $mpdf = new \Mpdf\Mpdf([
-                'format'  => [215, 330],
-                'tempDir' => storage_path('app/public/mpdf'),
-            ]);
-
             foreach ($detailObat as $key => $value) {
+                $mpdf = new \Mpdf\Mpdf([
+                    'format'  => [215, 330],
+                    'tempDir' => storage_path('app/public/mpdf'),
+                ]);
+
                 $mpdf->SetColumns(1, 'J');
 
-                // header
+                // html tag to head
+                $mpdf->WriteHTML(\Illuminate\Support\Facades\View::make('berkas-klaim.partials.header.obat-html', [
+                    'regPeriksa' => $regPeriksa->get($key),
+                ]));
+
+                // header <header></header>
                 $mpdf->WriteHTML(\Illuminate\Support\Facades\View::make('berkas-klaim.partials.header.obat-header', [
                     'regPeriksa' => $regPeriksa->get($key),
                 ]));
 
                 $mpdf->SetColumns(2, 'J', 3);
                 $mpdf->WriteHTML($value);
-                $mpdf->AddColumn();
-
-                if ($key != array_key_last($detailObat)) {
-                    $mpdf->AddPage();
+                
+                if (count($mpdf->ColDetails) % 2 != 0) {
+                    $mpdf->AddColumn();
                 }
+                
+                // footer <footer></footer>
+                $mpdf->WriteHTML(\Illuminate\Support\Facades\View::make('berkas-klaim.partials.footer.obat-footer'));
 
-                // footer
-                if ($key == array_key_last($detailObat)) {
-                    $mpdf->WriteHTML(\Illuminate\Support\Facades\View::make('berkas-klaim.partials.footer.obat-footer'));
-                }
+                $pdfs[] = $mpdf->Output('obat.pdf', 'S');
             }
-
-
-            $pdfs[] = $mpdf->Output('obat.pdf', 'S');
         }
 
         $inacbgReport = $this->genInacbgReport($sep);
