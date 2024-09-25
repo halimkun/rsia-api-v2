@@ -78,8 +78,11 @@
 		</div>
 
 		<div class="mt-5 w-full">
-			<div class="w-full p-3 border-t border-b" style="border-top: 1px solid #333; border-bottom: 1px solid #333;">
-				{!! nl2br($radiologi->hasilRadiologi->hasil) !!}
+			<div class="w-full border-b" style="border-bottom: 1px solid #333;">
+				<div class="border-t border-b mb-2" style="border-top: 1px solid #333; border-bottom: 1px solid #333;">
+					<h4 class="text-base font-bold">Hasil Pemeriksaan :</h4>
+				</div>
+				<p class="leading-none pb-2">{!! nl2br($radiologi->hasilRadiologi->hasil) !!}</p>
 			</div>
 		</div>
 

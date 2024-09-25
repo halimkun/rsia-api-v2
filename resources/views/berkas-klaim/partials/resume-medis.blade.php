@@ -7,14 +7,30 @@
             }
 
             @page :first {
-                margin-top: 50px; /* Custom margin for the first page */
+                margin-top: 50px;
+                /* Custom margin for the first page */
             }
 
-            header { position: fixed; top: -10px; left: 0px; right: 0px; height: 50px; max-height: min-content !important; }
-            footer { position: fixed; bottom: -60px; left: 0px; right: 0px; background-color: lightblue; height: 50px; }
+            header {
+                position: fixed;
+                top: -10px;
+                left: 0px;
+                right: 0px;
+                height: 50px;
+                max-height: min-content !important;
+            }
+
+            footer {
+                position: fixed;
+                bottom: -60px;
+                left: 0px;
+                right: 0px;
+                background-color: lightblue;
+                height: 50px;
+            }
         </style>
     @endpush
-    
+
     @push('header')
         <header>
             <table class="table mb-2 w-full table-auto">
@@ -80,8 +96,8 @@
             $los = null;
         }
 
-        $QRDokter = "Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh " . $sep?->nmdpdjp . ". ID : " . $ttdDpjp?->sidikjari->sidikjari;
-        $QRKoor   = "Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh " . $ttdResume?->nama . ". ID : " . $ttdResume?->sidikjari->sidikjari;
+        $QRDokter = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $sep?->nmdpdjp . '. ID : ' . $ttdDpjp?->sidikjari->sidikjari;
+        $QRKoor = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $ttdResume?->nama . '. ID : ' . $ttdResume?->sidikjari->sidikjari;
     @endphp
 
     <main style="margin-top: 125px;">
@@ -90,22 +106,22 @@
                 <td colspan="2" class="border p-1" style="border-color: #333;">
                     <table class="table table-auto">
                         @foreach ([
-                            'Tanggal Masuk'  => $regPeriksa?->tgl_registrasi,
+                            'Tanggal Masuk' => $regPeriksa?->tgl_registrasi,
                             'Tanggal Keluar' => $tglKeluar,
-                            'Lama Rawat'     => $los . ' Hari',
-                            'Ruang Rawat'    => !$kamarInap->isEmpty() ? $kamarInap[0]->kamar->bangsal->nm_bangsal : '-',
+                            'Lama Rawat' => $los . ' Hari',
+                            'Ruang Rawat' => !$kamarInap->isEmpty() ? $kamarInap[0]->kamar->bangsal->nm_bangsal : '-',
                         ] as $k => $v)
                             <tr>
                                 <td class="text-nowrap whitespace-nowrap leading-none">{{ Str::title($k) }}</td>
                                 <td class="px-1 leading-none" style="width: 3px;">:</td>
                                 <td class="w-full leading-none">{{ $v }}</td>
-    
+
                                 @if ($k == 'Tanggal Masuk')
                                     <td class="text-nowrap whitespace-nowrap leading-none">Jam</td>
                                     <td class="px-1 leading-none" style="width: 3px;">:</td>
                                     <td class="leading-none">{{ $regPeriksa?->jam_reg }}</td>
                                 @endif
-    
+
                                 @if ($k == 'Tanggal Keluar')
                                     <td class="text-nowrap whitespace-nowrap leading-none">Jam</td>
                                     <td class="px-1 leading-none" style="width: 3px;">:</td>
@@ -127,13 +143,13 @@
                                 <td class="text-nowrap whitespace-nowrap leading-none">{{ $k }}</td>
                                 <td class="px-1 leading-none" style="width: 3px;">:</td>
                                 <td class="w-full leading-none">{{ $v }}</td>
-    
+
                                 @if ($k == 'Tanggal Masuk')
                                     <td class="text-nowrap whitespace-nowrap leading-none">Jam</td>
                                     <td class="px-1 leading-none" style="width: 3px;">:</td>
                                     <td class="leading-none">{{ $regPeriksa?->jam_reg }}</td>
                                 @endif
-    
+
                                 @if ($k == 'Tanggal Keluar')
                                     <td class="text-nowrap whitespace-nowrap leading-none">Jam</td>
                                     <td class="px-1 leading-none" style="width: 3px;">:</td>
@@ -185,11 +201,11 @@
                             <td>1. {{ $resume?->diagnosa_sekunder }}</td>
                             <td>{{ $resume?->kd_diagnosa_sekunder }}</td>
                         </tr>
-                    
+
                         @for ($i = 2; $i <= 7; $i++)
                             @php
-                                $diagnosa = "diagnosa_sekunder" . $i;
-                                $kd_diagnosa = "kd_diagnosa_sekunder" . $i;
+                                $diagnosa = 'diagnosa_sekunder' . $i;
+                                $kd_diagnosa = 'kd_diagnosa_sekunder' . $i;
                             @endphp
                             <tr>
                                 <td></td>
@@ -207,8 +223,8 @@
                     <table class="w-full">
                         <tr>
                             <td width="150" style="width: 129px !important;"></td>
-                            <td></td>                    
-                            <td></td>                    
+                            <td></td>
+                            <td></td>
                             <td width="70" class="font-bold">ICD-9-CM</td>
                         </tr>
                         <tr>
@@ -217,11 +233,11 @@
                             <td>1. {{ $resume?->prosedur_utama }}</td>
                             <td>{{ $resume?->kd_prosedur_utama }}</td>
                         </tr>
-                    
+
                         @for ($i = 2; $i <= 4; $i++)
                             @php
-                                $prosedur = "prosedur_sekunder" . ($i - 1);
-                                $kd_prosedur = "kd_prosedur_sekunder" . ($i - 1);
+                                $prosedur = 'prosedur_sekunder' . ($i - 1);
+                                $kd_prosedur = 'kd_prosedur_sekunder' . ($i - 1);
                             @endphp
                             <tr>
                                 <td></td>
@@ -231,7 +247,7 @@
                             </tr>
                         @endfor
                     </table>
-                    
+
                 </td>
             </tr>
             <tr>
@@ -251,10 +267,10 @@
                     <p class="mb-1 font-bold leading-none">KONDISI PULANG</p>
                     <table class="table w-full">
                         <tr>
-                            <td class="leading-none p-0 m-0"><span class="font-dejavu text-xl leading-none">&#9725;</span> Membaik</td>
-                            <td class="leading-none p-0 m-0"><span class="font-dejavu text-xl leading-none">&#9726;</span> Pulang Atas Permintaan Sendiri</td>
-                            <td class="leading-none p-0 m-0"><span class="font-dejavu text-xl leading-none">&#9725;</span> Meninggal</td>
-                            <td class="leading-none p-0 m-0"><span class="font-dejavu text-xl leading-none">&#9725;</span> Rujuk</td>
+                            <td class="m-0 p-0 leading-none"><span class="font-dejavu text-xl leading-none">&#9725;</span> Membaik</td>
+                            <td class="m-0 p-0 leading-none"><span class="font-dejavu text-xl leading-none">&#9726;</span> Pulang Atas Permintaan Sendiri</td>
+                            <td class="m-0 p-0 leading-none"><span class="font-dejavu text-xl leading-none">&#9725;</span> Meninggal</td>
+                            <td class="m-0 p-0 leading-none"><span class="font-dejavu text-xl leading-none">&#9725;</span> Rujuk</td>
                         </tr>
                     </table>
                 </td>
@@ -304,7 +320,7 @@
                                             $text = 'Lainnya';
                                     }
                                 @endphp
-    
+
                                 {{ $text }}
                             </td>
                             <td>:</td>
@@ -314,7 +330,7 @@
                     </table>
                 </td>
             </tr>
-    
+
             <tr>
                 <td colspan="3" class="border p-1" style="border-color: #333;">
                     <table class="table w-full">
@@ -324,26 +340,26 @@
                             <td class="w-full text-center">Pekalongan,</td>
                         </tr>
                         <tr>
-                            <td class="w-full text-center mb-3">Kepala Ruang</td>
-                            <td class="w-full text-center mb-3">Pasien/Keluarga</td>
-                            <td class="w-full text-center mb-3 text-nowrap whitespace-nowrap">Dokter Penanggung Jawab Pelayanan</td>
+                            <td class="mb-3 w-full text-center">Kepala Ruang</td>
+                            <td class="mb-3 w-full text-center">Pasien/Keluarga</td>
+                            <td class="text-nowrap mb-3 w-full whitespace-nowrap text-center">Dokter Penanggung Jawab Pelayanan</td>
                         </tr>
                         <tr>
                             <td class="text-center">
                                 <div class="relative inline-block h-28 w-28">
-                                    <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG($QRDokter, 'QRCODE') }}" alt="barcode" class="h-2w-28 w-28" />
-                                    <img src="{{ asset('assets/images/logo.png') }}" alt="logo" class="h-9 w-9" style="position: absolute !important; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;" />
+                                    <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG($QRKoor, 'QRCODE') }}" alt="barcode" class="w-28 w-28" />
+                                    <img src="{{ asset('assets/images/logo.png') }}" alt="logo" class="h-8 w-8" style="position: absolute !important; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;" />
                                 </div>
                             </td>
                             <td class="text-center">
                                 @if ($ttdPasien && $ttdPasien->verifikasi)
-                                    <img src="http://192.168.100.31/rsiap/file/verif_sep/<?=$ttdPasien?->verifikasi?>" width="70%" />
+                                    <img src="http://192.168.100.31/rsiap/file/verif_sep/{{ $ttdPasien?->verifikasi }}" width="70%" />
                                 @endif
                             </td>
                             <td class="text-center">
                                 <div class="relative inline-block h-28 w-28">
-                                    <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG($QRDokter, 'QRCODE') }}" alt="barcode" class="h-2w-28 w-28" />
-                                    <img src="{{ asset('assets/images/logo.png') }}" alt="logo" class="h-9 w-9" style="position: absolute !important; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;" />
+                                    <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG($QRDokter, 'QRCODE') }}" alt="barcode" class="w-28 w-28" />
+                                    <img src="{{ asset('assets/images/logo.png') }}" alt="logo" class="h-8 w-8" style="position: absolute !important; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;" />
                                 </div>
                             </td>
                         </tr>
