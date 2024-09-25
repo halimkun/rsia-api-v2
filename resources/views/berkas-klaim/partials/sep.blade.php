@@ -133,16 +133,16 @@
     
         <div class="mt-2">
             <table class="table w-full table-auto">
-                <tr>
+                <tr class="align-middle">
                     <td colspan="2" style="border-color: #333" class="border p-1 px-2">DIISI DIAGNOSA DAN TINDAKAN DENGAN LENGKAP JELAS DAN TERBACA</td>
                     <td style="border-color: #333; width: 65px;" class="border p-1 px-2 text-center">KODE</td>
                 </tr>
-                <tr>
+                <tr class="align-middle">
                     <td style="border-color: #333; width:170px; max-width: 200px" class="border p-1 px-2">DIAGNOSA UTAMA</td>
                     <td style="border-color: #333" class="border p-1 px-2">{{ $diagnosa->where('prioritas', 1)->first()->penyakit->nm_penyakit ?? '-' }}</td>
                     <td style="border-color: #333" class="border p-1 px-2 text-center">{{ $diagnosa->where('prioritas', 1)->first()->kd_penyakit ?? '-' }}</td>
                 </tr>
-                <tr>
+                <tr class="align-middle">
                     <td style="border-color: #333; width:180px; max-width: 200px" class="border p-1 px-2">DIAGNOSA SEKUNDER</td>
                     <td colspan="2" style="border-color: #333;" class="m-0 border p-0 leading-none">
                         <table class="table w-full m-0 p-0 leading-none">
@@ -162,7 +162,7 @@
                         </table>
                     </td>
                 </tr>
-                <tr>
+                <tr class="align-middle">
                     <td style="border-color: #333; width:170px; max-width: 200px" class="border p-1 px-2">TINDAKAN / OPERASI</td>
                     <td colspan="2" style="border-color: #333" class="m-0 border p-0">
                         <table class="table w-full">
