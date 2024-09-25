@@ -73,10 +73,13 @@ class BerkasKlaimController extends Controller
             return \App\Models\RsiaTriaseUgd::where('no_rawat', $bSep->no_rawat)->first();
         });
 
+        $kamarInap         = \App\Models\KamarInap::with('kamar.bangsal')
+            ->where('no_rawat', $bSep->no_rawat)->where('stts_pulang', '<>', 'Pindah Kamar')
+            ->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
 
-        $kamarInap         = \App\Models\KamarInap::with('kamar.bangsal')->where('no_rawat', $bSep->no_rawat)->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
+        $operasi           = \App\Models\RsiaOperasiSafe::withAllRelations()->where('no_rawat', $bSep->no_rawat)->get();
         $resumePasienRanap = \App\Models\ResumePasienRanap::where('no_rawat', $bSep->no_rawat)->first();
-        $spri              = \App\Models\BridgingSuratPriBpjs::where('no_rawat', $bSep->no_rawat)->first();
+        $spri              = \App\Models\BridgingSuratPriBpjs::where('no_surat', $bSep->noskdp)->first();
         $radiologi         = \App\Models\PeriksaRadiologi::select('no_rawat', 'nip', 'kd_jenis_prw', 'tgl_periksa', 'jam', 'dokter_perujuk', 'kd_dokter', 'status')->with(['dokter.sidikjari', 'dokterPerujuk', 'hasilRadiologi', 'jenisPerawatan', 'petugas.sidikjari'])->where('no_rawat', $bSep->no_rawat)->orderBy('tgl_periksa', 'ASC')->orderBy('jam', 'ASC')->get();
 
         $lab               = \Illuminate\Support\Facades\Cache::remember("lab_{$sep}", 3600, function () use ($regPeriksa, $bSep) {
@@ -107,6 +110,10 @@ class BerkasKlaimController extends Controller
 
         if ($resumePasienRanap) {
             $pdfs[] = $this->genResumeMedis($bSep, $regPeriksa->pasien, $regPeriksa, $kamarInap, $resumePasienRanap, $ttdResume, $bSep->dokter->pegawai, $ttdPasien);
+        }
+        
+        if ($operasi) {
+            $pdfs = array_merge($pdfs, $this->genLaporanOperasi($regPeriksa, $operasi));
         }
 
         if ($spri) {
@@ -302,6 +309,20 @@ class BerkasKlaimController extends Controller
         return $resumeMedis;
     }
 
+    public function genLaporanOperasi($regPeriksa, $operasi)
+    {
+        $operasiHtml = [];
+
+        foreach ($operasi as $key => $value) {
+            $operasiHtml[] = PDFHelper::generate('berkas-klaim.partials.laporan-operasi', [
+                'regPeriksa' => $regPeriksa,
+                'operasi'    => $value,
+            ]);
+        }
+
+        return $operasiHtml;
+    }
+
     public function genHasilPemeriksaanUsg($brigdingSep, $pasien, $regPeriksa)
     {
         $resumeMedis = PDFHelper::generate('berkas-klaim.partials.hasil-usg', [
@@ -371,7 +392,7 @@ class BerkasKlaimController extends Controller
 
         return $hasilLab;
     }
-    
+
     /**
      * Generate Hasil Lab PDF
      * 
