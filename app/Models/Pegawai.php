@@ -151,7 +151,7 @@ class Pegawai extends Model
     /**
      * Petugas data
      * 
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      * */
     public function petugas()
     {
@@ -161,7 +161,7 @@ class Pegawai extends Model
     /**
      * Email pegawai data
      * 
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      * */
     public function email()
     {
@@ -171,7 +171,7 @@ class Pegawai extends Model
     /**
      * Status kerja data
      * 
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      * */
     public function statusKerja()
     {
@@ -201,7 +201,7 @@ class Pegawai extends Model
     /**
      * Jadwal pegawai data
      * 
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
      * */
     public function sidikjari()
     {
