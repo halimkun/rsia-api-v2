@@ -266,6 +266,7 @@
                 <td colspan="3" class="border p-1" style="border-color: #333;">
                     <p class="mb-1 font-bold leading-none">KONDISI PULANG</p>
                     <table class="table w-full">
+                        {{-- TOOD : Sesuaikan dengan kondisi pulang pasien dari database --}}
                         <tr>
                             <td class="m-0 p-0 leading-none"><span class="font-dejavu text-xl leading-none">&#9725;</span> Membaik</td>
                             <td class="m-0 p-0 leading-none"><span class="font-dejavu text-xl leading-none">&#9726;</span> Pulang Atas Permintaan Sendiri</td>
@@ -347,7 +348,7 @@
                         <tr>
                             <td class="text-center">
                                 <div class="relative inline-block h-28 w-28">
-                                    <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG($QRKoor, 'QRCODE') }}" alt="barcode" class="w-28 w-28" />
+                                    <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG($QRKoor, 'QRCODE') }}" alt="barcode" class="w-28 h-28" />
                                     <img src="{{ asset('assets/images/logo.png') }}" alt="logo" class="h-8 w-8" style="position: absolute !important; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;" />
                                 </div>
                             </td>
@@ -358,7 +359,7 @@
                             </td>
                             <td class="text-center">
                                 <div class="relative inline-block h-28 w-28">
-                                    <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG($QRDokter, 'QRCODE') }}" alt="barcode" class="w-28 w-28" />
+                                    <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG($QRDokter, 'QRCODE') }}" alt="barcode" class="w-28 h-28" />
                                     <img src="{{ asset('assets/images/logo.png') }}" alt="logo" class="h-8 w-8" style="position: absolute !important; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;" />
                                 </div>
                             </td>
