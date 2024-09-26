@@ -43,6 +43,8 @@ use Illuminate\Support\Facades\DB;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\JadwalPoli> $jadwal
  * @property-read int|null $jadwal_count
  * @property-read \App\Models\Spesialis|null $spesialis
+ * @property-read \App\Models\Pegawai $pegawai
+ * @property-read \App\Models\SidikJari|null $sidikjari
  * @mixin \Eloquent
  */
 class Dokter extends Model

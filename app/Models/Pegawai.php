@@ -85,6 +85,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  * @method static \Illuminate\Database\Eloquent\Builder|Pegawai whereTglLahir($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Pegawai whereTmpLahir($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Pegawai whereWajibmasuk($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RsiaCuti> $cuti
+ * @property-read int|null $cuti_count
+ * @property-read \App\Models\RsiaEmailPegawai|null $email
+ * @property-read \App\Models\Petugas|null $petugas
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RekapPresensi> $presensi
+ * @property-read int|null $presensi_count
+ * @property-read \App\Models\SidikJari|null $sidikjari
+ * @property-read \App\Models\SttsKerja $statusKerja
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RsiaPenerimaUndangan> $undangan
+ * @property-read int|null $undangan_count
  * @mixin \Eloquent
  */
 class Pegawai extends Model
