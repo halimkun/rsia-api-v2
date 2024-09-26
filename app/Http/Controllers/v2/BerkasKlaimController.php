@@ -69,14 +69,9 @@ class BerkasKlaimController extends Controller
             return \App\Models\RegPeriksa::with(['pasien', 'diagnosaPasien.penyakit', 'prosedurPasien.penyakit', 'catatanPerawatan'])->where('no_rawat', $bSep->no_rawat)->first();
         });
 
-        $triase = \Illuminate\Support\Facades\Cache::remember("triase_{$sep}", 3600, function () use ($bSep) {
-            return \App\Models\RsiaTriaseUgd::where('no_rawat', $bSep->no_rawat)->first();
-        });
-
         $kamarInap = \App\Models\KamarInap::with('kamar.bangsal')->where('no_rawat', $bSep->no_rawat)->where('stts_pulang', '<>', 'Pindah Kamar')->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
         $operasi = \App\Models\RsiaOperasiSafe::withAllRelations()->where('no_rawat', $bSep->no_rawat)->get();
         $resumePasienRanap = \App\Models\ResumePasienRanap::where('no_rawat', $bSep->no_rawat)->first();
-        $spri = \App\Models\BridgingSuratPriBpjs::where('no_surat', $bSep->noskdp)->first();
         $obat = $this->groupDetailPemberianObat(\App\Models\DetailPemberianObat::select('tgl_perawatan', 'jam', 'no_rawat', 'kode_brng', 'jml')->with('obat')->whereIn('no_rawat', $this->cekGabung($bSep->no_rawat))->get());
         
         $radiologi = \Illuminate\Support\Facades\Cache::remember("radiologi_{$sep}", 3600, function () use ($bSep) {
@@ -108,6 +103,7 @@ class BerkasKlaimController extends Controller
 
         $pdfs = [
             $this->genSep($bSep, $regPeriksa->diagnosaPasien, $regPeriksa->prosedurPasien),
+            $this->genTriaseUgd($regPeriksa, $sep),
         ];
 
         if ($resumePasienRanap) {
@@ -118,9 +114,7 @@ class BerkasKlaimController extends Controller
             $pdfs = array_merge($pdfs, $this->genLaporanOperasi($regPeriksa, $operasi));
         }
 
-        if ($spri) {
-            $pdfs[] = $this->genSuratPerintahRawatInap($bSep, $regPeriksa->pasien, $spri);
-        }
+        $pdfs[] = $this->genSuratPerintahRawatInap($bSep, $regPeriksa->pasien);
 
         if ($bSep->surat_kontrol) {
             $pdfs[] = $this->genSuratRencanaKontrol($bSep, $regPeriksa);
@@ -263,6 +257,20 @@ class BerkasKlaimController extends Controller
         return null;
     }
 
+    public function genTriaseUgd($regPeriksa, $sep)
+    {
+        $triase = \Illuminate\Support\Facades\Cache::remember("triase_{$sep}", 3600, function () use ($regPeriksa) {
+            return \App\Models\RsiaTriaseUgd::where('no_rawat', $regPeriksa->no_rawat)->first();
+        });
+
+        $triaseUgd = PDFHelper::generate('berkas-klaim.partials.triase', [
+            'regPeriksa' => $regPeriksa,
+            'triase'     => $triase,
+        ]);
+
+        return $triaseUgd;
+    }
+
     /**
      * Generate SEP PDF
      * 
@@ -348,8 +356,14 @@ class BerkasKlaimController extends Controller
      * 
      * @return \Barryvdh\DomPDF\PDF
      */
-    public function genSuratPerintahRawatInap($brigdingSep, $pasien, $spri)
+    public function genSuratPerintahRawatInap($brigdingSep, $pasien)
     {
+        if (!$brigdingSep->noskdp) {
+            return null;
+        }
+
+        $spri = \App\Models\BridgingSuratPriBpjs::where('no_surat', $brigdingSep->noskdp)->first();
+        
         $pri = PDFHelper::generate('berkas-klaim.partials.spri', [
             'sep'    => $brigdingSep,
             'pasien' => $pasien,
