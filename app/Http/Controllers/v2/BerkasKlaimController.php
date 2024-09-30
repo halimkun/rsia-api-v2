@@ -103,7 +103,7 @@ class BerkasKlaimController extends Controller
         $pdfs = [
             $this->genSep($bSep, $regPeriksa->diagnosaPasien, $regPeriksa->prosedurPasien),
             $this->genTriaseUgd($regPeriksa, $sep),
-            $this->genAsmedUgd($regPeriksa, $sep),
+            $this->genAsmedUgd($regPeriksa, $bSep),
         ];
 
         if ($resumePasienRanap) {
@@ -257,7 +257,27 @@ class BerkasKlaimController extends Controller
         return null;
     }
 
-    public function genTriaseUgd($regPeriksa, $sep)
+    public function genAsmedUgd($regPeriksa, $bSep)
+    {
+        if ($bSep->jnspelayanan != 2) {
+            return null;
+        }
+
+        $asmed = \App\Models\PenilaianMedisIgd::with('dokter.sidikjari')->where('no_rawat', $regPeriksa->no_rawat)->first();
+
+        if (!$asmed) {
+            return null;
+        }
+
+        $asmedUgd = PDFHelper::generate('berkas-klaim.partials.asmed-ugd', [
+            'regPeriksa' => $regPeriksa,
+            'asmed'      => $asmed,
+        ]);
+
+        return $asmedUgd;
+    }
+
+    public function genTriaseUgd($regPeriksa, $bSep)
     {
         $triase = \Illuminate\Support\Facades\Cache::remember("triase_{$sep}", 3600, function () use ($regPeriksa) {
             return \App\Models\RsiaTriaseUgd::where('no_rawat', $regPeriksa->no_rawat)->first();
