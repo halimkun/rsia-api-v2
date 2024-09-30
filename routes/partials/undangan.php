@@ -3,9 +3,9 @@
 use Orion\Facades\Orion;
 use Illuminate\Support\Facades\Route;
 
-// FIXME : review ulang endpoint undangan (SEMUA) 
+// FIXME : review ulang endpoint undangan (SEMUA)
 Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('undangan')->group(function () {
-    // ==================== PENERIMA UNDANGAN 
+    // ==================== PENERIMA UNDANGAN
     Orion::resource('penerima', \App\Http\Controllers\Orion\RsiaPenerimaUndanganController::class)
         ->only(['search'])
         ->parameters(['penerima' => 'base64_no_surat']); // INFO : selesai
@@ -16,7 +16,7 @@ Route::middleware(['user-aes', 'claim:role,pegawai'])->prefix('undangan')->group
 
     // ==================== KEHADIRAN RAPAT
     Route::apiResource('kehadiran', \App\Http\Controllers\v2\RsiaKehadiranRapatController::class)
-        ->only(['store'])
+        ->only(['store', 'show'])
         ->parameters(['kehadiran' => 'base64_no_surat']);
 });
 

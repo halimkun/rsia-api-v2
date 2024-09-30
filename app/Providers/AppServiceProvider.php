@@ -37,5 +37,10 @@ class AppServiceProvider extends ServiceProvider
         // ========== SET LOCALE
         setlocale(LC_TIME, 'id_ID.utf8');
         setlocale(LC_ALL, 'IND');
+
+        // ========== FORCE HTTPS
+        if($this->app->environment('production')) {
+            $this->app['request']->server->set('HTTPS','on');
+        }
     }
 }
