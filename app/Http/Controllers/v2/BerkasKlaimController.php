@@ -102,7 +102,7 @@ class BerkasKlaimController extends Controller
 
         $pdfs = [
             $this->genSep($bSep, $regPeriksa->diagnosaPasien, $regPeriksa->prosedurPasien),
-            $this->genTriaseUgd($regPeriksa, $sep),
+            $this->genTriaseUgd($regPeriksa, $bSep),
             $this->genAsmedUgd($regPeriksa, $bSep),
         ];
 
@@ -279,7 +279,11 @@ class BerkasKlaimController extends Controller
 
     public function genTriaseUgd($regPeriksa, $bSep)
     {
-        $triase = \Illuminate\Support\Facades\Cache::remember("triase_{$sep}", 3600, function () use ($regPeriksa) {
+        if ($bSep->jnspelayanan != 2) {
+            return null;
+        }
+
+        $triase = \Illuminate\Support\Facades\Cache::remember("triase_{$bSep->no_sep}", 3600, function () use ($regPeriksa) {
             return \App\Models\RsiaTriaseUgd::where('no_rawat', $regPeriksa->no_rawat)->first();
         });
 
