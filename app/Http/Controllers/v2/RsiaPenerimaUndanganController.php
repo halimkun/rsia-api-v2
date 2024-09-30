@@ -39,11 +39,50 @@ class RsiaPenerimaUndanganController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'no_surat' => 'required|string',
+            '' => 'required|string',
             'tipe'     => 'required|string|in:surat/internal,komite/ppi,komite/pmkp,komite/medis,komite/keperawatan,komite/kesehatan,berkas/notulen',
-            'model'    => 'required|string',
+            'model'    => 'string',
         ]);
 
+        // if no_surat contain /A/S-RSIA/ 
+        switch ($request->no_surat) {
+            case strpos($request->no_surat, '/A/S-RSIA/') !== false:
+                $request->merge([
+                    'model' => \App\Models\RsiaSuratInternal::class,
+                ]);
+                break;
+
+            case strpos($request->no_surat, 'KPRT-RSIA') !== false:
+                $request->merge([
+                    'model' => \App\Models\RsiaSuratInternal::class,
+                ]);
+                break;
+            case strpos($request->no_surat, 'KTKL-RSIA') !== false:
+                $request->merge([
+                    'model' => \App\Models\RsiaSuratInternal::class,
+                ]);
+                break;
+            case strpos($request->no_surat, 'KOMED-RSIA') !== false:
+                $request->merge([
+                    'model' => \App\Models\RsiaSuratInternal::class,
+                ]);
+                break;
+            case strpos($request->no_surat, 'PMKP-RSIA') !== false:
+                $request->merge([
+                    'model' => \App\Models\RsiaSuratInternal::class,
+                ]);
+                break;
+            case strpos($request->no_surat, 'PPI-RSIA') !== false:
+                $request->merge([
+                    'model' => \App\Models\RsiaSuratInternal::class,
+                ]);
+                break;
+            
+            default:
+                return ApiResponse::error('Invalid data : No surat tidak valid', 'invalid_request', 400);
+                break;
+        }
+        
         // App\\\\Models\\\\RsiaSuratInternal to App\Models\RsiaSuratInternal
         $request->merge([
             'model' => str_replace('\\\\', '\\', $request->model),
