@@ -39,9 +39,9 @@ class RsiaPenerimaUndanganController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            '' => 'required|string',
+            'no_surat' => 'required|string',
             'tipe'     => 'required|string|in:surat/internal,komite/ppi,komite/pmkp,komite/medis,komite/keperawatan,komite/kesehatan,berkas/notulen',
-            'model'    => 'string',
+            // 'model'    => 'string',
         ]);
 
         // if no_surat contain /A/S-RSIA/ 
