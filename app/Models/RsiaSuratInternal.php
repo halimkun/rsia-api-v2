@@ -57,6 +57,12 @@ class RsiaSuratInternal extends Model
     public $timestamps = false;
 
 
+    public function penerima()
+    {
+        return $this->hasMany(RsiaPenerimaUndangan::class, 'no_surat', 'no_surat')
+            ->select('no_surat', 'penerima', 'updated_at')->with('pegawai');
+    }
+
     public function penerimaUndangan()
     {
         return $this->hasMany(RsiaPenerimaUndangan::class, 'no_surat', 'no_surat');

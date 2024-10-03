@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Awobaz\Compoships\Compoships;
 use Illuminate\Database\Eloquent\Model;
+use Thiagoprz\CompositeKey\HasCompositeKey;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * App\Models\RsiaKehadiranRapat
@@ -26,7 +28,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class RsiaKehadiranRapat extends Model
 {
-    use HasFactory;
+    use HasCompositeKey, Compoships;
 
     protected $table = 'rsia_kehadiran_rapat';
 

@@ -37,7 +37,7 @@ class RsiaUndanganController extends Controller
     {
         $query = parent::buildIndexFetchQuery($request, $requestedRelations);
         $query->select(['no_surat', 'model'])->groupBy('no_surat', 'model');
-        
+
         return $query;
     }
 
@@ -95,7 +95,7 @@ class RsiaUndanganController extends Controller
      */
     public function sortableBy(): array
     {
-        return ['no_surat'];
+        return ['no_surat', 'created_at', 'updated_at'];
     }
 
     /**
