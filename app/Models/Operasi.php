@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Awobaz\Compoships\Compoships;
 use Illuminate\Database\Eloquent\Model;
 use Thiagoprz\CompositeKey\HasCompositeKey;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -130,7 +131,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class Operasi extends Model
 {
-    use HasFactory, HasCompositeKey;
+    use HasFactory, HasCompositeKey, Compoships;
 
     protected $table = 'operasi';
 
@@ -145,4 +146,170 @@ class Operasi extends Model
     public $incrementing = false;
 
     public $timestamps = false;
+
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    public function scopeWithAllRelations()
+    {
+        return $this->with([
+            'laporan',
+            'detailOperator1',
+            'detailOperator2',
+            'detailOperator3',
+            'detailAsistenOperator1',
+            'detailAsistenOperator2',
+            'detailAsistenOperator3',
+            'detailDokterAnak',
+            'detailPerawatResusitas',
+            'detailDokterAnestesi',
+            'detailAsistenAnestesi',
+            'detailAsistenAnestesi2',
+            'detailBidan',
+            'detailBidan2',
+            'detailBidan3',
+            'detailPerawatLuar',
+            'detailOmloop',
+            'detailOmloop2',
+            'detailOmloop3',
+            'detailOmloop4',
+            'detailOmloop5',
+            'detailDokterPjanak',
+            'detailDokterUmum',
+        ]);
+    }
+
+    /**
+     * Get the laporan that owns the Operasi
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function laporan()
+    {
+        return $this->hasOne(LaporanOperasi::class, ['no_rawat', 'tanggal'], ['no_rawat', 'tgl_operasi']);
+    }
+
+    /**
+     * Get the pasien that owns the Operasi
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function detailOperator1()
+    {
+        return $this->belongsTo(Dokter::class, 'operator1', 'kd_dokter')->select('kd_dokter', 'nm_dokter')->where('kd_dokter', '<>', '-');
+    }
+
+    public function detailOperator2()
+    {
+        return $this->belongsTo(Dokter::class, 'operator2', 'kd_dokter')->select('kd_dokter', 'nm_dokter')->where('kd_dokter', '<>', '-');
+    }
+
+    public function detailOperator3()
+    {
+        return $this->belongsTo(Dokter::class, 'operator3', 'kd_dokter')->select('kd_dokter', 'nm_dokter')->where('kd_dokter', '<>', '-');
+    }
+
+    public function detailAsistenOperator1()
+    {
+        return $this->belongsTo(Pegawai::class, 'asisten_operator1', 'nik')->select('id', 'nik', 'nama')->where('nik', '<>', '-');
+    }
+
+    public function detailAsistenOperator2()
+    {
+        return $this->belongsTo(Pegawai::class, 'asisten_operator2', 'nik')->select('id', 'nik', 'nama')->where('nik', '<>', '-');
+    }
+
+    public function detailAsistenOperator3()
+    {
+        return $this->belongsTo(Pegawai::class, 'asisten_operator3', 'nik')->select('id', 'nik', 'nama')->where('nik', '<>', '-');
+    }
+
+    // TODO : instrumen
+
+    public function  detailDokterAnak()
+    {
+        return $this->belongsTo(Dokter::class, 'dokter_anak', 'kd_dokter')->select('kd_dokter', 'nm_dokter')->where('kd_dokter', '<>', '-');
+    }
+
+    public function detailPerawatResusitas()
+    {
+        return $this->belongsTo(Pegawai::class, 'perawaat_resusitas', 'nik')->select('id', 'nik', 'nama')->where('nik', '<>', '-');
+    }
+
+    public function detailDokterAnestesi()
+    {
+        return $this->belongsTo(Dokter::class, 'dokter_anestesi', 'kd_dokter')->select('kd_dokter', 'nm_dokter')->where('kd_dokter', '<>', '-');
+    }
+
+    public function detailAsistenAnestesi()
+    {
+        return $this->belongsTo(Pegawai::class, 'asisten_anestesi', 'nik')->select('id', 'nik', 'nama')->where('nik', '<>', '-');
+    }
+
+    public function detailAsistenAnestesi2()
+    {
+        return $this->belongsTo(Pegawai::class, 'asisten_anestesi2', 'nik')->select('id', 'nik', 'nama')->where('nik', '<>', '-');
+    }
+
+    public function detailBidan()
+    {
+        return $this->belongsTo(Pegawai::class, 'bidan', 'nik')->select('id', 'nik', 'nama')->where('nik', '<>', '-');
+    }
+
+    public function detailBidan2()
+    {
+        return $this->belongsTo(Pegawai::class, 'bidan2', 'nik')->select('id', 'nik', 'nama')->where('nik', '<>', '-');
+    }
+
+    public function detailBidan3()
+    {
+        return $this->belongsTo(Pegawai::class, 'bidan3', 'nik')->select('id', 'nik', 'nama')->where('nik', '<>', '-');
+    }
+
+    public function detailPerawatLuar()
+    {
+        return $this->belongsTo(Pegawai::class, 'perawat_luar', 'nik')->select('id', 'nik', 'nama')->where('nik', '<>', '-');
+    }
+
+    public function detailPaket()
+    {
+        return $this->belongsTo(PaketOperasi::class, 'kode_paket', 'kode_paket')->select('kode_paket', 'nm_perawatan');
+    }
+
+    public function detailOmloop()
+    {
+        return $this->belongsTo(Pegawai::class, 'omloop', 'nik')->select('id', 'nik', 'nama')->where('nik', '<>', '-');
+    }
+
+    public function detailOmloop2()
+    {
+        return $this->belongsTo(Pegawai::class, 'omloop2', 'nik')->select('id', 'nik', 'nama')->where('nik', '<>', '-');
+    }
+
+    public function detailOmloop3()
+    {
+        return $this->belongsTo(Pegawai::class, 'omloop3', 'nik')->select('id', 'nik', 'nama')->where('nik', '<>', '-');
+    }
+
+    public function detailOmloop4()
+    {
+        return $this->belongsTo(Pegawai::class, 'omloop4', 'nik')->select('id', 'nik', 'nama')->where('nik', '<>', '-');
+    }
+
+    public function detailOmloop5()
+    {
+        return $this->belongsTo(Pegawai::class, 'omloop5', 'nik')->select('id', 'nik', 'nama')->where('nik', '<>', '-');
+    }
+
+    public function detailDokterPjanak()
+    {
+        return $this->belongsTo(Dokter::class, 'dokter_pjanak', 'kd_dokter')->select('kd_dokter', 'nm_dokter')->where('kd_dokter', '<>', '-');
+    }
+
+    public function detailDokterUmum()
+    {
+        return $this->belongsTo(Dokter::class, 'dokter_umum', 'kd_dokter')->select('kd_dokter', 'nm_dokter')->where('kd_dokter', '<>', '-');
+    }
 }

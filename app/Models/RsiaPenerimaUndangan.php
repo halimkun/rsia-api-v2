@@ -23,6 +23,12 @@ use Thiagoprz\CompositeKey\HasCompositeKey;
  * @method static \Illuminate\Database\Eloquent\Builder|RsiaPenerimaUndangan whereNoSurat($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RsiaPenerimaUndangan wherePenerima($value)
  * @method static \Illuminate\Database\Eloquent\Builder|RsiaPenerimaUndangan whereTipe($value)
+ * @property string $updated_at
+ * @property-read Model|\Eloquent $relatedModel
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaPenerimaUndangan searchByRelatedModel($searchTerm)
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaPenerimaUndangan whereBetweenDate($start, $end)
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaPenerimaUndangan whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|RsiaPenerimaUndangan withDetail()
  * @mixin \Eloquent
  */
 class RsiaPenerimaUndangan extends Model
@@ -46,23 +52,38 @@ class RsiaPenerimaUndangan extends Model
         'model'    => 'string',
     ];
 
-
-    public function pegawai()
-    {
-        return $this->belongsTo(Pegawai::class, 'penerima', 'nik')->select('nik', 'nama', 'jbtn', 'departemen', 'bidang');
-    }
-    
+    /**
+     * Get the detail that owns the RsiaPenerimaUndangan
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function detail()
     {
         return $this->belongsTo(Pegawai::class, 'penerima', 'nik')->select('nik', 'nama', 'jbtn', 'departemen', 'bidang');
     }
+  
+    public function pegawai()
+    {
+        return $this->belongsTo(Pegawai::class, 'penerima', 'nik')->select('nik', 'nama', 'jbtn', 'departemen', 'bidang');
+    }
 
-    // Relasi Polimorfik
+    /**
+     * Get the related model that owns the RsiaPenerimaUndangan
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
+     */
     public function relatedModel(): \Illuminate\Database\Eloquent\Relations\MorphTo
     {
         return $this->morphTo('no_surat', 'model', 'no_surat', 'no_surat');
     }
 
+    /**
+     * Scope a query to search by related model.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $searchTerm
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
     public function scopeSearchByRelatedModel($query, $searchTerm)
     {
         return $query->whereHas('relatedModel', function ($query) use ($searchTerm) {
@@ -70,6 +91,14 @@ class RsiaPenerimaUndangan extends Model
         });
     }
 
+    /**
+     * Scope a query to search by related model.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param string $start
+     * @param string $end
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
     public function scopeWhereBetweenDate($query, $start, $end)
     {
         if ($start == null || $end == null) {
@@ -81,6 +110,12 @@ class RsiaPenerimaUndangan extends Model
         }
     }
 
+    /**
+     * Scope a query to eager load related model and detail.
+     *
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
     public function scopeWithDetail($query)
     {
         return $query->with(['relatedModel', 'detail']);

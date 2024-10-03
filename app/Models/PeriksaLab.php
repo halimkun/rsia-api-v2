@@ -74,6 +74,26 @@ class PeriksaLab extends Model
     public $timestamps = false;
 
 
+    // scope with custom reg_periksa data
+    public function scopeWithRegPeriksaPasien($query, array $regPeriksaSelect, array $pasienSelect)
+    {
+        return $query->with(['regPeriksa' => function ($q) use ($regPeriksaSelect, $pasienSelect) {
+            $q->select($regPeriksaSelect);
+            $q->with(['poliklinik', 'pasien' => function ($p) use ($pasienSelect) {
+                $p->select($pasienSelect);
+            }]);
+        }]);
+    }
+    /**
+     * Get the registrasi that owns the periksa lab.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */ 
+    public function perujuk()
+    {
+        return $this->belongsTo(Dokter::class, 'dokter_perujuk', 'kd_dokter')->select('kd_dokter', 'nm_dokter');
+    }
+
     /**
      * Get the registrasi that owns the periksa lab.
      * 
@@ -102,6 +122,16 @@ class PeriksaLab extends Model
     public function petugas()
     {
         return $this->belongsTo(Petugas::class, 'nip', 'nip')->select('nip', 'nama');
+    }
+
+    /**
+     * Get the registrasi that owns the periksa lab.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * */
+    public function pegawai()
+    {
+        return $this->belongsTo(Pegawai::class, 'nip', 'nik')->select('id', 'nik', 'nama');
     }
 
     /**

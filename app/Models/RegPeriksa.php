@@ -126,7 +126,7 @@ class RegPeriksa extends Model
     public function pasien()
     {
         return $this->belongsTo(Pasien::class, 'no_rkm_medis', 'no_rkm_medis')
-            ->select('no_rkm_medis', 'nm_pasien', 'jk', 'tmp_lahir', 'tgl_lahir');
+            ->select('no_rkm_medis', 'nm_pasien', 'jk', 'tmp_lahir', 'tgl_lahir', 'alamat', 'no_tlp', 'no_ktp', 'agama', 'pekerjaan');
     }
 
     /**
@@ -231,9 +231,39 @@ class RegPeriksa extends Model
         return $this->hasMany(DetailPemberianObat::class, 'no_rawat', 'no_rawat');
     }
 
+    /**
+     * Get the pasien bayi that owns the registrasi.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * */
     public function pasienBayi()
     {
         return $this->belongsTo(PasienBayi::class, 'no_rkm_medis', 'no_rkm_medis')
             ->select('no_rkm_medis', 'berat_badan', 'anakke', 'keterangan', 'diagnosa');
+    }
+
+    /**
+     * Get the diagnosa pasien that owns the registrasi.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * */
+    public function diagnosaPasien()
+    {
+        return $this->hasMany(DiagnosaPasien::class, 'no_rawat', 'no_rawat');
+    }
+
+    /**
+     * Get the prosedur pasien that owns the registrasi.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * */
+    public function prosedurPasien()
+    {
+        return $this->hasMany(ProsedurPasien::class, 'no_rawat', 'no_rawat');
+    }
+
+    public function catatanPerawatan()
+    {
+        return $this->belongsTo(CatatanPerawatan::class, 'no_rawat', 'no_rawat');
     }
 }

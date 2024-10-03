@@ -23,9 +23,12 @@ class RanapGabung extends Model
 
     protected $table = 'ranap_gabung';
 
-    // protected $guarded = ['id'];
+    protected $primaryKey = 'no_rawat';
 
-    // protected $with = ['menu'];
+    protected $fillable = [
+        'no_rawat',
+        'no_rawat2'
+    ];
 
     public $timestamps = false;
 

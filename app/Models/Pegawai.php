@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * App\Models\Pegawai
@@ -84,6 +85,16 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Pegawai whereTglLahir($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Pegawai whereTmpLahir($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Pegawai whereWajibmasuk($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RsiaCuti> $cuti
+ * @property-read int|null $cuti_count
+ * @property-read \App\Models\RsiaEmailPegawai|null $email
+ * @property-read \App\Models\Petugas|null $petugas
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RekapPresensi> $presensi
+ * @property-read int|null $presensi_count
+ * @property-read \App\Models\SidikJari|null $sidikjari
+ * @property-read \App\Models\SttsKerja $statusKerja
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\RsiaPenerimaUndangan> $undangan
+ * @property-read int|null $undangan_count
  * @mixin \Eloquent
  */
 class Pegawai extends Model
@@ -140,7 +151,7 @@ class Pegawai extends Model
     /**
      * Petugas data
      * 
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      * */
     public function petugas()
     {
@@ -150,7 +161,7 @@ class Pegawai extends Model
     /**
      * Email pegawai data
      * 
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      * */
     public function email()
     {
@@ -160,7 +171,7 @@ class Pegawai extends Model
     /**
      * Status kerja data
      * 
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      * */
     public function statusKerja()
     {
@@ -185,5 +196,16 @@ class Pegawai extends Model
     public function cuti()
     {
         return $this->hasMany(RsiaCuti::class, 'nik', 'nik');
+    }
+
+    /**
+     * Jadwal pegawai data
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * */
+    public function sidikjari()
+    {
+        return $this->hasOne(SidikJari::class, 'id', 'id')
+            ->select('id', DB::raw('SHA1(sidikjari) as sidikjari'));
     }
 }

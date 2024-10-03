@@ -16,3 +16,8 @@ mix.js('resources/js/app.js', 'public/js').postCss('resources/css/app.css', 'pub
     tailwindcss('./tailwind.config.js'),
     require('autoprefixer'),
 ]);
+
+mix.js('resources/js/print.js', 'public/js').postCss('resources/css/print.css', 'public/css', [
+    tailwindcss('./tailwind.print.config.js'),
+    require('autoprefixer'),
+]);

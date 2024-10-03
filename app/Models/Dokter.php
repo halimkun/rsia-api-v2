@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 /**
  * App\Models\Dokter
@@ -42,6 +43,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\JadwalPoli> $jadwal
  * @property-read int|null $jadwal_count
  * @property-read \App\Models\Spesialis|null $spesialis
+ * @property-read \App\Models\Pegawai $pegawai
+ * @property-read \App\Models\SidikJari|null $sidikjari
  * @mixin \Eloquent
  */
 class Dokter extends Model
@@ -64,7 +67,7 @@ class Dokter extends Model
 
     public $timestamps = false;
 
-
+    
     public function jadwal()
     {
         return $this->hasMany(JadwalPoli::class, 'kd_dokter', 'kd_dokter');
@@ -77,7 +80,12 @@ class Dokter extends Model
 
     public function pegawai()
     {
-        return $this->belongsTo(Pegawai::class, 'kd_dokter', 'nik')
-            ->select('nik', 'nama', 'jk' ,'photo');
+        return $this->belongsTo(Pegawai::class, 'kd_dokter', 'nik')->select('id', 'nik', 'nama', 'jk' ,'photo');
+    }
+
+    public function sidikjari()
+    {
+        return $this->hasOneThrough(SidikJari::class, Pegawai::class, 'nik', 'id', 'kd_dokter', 'id')
+                ->select('sidikjari.id', DB::raw('SHA1(sidikjari) as sidikjari'));
     }
 }

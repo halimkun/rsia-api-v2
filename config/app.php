@@ -170,6 +170,10 @@ return [
         Kreait\Laravel\Firebase\ServiceProvider::class,
         Illuminate\Notifications\NotificationServiceProvider::class,
         Halim\EKlaim\Providers\EKlaimServiceProvider::class,
+        Webklex\PDFMerger\Providers\PDFMergerServiceProvider::class,
+        Milon\Barcode\BarcodeServiceProvider::class,
+
+        // Clockwork\Support\Laravel\ClockworkServiceProvider::class
 
         /*
          * Application Service Providers...
@@ -234,6 +238,10 @@ return [
         'Validator' => Illuminate\Support\Facades\Validator::class,
         'View' => Illuminate\Support\Facades\View::class,
 
+        'PDFMerger' => Webklex\PDFMerger\Facades\PDFMergerFacade::class,
+
+        'DNS1D' => Milon\Barcode\Facades\DNS1DFacade::class,
+        'DNS2D' => Milon\Barcode\Facades\DNS2DFacade::class,
     ],
 
 ];

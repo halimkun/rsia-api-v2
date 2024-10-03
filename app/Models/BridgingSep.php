@@ -163,7 +163,13 @@ class BridgingSep extends Model
      * */
     public function reg_periksa()
     {
-        return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'tgl_registrasi', 'jam_reg');
+        return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'tgl_registrasi', 'jam_reg', 'no_reg');
+    }
+
+    // dokter via reg_periksa
+    public function dokter()
+    {
+        return $this->hasOneThrough(Dokter::class, RegPeriksa::class, 'no_rawat', 'kd_dokter', 'no_rawat', 'kd_dokter');
     }
 
     /**
@@ -173,7 +179,7 @@ class BridgingSep extends Model
      * */
     public function kamar_inap()
     {
-        return $this->belongsTo(KamarInap::class, 'no_rawat', 'no_rawat')->select('no_rawat', '');
+        return $this->belongsTo(KamarInap::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'kd_kamar', 'diagnosa_awal', 'diagnosa_akhir', 'tgl_masuk', 'tgl_keluar', 'jam_masuk', 'jam_keluar', 'lama', 'stts_pulang');
     }
 
     /**
@@ -194,5 +200,25 @@ class BridgingSep extends Model
     public function chunk()
     {
         return $this->belongsTo(RsiaGroupingChunks::class, 'no_sep', 'no_sep');
+    }
+
+    /**
+     * Get the bridging_surat_kontrol_bpjs that owns the BridgingSep
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * */
+    public function surat_kontrol()
+    {
+        return $this->hasOne(BridgingSuratKontrolBpjs::class, 'no_surat', 'noskdp');
+    }
+
+    /**
+     * Get the bridging_surat_kontrol_bpjs that owns the BridgingSep
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * */
+    public function naikKelas()
+    {
+        return $this->hasOne(RsiaNaikKelas::class, 'no_sep', 'no_sep');
     }
 }

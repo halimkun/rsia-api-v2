@@ -16,42 +16,42 @@ class BridgingEKlaim extends Controller
      */
     public function index(Request $request)
     {
-        // check apakah didalam request terdapat metadata dan apakah didalam metadata terdapat method
-        if (!$request->has('metadata') && !$request->metadata->has('method')) {
-            return ApiResponse::error('Request must have metadata and method', 'invalid_request', null, 400);
-        }
+        // // check apakah didalam request terdapat metadata dan apakah didalam metadata terdapat method
+        // if (!$request->has('metadata') && !$request->metadata->has('method')) {
+        //     return ApiResponse::error('Request must have metadata and method', 'invalid_request', null, 400);
+        // }
 
-        $stringified = json_encode($request->all());
-        $request_data = \App\Helpers\EKlaimCrypt::encrypt($stringified);
+        // $stringified = json_encode($request->all());
+        // $request_data = \App\Helpers\EKlaimCrypt::encrypt($stringified);
 
-        // Ensure request_data is correctly formatted as a single-line string
-        $request_data = trim(preg_replace('/\s+/', ' ', $request_data)); // <--- This line is the key to the solution
+        // // Ensure request_data is correctly formatted as a single-line string
+        // $request_data = trim(preg_replace('/\s+/', ' ', $request_data)); // <--- This line is the key to the solution
 
-        try {
-            $response = Http::withHeaders([
-                'Content-Type' => 'application/x-www-form-urlencoded',
-            ])->post(env("EKLAIM_BASE_URL"), [
-                $request_data
-            ]);
-        } catch (\Throwable $th) {
-            return ApiResponse::error("Error : INACBG's invalid request", "invalid_inacbg_request", $th->getMessage(), 500);
-        }
+        // try {
+        //     $response = Http::withHeaders([
+        //         'Content-Type' => 'application/x-www-form-urlencoded',
+        //     ])->post(env("EKLAIM_BASE_URL"), [
+        //         $request_data
+        //     ]);
+        // } catch (\Throwable $th) {
+        //     return ApiResponse::error("Error : INACBG's invalid request", "invalid_inacbg_request", $th->getMessage(), 500);
+        // }
 
-        $first = strpos($response, "\n") + 1;
-        $last  = strrpos($response, "\n") - 1;
-        $data  = substr($response, $first, strlen($response) - $first - $last);
+        // $first = strpos($response, "\n") + 1;
+        // $last  = strrpos($response, "\n") - 1;
+        // $data  = substr($response, $first, strlen($response) - $first - $last);
 
-        try {
-            $resp = json_decode(\App\Helpers\EKlaimCrypt::decrypt($data));
-        } catch (\Throwable $th) {
-            return ApiResponse::error('Error : ' . $th->getMessage(), "invalid_inacbg_decrypt", $th->getCode(), 500);
-        }
+        // try {
+        //     $resp = json_decode(\App\Helpers\EKlaimCrypt::decrypt($data));
+        // } catch (\Throwable $th) {
+        //     return ApiResponse::error('Error : ' . $th->getMessage(), "invalid_inacbg_decrypt", $th->getCode(), 500);
+        // }
 
-        if ($resp->metadata->code != 200) {
-            return ApiResponse::error($resp->metadata->message, "invalid_inacbg_request", $resp, $resp->metadata->code);
-        }
+        // if ($resp->metadata->code != 200) {
+        //     return ApiResponse::error($resp->metadata->message, "invalid_inacbg_request", $resp, $resp->metadata->code);
+        // }
 
-        return $resp;
+        // return $resp;
     }
 
     /**
