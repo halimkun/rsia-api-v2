@@ -1,7 +1,7 @@
 <x-print-layout>
     @push('header')
         <header style="width: 100%; padding: 0 0; margin: 0 0;">
-            <table class="table mb-5 w-full table-auto">
+            <table class="table mb-3 w-full table-auto">
                 <tr style="text-align: center;">
                     <td style="text-align: center;">
                         <img src="{{ public_path('assets/images/logo.png') }}" width="70" />
@@ -19,7 +19,7 @@
     @endpush
 
     <main>
-        <div class="mb-4 mt-2 text-center font-bold">
+        <div class="mb-3 mt-2 text-center font-bold">
             KUITANSI PEMBAYARAN PASIEN BPJS NAIK KELAS
         </div>
 
@@ -93,7 +93,7 @@
                     </td>
                     <td class="text-center w-full">&nbsp;</td>
                     <td class="text-center w-full">
-                        <p class="mb-3">Kasir</p>
+                        <p class="mb-1">Kasir</p>
                         @php
                             $hash = $kasir->sidikjari ? $kasir->sidikjari->sidikjari : \Hash::make($kasir->nip);
                             $QRPetugas = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $kasir->nama . '. ID : ' . $hash;
