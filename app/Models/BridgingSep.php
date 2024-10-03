@@ -179,7 +179,7 @@ class BridgingSep extends Model
      * */
     public function kamar_inap()
     {
-        return $this->belongsTo(KamarInap::class, 'no_rawat', 'no_rawat')->select('no_rawat', '');
+        return $this->belongsTo(KamarInap::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'kd_kamar', 'diagnosa_awal', 'diagnosa_akhir', 'tgl_masuk', 'tgl_keluar', 'jam_masuk', 'jam_keluar', 'lama', 'stts_pulang');
     }
 
     /**
@@ -202,8 +202,23 @@ class BridgingSep extends Model
         return $this->belongsTo(RsiaGroupingChunks::class, 'no_sep', 'no_sep');
     }
 
+    /**
+     * Get the bridging_surat_kontrol_bpjs that owns the BridgingSep
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * */
     public function surat_kontrol()
     {
         return $this->hasOne(BridgingSuratKontrolBpjs::class, 'no_surat', 'noskdp');
+    }
+
+    /**
+     * Get the bridging_surat_kontrol_bpjs that owns the BridgingSep
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * */
+    public function naikKelas()
+    {
+        return $this->hasOne(RsiaNaikKelas::class, 'no_sep', 'no_sep');
     }
 }

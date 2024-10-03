@@ -61,7 +61,7 @@ class BerkasKlaimController extends Controller
         \Illuminate\Support\Facades\Artisan::call('cache:clear');
 
         $bSep = \Illuminate\Support\Facades\Cache::remember("bsep_{$sep}", 3600, function () use ($sep) {
-            return \App\Models\BridgingSep::with(['pasien', 'reg_periksa', 'dokter.pegawai.sidikjari', 'surat_kontrol'])->where('no_sep', $sep)->first();
+            return \App\Models\BridgingSep::with(['pasien', 'reg_periksa', 'dokter.pegawai.sidikjari', 'surat_kontrol', 'naikKelas'])->where('no_sep', $sep)->first();
         });
 
         $regPeriksa = \Illuminate\Support\Facades\Cache::remember("regPeriksa_{$sep}", 3600, function () use ($bSep) {
@@ -101,106 +101,107 @@ class BerkasKlaimController extends Controller
         // +==========+==========+==========+
 
         $pdfs = [
-            $this->genSep($bSep, $regPeriksa->diagnosaPasien, $regPeriksa->prosedurPasien),
-            $this->genTriaseUgd($regPeriksa, $bSep),
-            $this->genAsmedUgd($regPeriksa, $bSep),
+            // $this->genSep($bSep, $regPeriksa->diagnosaPasien, $regPeriksa->prosedurPasien),
+            // $this->genTriaseUgd($regPeriksa, $bSep),
+            // $this->genAsmedUgd($regPeriksa, $bSep),
         ];
 
-        if ($resumePasienRanap) {
-            $pdfs[] = $this->genResumeMedis($bSep, $regPeriksa->pasien, $regPeriksa, $kamarInap, $resumePasienRanap, $ttdResume, $bSep->dokter->pegawai, $ttdPasien);
-        }
+        // if ($resumePasienRanap) {
+        //     $pdfs[] = $this->genResumeMedis($bSep, $regPeriksa->pasien, $regPeriksa, $kamarInap, $resumePasienRanap, $ttdResume, $bSep->dokter->pegawai, $ttdPasien);
+        // }
 
-        if ($operasi) {
-            $pdfs = array_merge($pdfs, $this->genLaporanOperasi($regPeriksa, $operasi));
-        }
+        // if ($operasi) {
+        //     $pdfs = array_merge($pdfs, $this->genLaporanOperasi($regPeriksa, $operasi));
+        // }
 
-        $pdfs[] = $this->genSuratPerintahRawatInap($bSep, $regPeriksa->pasien);
+        // $pdfs[] = $this->genSuratPerintahRawatInap($bSep, $regPeriksa->pasien);
 
-        if ($bSep->surat_kontrol) {
-            $pdfs[] = $this->genSuratRencanaKontrol($bSep, $regPeriksa);
-        }
+        // if ($bSep->surat_kontrol) {
+        //     $pdfs[] = $this->genSuratRencanaKontrol($bSep, $regPeriksa);
+        // }
 
-        if ($this->genBerkasPendukung(['skl'], $berkasPendukung) && !empty($this->genBerkasPendukung(['skl'], $berkasPendukung))) {
-            $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['skl'], $berkasPendukung));
-        }
+        // if ($this->genBerkasPendukung(['skl'], $berkasPendukung) && !empty($this->genBerkasPendukung(['skl'], $berkasPendukung))) {
+        //     $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['skl'], $berkasPendukung));
+        // }
 
-        if ($regPeriksa->catatanPerawatan) {
-            $pdfs[] = $this->genHasilPemeriksaanUsg($bSep, $regPeriksa->pasien, $regPeriksa);
-        }
+        // if ($regPeriksa->catatanPerawatan) {
+        //     $pdfs[] = $this->genHasilPemeriksaanUsg($bSep, $regPeriksa->pasien, $regPeriksa);
+        // }
 
-        if ($this->genBerkasPendukung(['surat rujukan'], $berkasPendukung) && !empty($this->genBerkasPendukung(['surat rujukan'], $berkasPendukung))) {
-            $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['surat rujukan'], $berkasPendukung));
-        }
+        // if ($this->genBerkasPendukung(['surat rujukan'], $berkasPendukung) && !empty($this->genBerkasPendukung(['surat rujukan'], $berkasPendukung))) {
+        //     $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['surat rujukan'], $berkasPendukung));
+        // }
 
-        if ($this->genBerkasPendukung(['usg'], $berkasPendukung) && !empty($this->genBerkasPendukung(['usg'], $berkasPendukung))) {
-            $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['usg'], $berkasPendukung));
-        }
+        // if ($this->genBerkasPendukung(['usg'], $berkasPendukung) && !empty($this->genBerkasPendukung(['usg'], $berkasPendukung))) {
+        //     $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['usg'], $berkasPendukung));
+        // }
 
-        if ($this->genHasilLab($bSep, $regPeriksa, $lab) && !empty($this->genHasilLab($bSep, $regPeriksa, $lab))) {
-            $pdfs = array_merge($pdfs, $this->genHasilLab($bSep, $regPeriksa, $lab));
-        }
+        // if ($this->genHasilLab($bSep, $regPeriksa, $lab) && !empty($this->genHasilLab($bSep, $regPeriksa, $lab))) {
+        //     $pdfs = array_merge($pdfs, $this->genHasilLab($bSep, $regPeriksa, $lab));
+        // }
 
-        if ($this->genHasilPeriksaRadiologi($regPeriksa, $radiologi) && !empty($this->genHasilPeriksaRadiologi($regPeriksa, $radiologi))) {
-            $pdfs = array_merge($pdfs, $this->genHasilPeriksaRadiologi($regPeriksa, $radiologi));
-        }
+        // if ($this->genHasilPeriksaRadiologi($regPeriksa, $radiologi) && !empty($this->genHasilPeriksaRadiologi($regPeriksa, $radiologi))) {
+        //     $pdfs = array_merge($pdfs, $this->genHasilPeriksaRadiologi($regPeriksa, $radiologi));
+        // }
 
-        if ($this->genBerkasPendukung(['laborat'], $berkasPendukung) && !empty($this->genBerkasPendukung(['laborat'], $berkasPendukung))) {
-            $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['laborat'], $berkasPendukung));
-        }
+        // if ($this->genBerkasPendukung(['laborat'], $berkasPendukung) && !empty($this->genBerkasPendukung(['laborat'], $berkasPendukung))) {
+        //     $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['laborat'], $berkasPendukung));
+        // }
 
-        if ($this->genBerkasPendukung(['skl', 'surat rujukan', 'usg', 'laborat'], $berkasPendukung, true) && !empty($this->genBerkasPendukung(['skl', 'surat rujukan', 'usg', 'laborat'], $berkasPendukung, true))) {
-            $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['skl', 'surat rujukan', 'usg', 'laborat'], $berkasPendukung, true));
-        }
+        // if ($this->genBerkasPendukung(['skl', 'surat rujukan', 'usg', 'laborat'], $berkasPendukung, true) && !empty($this->genBerkasPendukung(['skl', 'surat rujukan', 'usg', 'laborat'], $berkasPendukung, true))) {
+        //     $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['skl', 'surat rujukan', 'usg', 'laborat'], $berkasPendukung, true));
+        // }
 
-        if ($this->genDetailObat($obat, $regPeriksa) && !empty($this->genDetailObat($obat, $regPeriksa))) {
-            $regPeriksa = $regPeriksa->whereIn('no_rawat', array_keys($obat->toArray()))->get()->keyBy('no_rawat');
+        // if ($this->genDetailObat($obat, $regPeriksa) && !empty($this->genDetailObat($obat, $regPeriksa))) {
+        //     $regPeriksa = $regPeriksa->whereIn('no_rawat', array_keys($obat->toArray()))->get()->keyBy('no_rawat');
 
-            $detailObat = [];
-            foreach ($obat as $key => $value) {
-                foreach ($value as $sk => $sv) {
-                    // table obat
-                    $detailObat[$key] = \Illuminate\Support\Facades\View::make('berkas-klaim.partials.obat', [
-                        'obat'       => $value,
-                    ]);
-                }
-            }
+        //     $detailObat = [];
+        //     foreach ($obat as $key => $value) {
+        //         foreach ($value as $sk => $sv) {
+        //             // table obat
+        //             $detailObat[$key] = \Illuminate\Support\Facades\View::make('berkas-klaim.partials.obat', [
+        //                 'obat'       => $value,
+        //             ]);
+        //         }
+        //     }
 
-            foreach ($detailObat as $key => $value) {
-                $mpdf = new \Mpdf\Mpdf([
-                    'format'  => [215, 330],
-                    'tempDir' => storage_path('app/public/mpdf'),
-                ]);
+        //     foreach ($detailObat as $key => $value) {
+        //         $mpdf = new \Mpdf\Mpdf([
+        //             'format'  => [215, 330],
+        //             'tempDir' => storage_path('app/public/mpdf'),
+        //         ]);
 
-                $mpdf->SetColumns(1, 'J');
+        //         $mpdf->SetColumns(1, 'J');
 
-                // html tag to head
-                $mpdf->WriteHTML(\Illuminate\Support\Facades\View::make('berkas-klaim.partials.header.obat-html', [
-                    'regPeriksa' => $regPeriksa->get($key),
-                ]));
+        //         // html tag to head
+        //         $mpdf->WriteHTML(\Illuminate\Support\Facades\View::make('berkas-klaim.partials.header.obat-html', [
+        //             'regPeriksa' => $regPeriksa->get($key),
+        //         ]));
 
-                // header <header></header>
-                $mpdf->WriteHTML(\Illuminate\Support\Facades\View::make('berkas-klaim.partials.header.obat-header', [
-                    'regPeriksa' => $regPeriksa->get($key),
-                ]));
+        //         // header <header></header>
+        //         $mpdf->WriteHTML(\Illuminate\Support\Facades\View::make('berkas-klaim.partials.header.obat-header', [
+        //             'regPeriksa' => $regPeriksa->get($key),
+        //         ]));
 
-                $mpdf->SetColumns(2, 'J', 3);
-                $mpdf->WriteHTML($value);
+        //         $mpdf->SetColumns(2, 'J', 3);
+        //         $mpdf->WriteHTML($value);
 
-                if (count($mpdf->ColDetails) % 2 != 0) {
-                    $mpdf->AddColumn();
-                }
+        //         if (count($mpdf->ColDetails) % 2 != 0) {
+        //             $mpdf->AddColumn();
+        //         }
 
-                // footer <footer></footer>
-                $mpdf->WriteHTML(\Illuminate\Support\Facades\View::make('berkas-klaim.partials.footer.obat-footer'));
+        //         // footer <footer></footer>
+        //         $mpdf->WriteHTML(\Illuminate\Support\Facades\View::make('berkas-klaim.partials.footer.obat-footer'));
 
-                $pdfs[] = $mpdf->Output('obat.pdf', 'S');
-            }
-        }
+        //         $pdfs[] = $mpdf->Output('obat.pdf', 'S');
+        //     }
+        // }
 
-        $inacbgReport = $this->genInacbgReport($sep);
-        if ($inacbgReport) {
-            $pdfs[] = $inacbgReport;
-        }
+        // INACBG's klaim report
+        // $pdfs[] = $this->genInacbgReport($sep);
+
+        // Kwitansi naik kelas
+        $pdfs[] = $this->genKwitansiNaikKelas($bSep, $kamarInap, $ttdPasien);
 
         // php artisan view:clear
         \Illuminate\Support\Facades\Artisan::call('view:clear');
@@ -255,6 +256,32 @@ class BerkasKlaimController extends Controller
         ]);
 
         return null;
+    }
+
+    public function genKwitansiNaikKelas($sep, $kamarInap, $ttdPasien)
+    {
+        if (!$sep->naikKelas) {
+            return null;
+        }
+
+        $kasir = \App\Helpers\JurnalHelper::determinePetugas($sep->no_rawat);
+
+        if (!$kasir) {
+            $kasir = \App\Models\Pegawai::with('sidikjari')->where('jnj_jabatan', 'RS7')->first();
+
+            \Log::channel('eklaim')->error('Berkas Klaim Print - Failed to determine kasir using jurnal logs', [
+                'sep' => $sep,
+            ]);
+        }
+
+        $kwitansi = PDFHelper::generate('berkas-klaim.partials.kwitansi-naik-kelas', [
+            'sep'       => $sep,
+            'kamarInap' => $kamarInap,
+            'ttdPasien' => $ttdPasien,
+            'kasir'     => $kasir,
+        ]);
+
+        return $kwitansi;
     }
 
     public function genAsmedUgd($regPeriksa, $bSep)
