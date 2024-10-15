@@ -68,7 +68,7 @@ class RealCostController extends Controller
         return new \App\Http\Resources\Pasien\Tarif\DefaultTarifResource(collect($runningTarif));
     }
 
-    private function getTarif($no_rawat, Request $request)
+    public function getTarif($no_rawat, Request $request)
     {
         return [
             'detail_pemberian_obat' => (new \App\Http\Resources\Pasien\Tarif\TarifDetailPemberianObat($no_rawat))->toArray($request),
@@ -82,6 +82,7 @@ class RealCostController extends Controller
             'rawat_jalan_dr_pr'     => (new \App\Http\Resources\Pasien\Tarif\TarifRawatJalanDrPr($no_rawat))->toArray($request),
             'rawat_jalan_pr'        => (new \App\Http\Resources\Pasien\Tarif\TarifRawatJalanPr($no_rawat))->toArray($request),
             'rawat_jalan_dr'        => (new \App\Http\Resources\Pasien\Tarif\TarifRawatJalanDr($no_rawat))->toArray($request),
+            // tambahan_biaya
         ];
     }
 }

@@ -13,7 +13,7 @@ class TarifOperasi extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
      */
-    public function toArray($request)
+    public function toArray($request, bool $sum = true)
     {
         $fields = [
             "biayaoperator1", "biayaoperator2", "biayaoperator3",
@@ -28,14 +28,22 @@ class TarifOperasi extends JsonResource
         ];
 
         $tarif = 0;
-        $data = Operasi::where('no_rawat', $this->resource)->get($fields)->toArray();
+        $data = Operasi::where('no_rawat', $this->resource);
         
-        foreach ($data as $item) {
-            foreach ($item as $key => $value) {
-                $tarif += $value;
+        if ($sum) {
+            $data = $data->get($fields)->toArray();
+
+            foreach ($data as $item) {
+                foreach ($item as $key => $value) {
+                    $tarif += $value;
+                }
             }
+    
+            return $tarif;
         }
 
-        return $tarif;
+        $data = $data->with('detailPaket')->get([...$fields, 'kode_paket']);
+
+        return $data;
     }
 }

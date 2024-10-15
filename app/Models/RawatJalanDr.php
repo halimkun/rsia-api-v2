@@ -55,4 +55,14 @@ class RawatJalanDr extends Model
     public $incrementing = false;
 
     public $timestamps = false;
+
+    public function jenisPerawatan()
+    {
+        return $this->belongsTo(JenisPerawatan::class, 'kd_jenis_prw', 'kd_jenis_prw');
+    }
+
+    public function dokter()
+    {
+        return $this->belongsTo(Dokter::class, 'kd_dokter', 'kd_dokter')->select('kd_dokter', 'nm_dokter', 'kd_sps');
+    }
 }

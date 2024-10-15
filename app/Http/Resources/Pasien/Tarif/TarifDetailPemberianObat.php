@@ -13,9 +13,15 @@ class TarifDetailPemberianObat extends JsonResource
      * @param  \Illuminate\Http\Request  $request
      * @return array|\Illuminate\Contracts\Support\Arrayable|\JsonSerializable
      */
-    public function toArray($request)
+    public function toArray($request, bool $sum = true)
     {
-        $data = DetailPemberianObat::where('no_rawat', $this->resource)->sum('total');
+        $data = DetailPemberianObat::where('no_rawat', $this->resource);
+        if ($sum) {
+            $data = $data->sum('total');
+        } else {
+            $data = $data->get();
+        }
+        
         return $data;
     }
 }
