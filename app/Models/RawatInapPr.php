@@ -53,4 +53,9 @@ class RawatInapPr extends Model
     public $incrementing = false;
 
     public $timestamps = false;
+
+    public function jenisPerawatan()
+    {
+        return $this->belongsTo(JenisPerawatanInap::class, 'kd_jenis_prw', 'kd_jenis_prw');
+    }
 }

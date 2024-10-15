@@ -65,7 +65,7 @@ class BerkasKlaimController extends Controller
         });
 
         $regPeriksa = \Illuminate\Support\Facades\Cache::remember("regPeriksa_{$sep}", 3600, function () use ($bSep) {
-            return \App\Models\RegPeriksa::with(['pasien', 'diagnosaPasien.penyakit', 'prosedurPasien.penyakit', 'catatanPerawatan'])->where('no_rawat', $bSep->no_rawat)->first();
+            return \App\Models\RegPeriksa::with(['pasien', 'poliklinik', 'diagnosaPasien.penyakit', 'prosedurPasien.penyakit', 'catatanPerawatan', 'caraBayar'])->where('no_rawat', $bSep->no_rawat)->first();
         });
 
         $kamarInap = \App\Models\KamarInap::with('kamar.bangsal')->where('no_rawat', $bSep->no_rawat)->where('stts_pulang', '<>', 'Pindah Kamar')->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
@@ -78,14 +78,6 @@ class BerkasKlaimController extends Controller
             $radiologiWith = ['dokter.sidikjari', 'dokterPerujuk', 'hasilRadiologi', 'jenisPerawatan', 'petugas.sidikjari'];
 
             return \App\Models\PeriksaRadiologi::select($radiologiSelect)->with($radiologiWith)->where('no_rawat', $bSep->no_rawat)->orderBy('tgl_periksa', 'ASC')->orderBy('jam', 'ASC')->get();
-        });
-
-        $lab = \Illuminate\Support\Facades\Cache::remember("lab_{$sep}", 3600, function () use ($regPeriksa, $bSep) {
-            $labWih = ['pegawai.sidikjari', 'dokter.sidikjari', 'perujuk', 'jenisPerawatan', 'detailPeriksaLab.template'];
-
-            $labData = \App\Models\PeriksaLab::with($labWih)->whereIn('no_rawat', $this->getRegisterLabDouble($regPeriksa->kd_poli, $bSep->no_rawat, $bSep->nomr))->orderBy('tgl_periksa', 'ASC')->orderBy('jam', 'ASC')->get();
-
-            return $this->groupPeriksaLabData($labData);
         });
 
         $berkasPendukung   = \App\Models\RsiaUpload::where('no_rawat', $bSep->no_rawat)->get()->map(function ($item) {
@@ -138,8 +130,8 @@ class BerkasKlaimController extends Controller
             $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['usg'], $berkasPendukung));
         }
 
-        if ($this->genHasilLab($bSep, $regPeriksa, $lab) && !empty($this->genHasilLab($bSep, $regPeriksa, $lab))) {
-            $pdfs = array_merge($pdfs, $this->genHasilLab($bSep, $regPeriksa, $lab));
+        if ($this->genHasilLab($bSep, $regPeriksa) && !empty($this->genHasilLab($bSep, $regPeriksa))) {
+            $pdfs = array_merge($pdfs, $this->genHasilLab($bSep, $regPeriksa));
         }
 
         if ($this->genHasilPeriksaRadiologi($regPeriksa, $radiologi) && !empty($this->genHasilPeriksaRadiologi($regPeriksa, $radiologi))) {
@@ -154,59 +146,16 @@ class BerkasKlaimController extends Controller
             $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['skl', 'surat rujukan', 'usg', 'laborat'], $berkasPendukung, true));
         }
 
-        if ($this->genDetailObat($obat, $regPeriksa) && !empty($this->genDetailObat($obat, $regPeriksa))) {
-            $regPeriksa = $regPeriksa->whereIn('no_rawat', array_keys($obat->toArray()))->get()->keyBy('no_rawat');
+        $pdfs = array_merge($pdfs, $this->genDetailObat($obat, $regPeriksa));
 
-            $detailObat = [];
-            foreach ($obat as $key => $value) {
-                foreach ($value as $sk => $sv) {
-                    // table obat
-                    $detailObat[$key] = \Illuminate\Support\Facades\View::make('berkas-klaim.partials.obat', [
-                        'obat'       => $value,
-                    ]);
-                }
-            }
-
-            foreach ($detailObat as $key => $value) {
-                $mpdf = new \Mpdf\Mpdf([
-                    'format'  => [215, 330],
-                    'tempDir' => storage_path('app/public/mpdf'),
-                ]);
-
-                $mpdf->SetColumns(1, 'J');
-
-                // html tag to head
-                $mpdf->WriteHTML(\Illuminate\Support\Facades\View::make('berkas-klaim.partials.header.obat-html', [
-                    'regPeriksa' => $regPeriksa->get($key),
-                ]));
-
-                // header <header></header>
-                $mpdf->WriteHTML(\Illuminate\Support\Facades\View::make('berkas-klaim.partials.header.obat-header', [
-                    'regPeriksa' => $regPeriksa->get($key),
-                ]));
-
-                $mpdf->SetColumns(2, 'J', 3);
-                $mpdf->WriteHTML($value);
-
-                if (count($mpdf->ColDetails) % 2 != 0) {
-                    $mpdf->AddColumn();
-                }
-
-                // footer <footer></footer>
-                $mpdf->WriteHTML(\Illuminate\Support\Facades\View::make('berkas-klaim.partials.footer.obat-footer'));
-
-                $pdfs[] = $mpdf->Output('obat.pdf', 'S');
-            }
-        }
+        // Billing Detail
+        $pdfs[] = $this->genBillingDetail($bSep->no_rawat, $regPeriksa);
 
         // INACBG's klaim report
         $pdfs[] = $this->genInacbgReport($sep);
 
         // Kwitansi naik kelas
         $pdfs[] = $this->genKwitansiNaikKelas($bSep, $kamarInap, $ttdPasien);
-
-        // php artisan view:clear
-        \Illuminate\Support\Facades\Artisan::call('view:clear');
 
         $pdf = PDFHelper::merge($pdfs);
 
@@ -220,6 +169,61 @@ class BerkasKlaimController extends Controller
             ->header('Content-Type', 'application/pdf')
             ->header('Pragma', 'no-cache')
             ->header('Expires', '0');
+    }
+
+    public function genBillingDetail(string $no_rawat, $regPeriksa)
+    {
+        $billing = $this->billingData($no_rawat);
+
+        if (\Str::lower($regPeriksa->status_lanjut) == 'ranap') {
+            $resepPulang   = \App\Models\ResepPulang::with('obat')->where('no_rawat', $no_rawat)->get()->groupBy('kode_brng');
+            $ruang         = \App\Models\KamarInap::with('kamar')->where('no_rawat', $no_rawat)->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
+        } else {
+            $resepPulang   = null;
+            $ruang         = null;
+        }
+
+        $tambahanBiaya = \App\Models\TambahanBiaya::where('no_rawat', $no_rawat)->orderBy('nama_biaya', 'desc')->get();
+        $potonganBiaya = \App\Models\PenguranganBiaya::where('no_rawat', $no_rawat)->orderBy('nama_pengurangan', 'desc')->get();
+
+        $kasir         = \App\Helpers\JurnalHelper::determinePetugas($no_rawat);
+        $asmenKeuangan = \App\Models\Pegawai::select('id', 'nik', 'nama', 'jnj_jabatan')->with('sidikjari')->where('jnj_jabatan', 'RS7')->first();
+        $returObat     = \Illuminate\Support\Facades\Cache::remember("retur_obat_{$no_rawat}", 3600, function () use ($no_rawat) {
+            return \App\Models\DetReturJual::with('obat')
+                ->where('no_retur_jual', 'like', "%$no_rawat%")
+                ->get()->groupBy("kode_brng");
+        });
+
+        $dokters = null;
+        $nota = null;
+
+        if (Str::lower($regPeriksa->status_lanjut) == 'ralan') {
+            $nota = \App\Models\NotaJalan::where('no_rawat', $no_rawat)->first();
+        } else if (Str::lower($regPeriksa->status_lanjut) == 'ranap') {
+            $dokters = \App\Models\RawatInapDr::with('dokter.spesialis')->where('no_rawat', $no_rawat)->get()->groupBy('kd_dokter');
+            $nota = \App\Models\NotaInap::where('no_rawat', $no_rawat)->first();
+        }
+
+        // if dokter not null, sort by nm_dokter
+        if ($dokters) {
+            $dokters = $dokters->sortBy('dokter.nm_dokter');
+        }
+
+        $page = PDFHelper::generate('berkas-klaim.partials.billing', [
+            'regPeriksa'    => $regPeriksa,
+            'dokters'       => $dokters,
+            'ruang'         => $ruang,
+            'billing'       => $billing,
+            'nota'          => $nota,
+            'resepPulang'   => $resepPulang ?? null,
+            'tambahanBiaya' => $tambahanBiaya,
+            'potonganBiaya' => $potonganBiaya,
+            'returObat'     => $returObat,
+            'kasir'         => $kasir,
+            'asmenKeuangan' => $asmenKeuangan,
+        ]);
+
+        return $page;
     }
 
     /**
@@ -283,7 +287,7 @@ class BerkasKlaimController extends Controller
         }
 
         $pasien = \App\Models\Pasien::where('no_rkm_medis', $regPeriksa->no_rkm_medis)->first();
-        
+
         $cppFile = PDFHelper::generate('berkas-klaim.partials.cppt', [
             'regPeriksa' => $regPeriksa->withoutRelations(),
             'pasien'     => $pasien,
@@ -486,8 +490,18 @@ class BerkasKlaimController extends Controller
      * 
      * @return array
      */
-    public function genHasilLab($sep, $regPeriksa, $lab)
+    public function genHasilLab($sep, $regPeriksa)
     {
+        $lab = \Illuminate\Support\Facades\Cache::remember("lab_{$sep}", 3600, function () use ($regPeriksa, $sep) {
+            $labWih = ['pegawai.sidikjari', 'dokter.sidikjari', 'perujuk', 'jenisPerawatan', 'detailPeriksaLab.template'];
+
+            $labData = \App\Models\PeriksaLab::with($labWih)
+                ->whereIn('no_rawat', $this->getRegisterLabDouble($regPeriksa->kd_poli, $sep->no_rawat, $sep->nomr))
+                ->orderBy('tgl_periksa', 'DESC')->orderBy('jam', 'DESC')->get();
+
+            return $this->groupPeriksaLabData($labData);
+        });
+
         $hasilLab = [];
 
         foreach ($lab as $key => $value) {
@@ -534,19 +548,52 @@ class BerkasKlaimController extends Controller
 
     public function genDetailObat($obat, $regPeriksa)
     {
+        $tempPdf = [];
         $detailObat = [];
 
-        // Eager load the related models to avoid N+1 problem
         $regPeriksa = $regPeriksa->whereIn('no_rawat', array_keys($obat->toArray()))->get()->keyBy('no_rawat');
 
         foreach ($obat as $key => $value) {
-            $detailObat[$key] = PDFHelper::generate('berkas-klaim.partials.obat', [
-                'regPeriksa' => $regPeriksa->get($key),
-                'obat'       => $value,
-            ]);
+            foreach ($value as $sk => $sv) {
+                // table obat
+                $detailObat[$key] = \Illuminate\Support\Facades\View::make('berkas-klaim.partials.obat', [
+                    'obat'       => $value,
+                ]);
+            }
         }
 
-        return $detailObat;
+        foreach ($detailObat as $key => $value) {
+            $mpdf = new \Mpdf\Mpdf([
+                'format'  => [215, 330],
+                'tempDir' => storage_path('app/public/mpdf'),
+            ]);
+
+            $mpdf->SetColumns(1, 'J');
+
+            // html tag to head
+            $mpdf->WriteHTML(\Illuminate\Support\Facades\View::make('berkas-klaim.partials.header.obat-html', [
+                'regPeriksa' => $regPeriksa->get($key),
+            ]));
+
+            // header <header></header>
+            $mpdf->WriteHTML(\Illuminate\Support\Facades\View::make('berkas-klaim.partials.header.obat-header', [
+                'regPeriksa' => $regPeriksa->get($key),
+            ]));
+
+            $mpdf->SetColumns(2, 'J', 3);
+            $mpdf->WriteHTML($value);
+
+            if (count($mpdf->ColDetails) % 2 != 0) {
+                $mpdf->AddColumn();
+            }
+
+            // footer <footer></footer>
+            $mpdf->WriteHTML(\Illuminate\Support\Facades\View::make('berkas-klaim.partials.footer.obat-footer'));
+
+            $tempPdf[] = $mpdf->Output('obat.pdf', 'S');
+        }
+
+        return $tempPdf;
     }
 
     /**
@@ -592,7 +639,7 @@ class BerkasKlaimController extends Controller
                 continue;
             }
 
-            $file = $berkasPendukung->where('kategori', $value)->first()?->file;
+            $file = $berkasPendukung->where('kategori', $value)->first()->file;
             $files = explode(',', $file);
 
             foreach ($files as $file) {
@@ -697,8 +744,8 @@ class BerkasKlaimController extends Controller
         // Check if the kd_poli is in the filter
         if (in_array($kd_poli, $filterPoli)) {
             $registrasiData = \App\Models\RegPeriksa::where('no_rkm_medis', $no_rkm_medis)
-                ->orderBy('no_rawat', 'desc')
-                ->limit(2)
+                ->where('no_rawat', '<=', $no_rawat)
+                ->orderBy('no_rawat', 'desc')->limit(2)
                 ->pluck('no_rawat');
 
             return $registrasiData->toArray();
@@ -706,5 +753,175 @@ class BerkasKlaimController extends Controller
 
         // Return the no_rawat if not in the filter
         return [$no_rawat];
+    }
+
+
+    public function billingData(string $no_rawat)
+    {
+        $tarif = [];
+        $cekGabung = \App\Models\RanapGabung::where('no_rawat', $no_rawat)->first();
+
+        $tarif[$no_rawat] = $this->getTarif($no_rawat);
+
+        if ($cekGabung) {
+            $tarif[$cekGabung->no_rawat2] = $this->getTarif($cekGabung->no_rawat2);
+        }
+
+        return $tarif;
+    }
+
+    public function getTarif(string $no_rawat)
+    {
+        // +==========+==========+==========+
+
+        $selectRawatData = ['no_rawat', 'kd_jenis_prw', 'biaya_rawat'];
+        // $rawat_inap_pr = $rawat_inap_dr = $rawat_inap_drpr = $rawat_jl_pr = $rawat_jl_dr = $rawat_jl_drpr = null;
+
+        $rawat_inap_pr = \Illuminate\Support\Facades\Cache::remember("rawat_inap_pr_{$no_rawat}", 3600, function () use ($no_rawat, $selectRawatData) {
+            return \App\Models\RawatInapPr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
+                $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
+                    $qq->select('kd_kategori', 'nm_kategori');
+                }]);
+            }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
+                return $item->jenisPerawatan->kategori->nm_kategori;
+            })->map(function ($group) {
+                return $group->groupBy(function ($item) {
+                    return $item->jenisPerawatan->nm_perawatan;
+                });
+            });
+        });
+
+        $rawat_inap_dr = \Illuminate\Support\Facades\Cache::remember("rawat_inap_dr_{$no_rawat}", 3600, function () use ($no_rawat, $selectRawatData) {
+            return \App\Models\RawatInapDr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
+                $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
+                    $qq->select('kd_kategori', 'nm_kategori');
+                }]);
+            }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
+                return $item->jenisPerawatan->kategori->nm_kategori;
+            })->map(function ($group) {
+                return $group->groupBy(function ($item) {
+                    return $item->jenisPerawatan->nm_perawatan;
+                });
+            });
+        });
+
+        $rawat_inap_drpr = \Illuminate\Support\Facades\Cache::remember("rawat_inap_drpr_{$no_rawat}", 3600, function () use ($no_rawat, $selectRawatData) {
+            return \App\Models\RawatInapDrPr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
+                $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
+                    $qq->select('kd_kategori', 'nm_kategori');
+                }]);
+            }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
+                return $item->jenisPerawatan->kategori->nm_kategori;
+            })->map(function ($group) {
+                return $group->groupBy(function ($item) {
+                    return $item->jenisPerawatan->nm_perawatan;
+                });
+            });
+        });
+
+        $rawat_jl_pr = \Illuminate\Support\Facades\Cache::remember("rawat_jl_pr_{$no_rawat}", 3600, function () use ($no_rawat, $selectRawatData) {
+            return \App\Models\RawatJalanPr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
+                $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
+                    $qq->select('kd_kategori', 'nm_kategori');
+                }]);
+            }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
+                return $item->jenisPerawatan->kategori->nm_kategori;
+            })->map(function ($group) {
+                return $group->groupBy(function ($item) {
+                    return $item->jenisPerawatan->nm_perawatan;
+                });
+            });
+        });
+
+        $rawat_jl_dr = \Illuminate\Support\Facades\Cache::remember("rawat_jl_dr_{$no_rawat}", 3600, function () use ($no_rawat, $selectRawatData) {
+            return \App\Models\RawatJalanDr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
+                $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
+                    $qq->select('kd_kategori', 'nm_kategori');
+                }]);
+            }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
+                return $item->jenisPerawatan->kategori->nm_kategori;
+            })->map(function ($group) {
+                return $group->groupBy(function ($item) {
+                    return $item->jenisPerawatan->nm_perawatan;
+                });
+            });
+        });
+
+        $rawat_jl_drpr = \Illuminate\Support\Facades\Cache::remember("rawat_jl_drpr_{$no_rawat}", 3600, function () use ($no_rawat, $selectRawatData) {
+            return \App\Models\RawatJalanDrPr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
+                $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
+                    $qq->select('kd_kategori', 'nm_kategori');
+                }]);
+            }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
+                return $item->jenisPerawatan->kategori->nm_kategori;
+            })->map(function ($group) {
+                return $group->groupBy(function ($item) {
+                    return $item->jenisPerawatan->nm_perawatan;
+                });
+            });
+        });
+
+        // +==========+==========+==========+
+
+        $statusLanjut = \App\Models\RegPeriksa::select('status_lanjut')->where('no_rawat', $no_rawat)->first();
+
+        // +==========+==========+==========+
+
+        $operasi = null;
+        if (\Str::lower($statusLanjut->status_lanjut) == 'ranap') {
+            $operasi = \Illuminate\Support\Facades\Cache::remember("operasi_{$no_rawat}", 3600, function () use ($no_rawat) {
+                return (new \App\Http\Resources\Pasien\Tarif\TarifOperasi($no_rawat))->toArray(new Request(), false);
+            });
+        }
+
+        $periksaLab = \Illuminate\Support\Facades\Cache::remember("periksa_lab_{$no_rawat}", 3600, function () use ($no_rawat) {
+            return \App\Models\PeriksaLab::with('jenisPerawatan')
+                ->where('no_rawat', $no_rawat)
+                ->get()->groupBy("kd_jenis_prw");
+        });
+
+        $periksaRadiologi = \Illuminate\Support\Facades\Cache::remember("periksa_radiologi_{$no_rawat}", 3600, function () use ($no_rawat) {
+            return \App\Models\PeriksaRadiologi::with('jenisPerawatan')
+                ->where('no_rawat', $no_rawat)
+                ->get()->groupBy("kd_jenis_prw");
+        });
+
+        $obatDanBhp = \Illuminate\Support\Facades\Cache::remember("obat_bhp_{$no_rawat}", 3600, function () use ($no_rawat) {
+            return \App\Models\DetailPemberianObat::with('obat')
+                ->where('jml', '<>', 0)->where('no_rawat', $no_rawat)
+                ->get()->groupBy(function ($q) {
+                    return $q->obat->nama_brng;
+                })->sortKeys();
+        });
+
+        // +==========+==========+==========+
+
+        $mergedData = collect([
+            "Pemeriksaan Lab"       => $periksaLab,
+            "Pemeriksaan Radiologi" => $periksaRadiologi,
+            "Obat dan BHP"          => $obatDanBhp,
+            "Operasi"               => $operasi,
+        ]);
+
+        // loop the rawat inap dr
+        foreach ([$rawat_inap_pr, $rawat_inap_dr, $rawat_inap_drpr, $rawat_jl_pr, $rawat_jl_dr, $rawat_jl_drpr] as $key => $value) {
+            if (!$value) {
+                continue;
+            }
+
+            foreach ($value as $k => $v) {
+                if ($mergedData->has($k)) {
+                    $mergedData[$k] = $mergedData[$k]->mergeRecursive($v);
+                } else {
+                    $mergedData[$k] = $v;
+                }
+            }
+        }
+
+        $mergedData = $mergedData->filter(function ($item) {
+            return $item && !$item->isEmpty();
+        })->sortKeys();
+
+        return $mergedData;
     }
 }
