@@ -14,6 +14,10 @@ Route::middleware(['user-aes', 'claim:role,pegawai|dokter'])->prefix('undangan')
         ->only(['store', 'show'])
         ->parameters(['penerima' => 'base64_no_surat']);
 
+    // add proof url to penerima
+    Route::get('penerima/{base64_no_surat}/proof', [\App\Http\Controllers\v2\RsiaPenerimaUndanganController::class, 'proofDownload'])
+        ->name('penerima.proof');
+
     // ==================== KEHADIRAN RAPAT
     Route::apiResource('kehadiran', \App\Http\Controllers\v2\RsiaKehadiranRapatController::class)
         ->only(['store', 'show'])
