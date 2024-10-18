@@ -157,6 +157,26 @@ class BridgingSep extends Model
     ];
 
     /**
+     * The attributes that are mass assignable
+     * 
+     * @var array
+     * */
+    public function scopeGetTanggalPulang($query, $noRawat)
+    {
+        return $query->where('no_rawat', $noRawat)->where('stts_pulang', '!=', 'Pindah Kamar')->first();
+    }
+
+    /**
+     * Get the status_klaim that owns the BridgingSep
+     * 
+     * @var array
+     * */
+    public function status_klaim()
+    {
+        return $this->hasOne(RsiaStatusKlaim::class, 'no_sep', 'no_sep');
+    }
+
+    /**
      * Get the reg_periksa that owns the BridgingSep
      * 
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
@@ -166,7 +186,11 @@ class BridgingSep extends Model
         return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'tgl_registrasi', 'jam_reg', 'no_reg');
     }
 
-    // dokter via reg_periksa
+    /**
+     * Get the dokter that owns the BridgingSep
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasOneThrough
+     * */
     public function dokter()
     {
         return $this->hasOneThrough(Dokter::class, RegPeriksa::class, 'no_rawat', 'kd_dokter', 'no_rawat', 'kd_dokter');
@@ -180,6 +204,16 @@ class BridgingSep extends Model
     public function kamar_inap()
     {
         return $this->belongsTo(KamarInap::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'kd_kamar', 'diagnosa_awal', 'diagnosa_akhir', 'tgl_masuk', 'tgl_keluar', 'jam_masuk', 'jam_keluar', 'lama', 'stts_pulang');
+    }
+
+    /**
+     * Get the tanggal_pulang that owns the BridgingSep
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * */
+    public function tanggal_pulang()
+    {
+        return $this->hasOne(KamarInap::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'tgl_keluar', 'jam_keluar', 'lama')->where('stts_pulang', '<>', 'Pindah Kamar');
     }
 
     /**
