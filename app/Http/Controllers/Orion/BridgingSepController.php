@@ -20,6 +20,11 @@ class BridgingSepController extends \Orion\Http\Controllers\Controller
         return \Illuminate\Support\Facades\Auth::guard('user-aes')->user();
     }
 
+    public function exposedScopes(): array
+    {
+        return [];
+    }
+
     /**
      * The attributes that are used for sorting.
      *
@@ -54,9 +59,9 @@ class BridgingSepController extends \Orion\Http\Controllers\Controller
      * The relations that are used for including.
      * 
      * @return array
-     * */ 
+     * */
     public function includes(): array
     {
-        return ['reg_periksa', 'kamar_inap', 'chunk'];
+        return ['reg_periksa', 'kamar_inap', 'chunk', 'tanggal_pulang', 'status_klaim', 'status_klaim.log'];
     }
 }
