@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\DB;
  * @property-read int|null $notifications_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Passport\Token> $tokens
  * @property-read int|null $tokens_count
- * 
+ *
  * @mixin \Eloquent
  */
 class User extends Authenticatable
@@ -75,11 +75,23 @@ class User extends Authenticatable
         return null;
     }
 
+    public function createCustomToken(string $name, $clientId,  $scopes = [])
+    {
+        $token = $this->createToken($name, $scopes);
+
+        // TODO : sesuaikan clientID dengan client yang ada di database
+        if ($clientId == "mobile") {
+            $token->token->expires_at = now()->addHour(6);
+        } else {
+            $token->token->expires_a = now()->addDays(30);
+        }
+    }
+
     /**
      * Get the user's detail
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
-     * */ 
+     * */
     public function detail()
     {
         return $this->hasOne(Pegawai::class, 'nik', 'id_user');
