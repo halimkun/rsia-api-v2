@@ -23,12 +23,12 @@
         <div class="my-3">
             <table class="table w-full">
                 @foreach ([
-        'No. Nota' => $nota?->no_nota,
-        'No. RM' => $regPeriksa?->no_rkm_medis,
-        'Nama Pasien' => $regPeriksa?->pasien?->nm_pasien,
-        'JK / Umur' => (\Str::lower($regPeriksa?->pasien?->jk) == 'p' ? 'Perempuan' : 'Laki-laki') . ' / ' . $regPeriksa?->umurdaftar . ' ' . $regPeriksa?->sttsumur,
-        'Cara Bayar' => $regPeriksa?->caraBayar?->png_jawab,
-    ] as $key => $val)
+                    'No. Nota' => $nota?->no_nota,
+                    'No. RM' => $regPeriksa?->no_rkm_medis,
+                    'Nama Pasien' => $regPeriksa?->pasien?->nm_pasien,
+                    'JK / Umur' => (\Str::lower($regPeriksa?->pasien?->jk) == 'p' ? 'Perempuan' : 'Laki-laki') . ' / ' . $regPeriksa?->umurdaftar . ' ' . $regPeriksa?->sttsumur,
+                    'Cara Bayar' => $regPeriksa?->caraBayar?->png_jawab,
+                ] as $key => $val)
                     <tr class="align-top">
                         <td class="text-nowrap whitespace-nowrap text-sm leading-4" style="width: 128px;">{{ $key }}</td>
                         <td class="px-2 text-sm leading-4">:</td>
@@ -163,6 +163,7 @@
         @endif
 
         <h4 class="text-base font-bold" style="margin-bottom: 2px">&#x2022; Rincian Biaya</h4>
+        <?php $semuanyaIni = 0 ?>
         @foreach ($billing as $noRawat => $items)
             <table class="table mb-5 w-full">
                 <thead>
@@ -177,8 +178,7 @@
                 </thead>
                 <tbody>
                     <?php $totalAllkategori = 0; ?>
-                    <?php $indexItem = 0;
-                    $noKartegori = 1; ?>
+                    <?php $indexItem = 0; $noKartegori = 1; ?>
                     @foreach ($items as $kategori => $item)
                         <?php $totalKategori = 0; ?>
 
@@ -355,11 +355,12 @@
                         <?php $totalAllkategori += $totalKategori; ?>
 
                         {{-- Reset index item --}}
-                        <?php $noKartegori++;
-                        $indexItem = 0; ?>
+                        <?php $noKartegori++; $indexItem = 0; ?>
                     @endforeach
                 </tbody>
             </table>
+
+            <?php $semuanyaIni += $totalAllkategori; ?>
         @endforeach
 
         <?php $totalResepPulang = 0; ?>
@@ -505,7 +506,7 @@
                 <tr>
                     <td class="border-b px-1 text-left font-bold italic leading-none" style="padding: 4px, 4px; background-color: lightblue; border-color: #333" colspan="5">Total Keseluruhan</td>
                     <td class="border-b px-1 text-right font-bold italic leading-none" style="padding: 4px, 4px; background-color: lightblue; border-color: #333">
-                        Rp {{ number_format($totalRuang + $totalAllkategori + $totalResepPulang + $totalTambahanBiaya - $totalPotonganBiaya, 0, ',', '.') }}
+                        Rp {{ number_format($totalRuang + $semuanyaIni + $totalResepPulang + $totalTambahanBiaya - $totalPotonganBiaya, 0, ',', '.') }}
                     </td>
                 </tr>
             </tbody>
