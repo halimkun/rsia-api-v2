@@ -30,19 +30,41 @@ class RealCostResource extends JsonResource
         }
 
         // Sum all individual tarif elements
-        $data['total_tarif'] = isset($data['tarif_ibu_anak']) ? collect($data['tarif_ibu_anak'])->sum() : collect($data['tarif_ibu'])->sum();
+        // $data['total_tarif'] = isset($data['tarif_ibu_anak']) ? collect($data['tarif_ibu_anak'])->sum() : collect($data['tarif_ibu'])->sum();
+        // sum all individual tarif elements but if key is 'retur_obat' and 'potongan' then subtract it
+        $data['total_tarif'] = isset($data['tarif_ibu_anak']) ? collect($data['tarif_ibu_anak'])->map(function ($item, $key) {
+            if ($key === 'retur_obat' || $key === 'potongan') {
+                return collect($item)->flatten()->sum() * -1;
+            }
+            return collect($item)->flatten()->sum();
+        })->sum() : collect($data['tarif_ibu'])->map(function ($item, $key) {
+            if ($key === 'retur_obat' || $key === 'potongan') {
+                return collect($item)->flatten()->sum() * -1;
+            }
+            return collect($item)->flatten()->sum();
+        })->sum();
 
         return $data;
     }
 
     private function getTarif($no_rawat, \Illuminate\Http\Request $request)
     {
+        $tambahan = \App\Models\TambahanBiaya::where('no_rawat', $no_rawat)->sum('besar_biaya');
+        $potongan = \App\Models\PenguranganBiaya::where('no_rawat', $no_rawat)->sum('besar_potongan');
+        $returObat = \App\Models\DetReturJual::where('no_retur_jual', $no_rawat)->sum('subtotal');
+        $resepPulang   = \App\Models\ResepPulang::where('no_rawat', $no_rawat)->sum('total');
+
         return [
-            'detail_pemberian_obat' => (new \App\Http\Resources\Pasien\Tarif\TarifDetailPemberianObat($no_rawat))->toArray($request),
+            'retur_obat'            => $returObat,
+            'potongan'              => $potongan,
+            'tambahan'              => $tambahan,
+            'resep_pulang'          => $resepPulang,
+
             'kamar_inap'            => (new \App\Http\Resources\Pasien\Tarif\TarifKamarInap($no_rawat))->toArray($request),
-            'operasi'               => (new \App\Http\Resources\Pasien\Tarif\TarifOperasi($no_rawat))->toArray($request),
-            'periksa_lab'           => (new \App\Http\Resources\Pasien\Tarif\TarifPeriksaLab($no_rawat))->toArray($request),
+            'detail_pemberian_obat' => (new \App\Http\Resources\Pasien\Tarif\TarifDetailPemberianObat($no_rawat))->toArray($request),
             'periksa_radiologi'     => (new \App\Http\Resources\Pasien\Tarif\TarifPeriksaRadiologi($no_rawat))->toArray($request),
+            'periksa_lab'           => (new \App\Http\Resources\Pasien\Tarif\TarifPeriksaLab($no_rawat))->toArray($request),
+            'operasi'               => (new \App\Http\Resources\Pasien\Tarif\TarifOperasi($no_rawat))->toArray($request),
             'rawat_inap_dr_pr'      => (new \App\Http\Resources\Pasien\Tarif\TarifRawatInapDrPr($no_rawat))->toArray($request),
             'rawat_inap_pr'         => (new \App\Http\Resources\Pasien\Tarif\TarifRawatInapPr($no_rawat))->toArray($request),
             'rawat_inap_dr'         => (new \App\Http\Resources\Pasien\Tarif\TarifRawatInapDr($no_rawat))->toArray($request),
