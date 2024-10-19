@@ -521,8 +521,8 @@
                             Kabid Umum dan Keuangan
                         </p>
                         @php
-                            $HASHKoor = $asmenKeuangan->sidikjari ? $asmenKeuangan->sidikjari->sidikjari : \Hash::make($asmenKeuangan->nik);
-                            $QRKoor = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $asmenKeuangan->nama . '. ID : ' . $HASHKoor;
+                            $HASHKoor = $asmenKeuangan?->sidikjari ? $asmenKeuangan?->sidikjari?->sidikjari : \Hash::make($asmenKeuangan?->nik);
+                            $QRKoor = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $asmenKeuangan?->nama . '. ID : ' . $HASHKoor;
                         @endphp
 
                         <div class="relative inline-block h-28 w-28">
@@ -530,7 +530,7 @@
                             <img src="{{ asset('assets/images/logo.png') }}" alt="logo" class="h-8 w-8" style="position: absolute !important; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;" />
                         </div>
 
-                        <p class="mt-3">{{ $asmenKeuangan->nama }}</p>
+                        <p class="mt-3">{{ $asmenKeuangan?->nama }}</p>
                     </td>
                     <td class="w-full text-center">
                         <p class="mb-3">
@@ -538,8 +538,8 @@
                             Kasir
                         </p>
                         @php
-                            $hash = $kasir->sidikjari ? $kasir->sidikjari->sidikjari : \Hash::make($kasir->nip);
-                            $QRPetugas = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $kasir->nama . '. ID : ' . $hash;
+                            $hash = $kasir?->sidikjari ? $kasir?->sidikjari?->sidikjari : \Hash::make($kasir?->nip);
+                            $QRPetugas = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $kasir?->nama . '. ID : ' . $hash;
                         @endphp
 
                         <div class="relative inline-block h-28 w-28">
@@ -547,7 +547,7 @@
                             <img src="{{ asset('assets/images/logo.png') }}" alt="logo" class="h-8 w-8" style="position: absolute !important; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;" />
                         </div>
 
-                        <p class="mt-3">{{ $kasir->nama }}</p>
+                        <p class="mt-3">{{ $kasir?->nama }}</p>
                     </td>
                 </tr>
             </table>
