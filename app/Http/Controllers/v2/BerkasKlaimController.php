@@ -185,14 +185,14 @@ class BerkasKlaimController extends Controller
 
         $tambahanBiaya = \App\Models\TambahanBiaya::where('no_rawat', $no_rawat)->orderBy('nama_biaya', 'desc')->get();
         $potonganBiaya = \App\Models\PenguranganBiaya::where('no_rawat', $no_rawat)->orderBy('nama_pengurangan', 'desc')->get();
-
-        $kasir         = \App\Helpers\JurnalHelper::determinePetugas($no_rawat);
-        $asmenKeuangan = \App\Models\Pegawai::select('id', 'nik', 'nama', 'jnj_jabatan')->with('sidikjari')->where('jnj_jabatan', 'RS7')->first();
         $returObat     = \Illuminate\Support\Facades\Cache::remember("retur_obat_{$no_rawat}", 3600, function () use ($no_rawat) {
             return \App\Models\DetReturJual::with('obat')
                 ->where('no_retur_jual', 'like', "%$no_rawat%")
                 ->get()->groupBy("kode_brng");
         });
+
+        $kasir         = \App\Helpers\JurnalHelper::determinePetugas($no_rawat);
+        $asmenKeuangan = \App\Models\Pegawai::select('id', 'nik', 'nama', 'jnj_jabatan')->with('sidikjari')->where('jnj_jabatan', 'RS7')->first();
 
         $dokters = null;
         $nota = null;
