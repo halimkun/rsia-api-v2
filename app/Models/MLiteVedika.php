@@ -66,6 +66,16 @@ class MLiteVedika extends Model
     }
 
     /**
+     * Get the petugas that owns the MLiteVedika
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function petugas()
+    {
+        return $this->belongsTo(Pegawai::class, 'username', 'nik')->select('nik', 'nama');
+    }
+
+    /**
      * Get the registrasi that owns the MLiteVedika
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
