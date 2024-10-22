@@ -10,4 +10,5 @@ Route::middleware(['user-aes', 'custom-user', 'claim:role,pegawai'])->group(func
     Route::get('sep/{no_sep}/print', [\App\Http\Controllers\v2\BerkasKlaimController::class, 'print']);
     Route::resource('/sep/{no_sep}/klaim/status', \App\Http\Controllers\RsiaStatusKlaimController::class)->only(['store']);
     Route::resource('/sep/{no_sep}/klaim/logs', \App\Http\Controllers\RsiaLogStatusKlaim::class)->only(['index']);
+    Orion::resource('/sep/{no_sep}/klaim/latest', \App\Http\Controllers\v2\HasilGroupingController::class)->only(['index']);
 });
