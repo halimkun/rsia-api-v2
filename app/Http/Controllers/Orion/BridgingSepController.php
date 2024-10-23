@@ -62,6 +62,6 @@ class BridgingSepController extends \Orion\Http\Controllers\Controller
      * */
     public function includes(): array
     {
-        return ['reg_periksa', 'kamar_inap', 'chunk', 'tanggal_pulang', 'status_klaim', 'status_klaim.log'];
+        return ['reg_periksa', 'kamar_inap', 'chunk', 'tanggal_pulang', 'status_klaim', 'status_klaim.log', 'groupStage'];
     }
 }

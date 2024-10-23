@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * App\Models\BridgingSep
@@ -241,18 +242,28 @@ class BridgingSep extends Model
      * 
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
      * */
-    public function surat_kontrol()
+    public function surat_kontrol(): HasOne
     {
         return $this->hasOne(BridgingSuratKontrolBpjs::class, 'no_surat', 'noskdp');
     }
 
     /**
-     * Get the bridging_surat_kontrol_bpjs that owns the BridgingSep
+     * Get the rsia_naik_kelas that owns the BridgingSep
      * 
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
      * */
-    public function naikKelas()
+    public function naikKelas(): HasOne
     {
         return $this->hasOne(RsiaNaikKelas::class, 'no_sep', 'no_sep');
+    }
+
+    /**
+     * Get the inacbg_grouping_stage12 that owns the BridgingSep
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * */
+    public function groupStage(): HasOne
+    {
+        return $this->hasOne(InacbgGropingStage12::class, 'no_sep', 'no_sep');
     }
 }

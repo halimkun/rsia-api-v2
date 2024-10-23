@@ -98,6 +98,11 @@ class KlaimController extends Controller
             "payor_cd"      => $request->payor_cd
         ];
 
+        \Log::info("Set klaim data", [
+            "sep"  => $sep,
+            "data" => \Halim\EKlaim\Helpers\ClaimDataParser::parse($request)
+        ]);
+
         $data = array_merge($required, \Halim\EKlaim\Helpers\ClaimDataParser::parse($request));
 
         BodyBuilder::setMetadata('set_claim_data', ["nomor_sep" => $sep]);
@@ -117,8 +122,18 @@ class KlaimController extends Controller
 
             // ==================================================== END OF SAVE DATAS
         });
-        
+
         $hasilGrouping = $this->groupStages($sep);
+        $responseCode = $hasilGrouping->response->cbg ? $hasilGrouping->response->cbg->code : null;
+
+        \Log::channel(config('eklaim.log_channel'))->info("HASIL", [
+            "HASIL" => $hasilGrouping,
+            "RESPONSE CODE" => $responseCode
+        ]);
+
+        if ($responseCode && (\Illuminate\Support\Str::startsWith($responseCode, 'X') || \Illuminate\Support\Str::startsWith($responseCode, 'x'))) {
+            return ApiResponse::error($hasilGrouping->response->cbg->code . " : " . $hasilGrouping->response->cbg->description, 500);
+        }
 
         return ApiResponse::successWithData($hasilGrouping->response, "Grouping Berhasil dilakukan");
     }
@@ -222,6 +237,7 @@ class KlaimController extends Controller
         $group = new GroupKlaimController();
 
         // Grouping stage 1
+        $gr2 = null;
         $gr1 = $group->stage1(new \Halim\EKlaim\Http\Requests\GroupingStage1Request(["nomor_sep" => $sep]))->then(function ($response) use ($sep) {
             \Log::channel(config('eklaim.log_channel'))->info("Grouping stage 1 success", [
                 "sep"      => $sep,
@@ -251,7 +267,7 @@ class KlaimController extends Controller
         \Log::channel(config('eklaim.log_channel'))->info("Grouping stage 1 & 2 data", [
             "sep" => $sep,
             "stage1" => $gr1->getData(),
-            "stage2" => isset($gr2) ? $gr2->getData() : null
+            "stage2" => $gr2?->getData()
         ]);
 
         // ==================================================== END OF GROUPING STAGE 1 & 2
@@ -261,9 +277,9 @@ class KlaimController extends Controller
                 "no_sep"    => $sep,
                 "code_cbg"  => $hasilGrouping->response->cbg->code,
                 "deskripsi" => $hasilGrouping->response->cbg->description,
-                "tarif"     => $hasilGrouping->response->cbg->tariff
+                "tarif"     => $hasilGrouping->response->cbg ? $hasilGrouping->response->cbg->tariff : null,
             ];
-
+            
             \Illuminate\Support\Facades\DB::transaction(function () use ($sep,  $groupingData) {
                 \App\Models\InacbgGropingStage12::where('no_sep', $sep)->delete();
                 \App\Models\InacbgGropingStage12::create($groupingData);
