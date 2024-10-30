@@ -105,6 +105,21 @@ class KlaimController extends Controller
 
         $data = array_merge($required, \Halim\EKlaim\Helpers\ClaimDataParser::parse($request));
 
+        // [0]. Re-Edit Klaim
+        BodyBuilder::setMetadata('reedit_claim');
+        BodyBuilder::setData(["nomor_sep" => $sep]);
+        
+        EklaimService::send(BodyBuilder::prepared())->then(function ($response) use ($sep) {
+            \Log::channel(config('eklaim.log_channel'))->info("Re-Edit klaim success", [
+                "sep"      => $sep,
+                "response" => $response
+            ]);
+        });
+
+        
+        // [1]. Set claim data
+        usleep(rand(500, 2000) * 1000);
+        
         BodyBuilder::setMetadata('set_claim_data', ["nomor_sep" => $sep]);
         BodyBuilder::setData($data);
 
@@ -116,15 +131,39 @@ class KlaimController extends Controller
             ]);
 
             // ==================================================== SAVE DATAS
-            
+
             $this->saveDiagnosaAndProcedures($data);
             $this->saveChunksData($data);
 
             // ==================================================== END OF SAVE DATAS
         });
 
+        
+        // [2]. Grouping stage 1 & 2
+        usleep(rand(500, 2000) * 1000);
+
         $hasilGrouping = $this->groupStages($sep);
         $responseCode = $hasilGrouping->response->cbg ? $hasilGrouping->response->cbg->code : null;
+
+        // cekNaikKelas
+        $this->cekNaikKelas($sep, $hasilGrouping);
+
+        // [3]. Final Klaim
+        usleep(rand(500, 2000) * 1000);
+
+        BodyBuilder::setMetadata('claim_final');
+        BodyBuilder::setData([
+            "nomor_sep" => $sep,
+            "coder_nik" => '3326105603750002',
+        ]);
+
+        EklaimService::send(BodyBuilder::prepared())->then(function ($response) use ($sep) {
+            \Log::channel(config('eklaim.log_channel'))->info("Final klaim success", [
+                "sep"      => $sep,
+                "response" => $response
+            ]);
+        });
+
 
         \Log::channel(config('eklaim.log_channel'))->info("HASIL", [
             "HASIL" => $hasilGrouping,
@@ -235,9 +274,11 @@ class KlaimController extends Controller
     {
         \Illuminate\Support\Facades\DB::transaction(function () use ($klaim_data) {
             \App\Models\RsiaGroupingChunks::updateOrCreate(['no_sep' => $klaim_data['nomor_sep']], [
-                'cara_masuk'      => isset($klaim_data['cara_masuk']) ? $klaim_data['cara_masuk'] : null,
-                'usia_kehamilan'  => isset($klaim_data['persalinan']) ? $klaim_data['persalinan']['usia_kehamilan'] : null,
-                'onset_kontraksi' => isset($klaim_data['persalinan']) ? $klaim_data['persalinan']['onset_kontraksi'] : null,
+                'cara_masuk'      => $klaim_data['cara_masuk'] ?? null,
+                'sistole'         => $klaim_data['sistole'] ?? null,
+                'diastole'        => $klaim_data['diastole'] ?? null,
+                'usia_kehamilan'  => $klaim_data['persalinan']['usia_kehamilan'] ?? null,
+                'onset_kontraksi' => $klaim_data['persalinan']['onset_kontraksi'] ?? null,
             ]);
         }, 5);
     }
@@ -296,7 +337,7 @@ class KlaimController extends Controller
         }, 5);
     }
 
-    public function groupStages($sep)
+    private function groupStages($sep)
     {
         // ==================================================== GROUPING STAGE 1 & 2
         $group = new GroupKlaimController();
@@ -344,7 +385,7 @@ class KlaimController extends Controller
                 "deskripsi" => $hasilGrouping->response->cbg->description,
                 "tarif"     => $hasilGrouping->response->cbg ? $hasilGrouping->response->cbg->tariff : null,
             ];
-            
+
             \Illuminate\Support\Facades\DB::transaction(function () use ($sep,  $groupingData) {
                 \App\Models\InacbgGropingStage12::where('no_sep', $sep)->delete();
                 \App\Models\InacbgGropingStage12::create($groupingData);
@@ -358,5 +399,46 @@ class KlaimController extends Controller
         }
 
         return $hasilGrouping;
+    }
+
+    private function cekNaikKelas($sep, $groupResponse)
+    {
+        $sep = \App\Models\BridgingSep::where('no_sep', $sep)->first();
+
+        // Pastikan sep valid dan kelas naik tidak lebih dari 3
+        if (!$sep || $sep->klsnaik > 3) return;
+
+        // Periksa spesialis dokter, lanjutkan hanya jika spesialisnya kandungan
+        $regPeriksa = \App\Models\RegPeriksa::with('dokter.spesialis')->where('no_rawat', $sep->no_rawat)->first();
+        if (!\Str::contains(\Str::lower($regPeriksa->dokter->spesialis->nm_sps), 'kandungan')) return;
+
+        // Periksa kelas VIP A atau VIP B
+        $kamarInap = \App\Models\KamarInap::where('no_rawat', $sep->no_rawat)->latest('tgl_masuk')->latest('jam_masuk')->first();
+        if (!\Str::contains(\Str::lower($kamarInap->kd_kamar), ['kandungan va', 'kandungan vb1', 'kandungan vb2'])) return;
+
+        // Ambil tarif dan tarif alternatif kelas 1
+        $cbgTarif = $groupResponse?->response?->cbg?->tariff ?? 0;
+        $altTariKelas1 = collect($groupResponse->tarif_alt)->where('kelas', 'kelas_1')->first()?->tarif_inacbg ?? 0;
+
+        if (!$altTariKelas1) {
+            return ApiResponse::error("Pasien Naik Kelas namun, alt tarif kelas tidak ditemukan", 500);
+        }
+
+        // Tentukan presentase dan hitung tarif tambahan berdasarkan kelas kamar inap
+        $presentase = \Str::contains(\Str::lower($kamarInap->kd_kamar), 'kandungan va') ? 73 : 43;
+        $tambahanBiaya = $altTariKelas1 - $cbgTarif + ($altTariKelas1 * $presentase / 100);
+
+        // Simpan data naik kelas
+        \App\Models\RsiaNaikKelas::updateOrCreate(
+            ['no_sep' => $sep->no_sep], // Kondisi untuk update
+            [
+                'jenis_naik'  => "Naik " . \App\Helpers\NaikKelasHelper::getJumlahNaik($sep->klsrawat, $sep->klsnaik) . " Kelas",
+                'tarif_1'     => $altTariKelas1,
+                'tarif_2'     => $cbgTarif,
+                'presentase'  => $presentase,
+                'tarif_akhir' => $tambahanBiaya,
+                'diagnosa'    => $sep->nmdiagnosaawal
+            ]
+        );
     }
 }

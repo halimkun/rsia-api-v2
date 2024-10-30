@@ -18,4 +18,6 @@ class RsiaNaikKelas extends Model
     public $timestamps = false;
 
     protected $keyType = 'string';   
+
+    protected $guarded = [];    
 }
