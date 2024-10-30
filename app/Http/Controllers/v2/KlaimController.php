@@ -138,6 +138,71 @@ class KlaimController extends Controller
         return ApiResponse::successWithData($hasilGrouping->response, "Grouping Berhasil dilakukan");
     }
 
+    /**
+     * get klaim data method
+     *
+     * method to get klaim data from eklaim service and save it to our database
+     *  
+     * @param string $sep
+     * 
+     * @return \Illuminate\Http\JsonResponse
+     * */
+    public function sync($sep)
+    {
+        BodyBuilder::setMetadata('get_claim_data');
+        BodyBuilder::setData(["nomor_sep" => $sep]);
+
+        $response = EklaimService::send(BodyBuilder::prepared());
+
+        // Pastikan response berhasil (status code 200)
+        if ($response->getStatusCode() !== 200) {
+            return $this->logAndReturnError("Error while getting klaim data", $response);
+        }
+
+        $responseData = $response->getData()?->response?->data ?? null;
+        if (!$responseData) {
+            return $this->logAndReturnError("Error while getting klaim data", $response);
+        }
+
+        $cbg = $responseData->grouper?->response?->cbg ?? null;
+        if (!$cbg) {
+            return $this->logAndReturnError("Error while getting klaim data", $response);
+        }
+
+        $groupingData = [
+            'no_sep'    => $sep,
+            'code_cbg'  => $cbg->code ?? null,
+            'deskripsi' => $cbg->description ?? null,
+            'tarif'     => $cbg->tariff ?? null,
+        ];
+
+        // Melakukan transaksi penyimpanan data ke database
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($sep, $groupingData) {
+                \App\Models\InacbgGropingStage12::where('no_sep', $sep)->delete();
+                \App\Models\InacbgGropingStage12::create($groupingData);
+            }, 5);
+
+            \Log::channel(config('eklaim.log_channel'))->info("Data inserted to inacbg_grouping_stage12", $groupingData);
+            return ApiResponse::successWithData($responseData, "Grouping Berhasil dilakukan");
+        } catch (\Throwable $th) {
+            \Log::channel(config('eklaim.log_channel'))->error("Error while inserting data to inacbg_grouping_stage12", [
+                "error" => $th->getMessage()
+            ]);
+            return ApiResponse::error("Error while inserting data to inacbg_grouping_stage12", 500);
+        }
+    }
+
+    /**
+     * Helper method untuk log dan kembalikan error.
+     */
+    protected function logAndReturnError($message, $response)
+    {
+        \Log::channel(config('eklaim.log_channel'))->error($message, json_decode(json_encode($response->getData()), true));
+        return ApiResponse::error($message, 500);
+    }
+
+
     private function storeInacbgKlaimBaru2($no_rawat, $nomor_sep, $patient_id, $admission_id, $hospital_admission_id)
     {
         $dataToSave = [
