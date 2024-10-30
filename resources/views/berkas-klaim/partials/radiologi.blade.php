@@ -105,7 +105,7 @@
 					</td>
 					<td class="text-center">
 						<div class="text-base leading-none">Tgl. Cetak : {{ date('d/m/Y H:i:s', strtotime($radiologi?->tgl_periksa . ' ' . $radiologi?->jam)) }}</div>
-						<div class="mb-2">Petugas Laboratorium</div>
+						<div class="mb-2">Petugas Radiologi</div>
 						<div class="relative inline-block h-28 w-28">
 							<img src="data:image/png;base64,{{ DNS2D::getBarcodePNG($QRPetugas, 'QRCODE') }}" alt="barcode" class="h-2w-28 w-28" />
 							<img src="{{ asset('assets/images/logo.png') }}" alt="logo" class="h-8 w-8" style="position: absolute !important; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;" />

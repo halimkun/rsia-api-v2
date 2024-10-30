@@ -6,7 +6,9 @@ class JurnalHelper
 {
     public static function determinePetugas($no_rawat)
     {
-        $jurnal = \App\Models\Jurnal::where('no_bukti', $no_rawat)->orderBy('tgl_jurnal', 'desc')->orderBy('jam_jurnal', 'desc')->first();
+        $jurnal = \App\Models\Jurnal::where('no_bukti', $no_rawat)
+            ->where('keterangan', 'like', '%TINDAKAN%')
+            ->orderBy('tgl_jurnal', 'desc')->orderBy('jam_jurnal', 'desc')->first();
 
         if (!$jurnal) {
             return null;
