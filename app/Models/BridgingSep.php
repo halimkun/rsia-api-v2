@@ -184,7 +184,7 @@ class BridgingSep extends Model
      * */
     public function reg_periksa()
     {
-        return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'tgl_registrasi', 'jam_reg', 'no_reg');
+        return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'tgl_registrasi', 'kd_dokter', 'jam_reg', 'no_reg', 'umurdaftar', 'sttsumur', 'status_poli');
     }
 
     /**

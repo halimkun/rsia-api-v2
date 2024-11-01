@@ -58,6 +58,8 @@ class BerkasKlaimController extends Controller
      */
     public function print($sep, Request $request)
     {
+        $params = $request->query();
+
         \Illuminate\Support\Facades\Artisan::call('cache:clear');
 
         $bSep = \Illuminate\Support\Facades\Cache::remember("bsep_{$sep}", 3600, function () use ($sep) {
@@ -164,6 +166,37 @@ class BerkasKlaimController extends Controller
         $pdf->setFileName('berkas-klaim-' . $sep . '.pdf');
 
         // +==========+==========+==========+
+
+        // if action in query and action is export
+        if (isset($params['action']) && $params['action'] == 'export') {
+            $fileName = 'berkas-klaim-' . $sep . '.pdf';
+            try {
+                \Halim\EKlaim\Builders\BodyBuilder::setMetadata('claim_final');
+                \Halim\EKlaim\Builders\BodyBuilder::setData([
+                    "nomor_sep" => $sep,
+                    "coder_nik" => '3326105603750002',
+                ]);
+
+                \Halim\EKlaim\Services\EklaimService::send(\Halim\EKlaim\Builders\BodyBuilder::prepared())->then(function ($response) use ($sep) {
+                    \Log::channel(config('eklaim.log_channel'))->info("Final klaim success - Export Action", [
+                        "sep"      => $sep,
+                        "response" => $response
+                    ]);
+                });
+
+                \App\Models\BerkasDigitalPerawatan::updateOrCreate(
+                    ['no_rawat' => $bSep->no_rawat, 'kode'     => '009'],
+                    ['lokasi_file' => $fileName]
+                );
+
+                $st = new \Illuminate\Support\Facades\Storage();
+                $st::disk('sftp')->put('/simrsiav2/file/berkas_klaim_pengajuan/' . $fileName, $pdf->output());
+
+                return response()->json(['message' => 'Berkas klaim berhasil diexport']);
+            } catch (\Throwable $th) {
+                return response()->json(['message' => 'Berkas klaim gagal diexport', 'error' => $th->getMessage()]);
+            }
+        }
 
         return response($pdf->stream(), 200)
             ->header('Content-Type', 'application/pdf')

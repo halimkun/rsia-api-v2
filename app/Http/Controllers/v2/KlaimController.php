@@ -143,7 +143,7 @@ class KlaimController extends Controller
         usleep(rand(500, 2000) * 1000);
 
         $hasilGrouping = $this->groupStages($sep);
-        $responseCode = $hasilGrouping->response->cbg ? $hasilGrouping->response->cbg->code : null;
+        $responseCode = $hasilGrouping?->response?->cbg ? $hasilGrouping?->response?->cbg?->code : null;
 
         // cekNaikKelas
         $this->cekNaikKelas($sep, $hasilGrouping);
@@ -347,6 +347,7 @@ class KlaimController extends Controller
         $gr1 = $group->stage1(new \Halim\EKlaim\Http\Requests\GroupingStage1Request(["nomor_sep" => $sep]))->then(function ($response) use ($sep) {
             \Log::channel(config('eklaim.log_channel'))->info("Grouping stage 1 success", [
                 "sep"      => $sep,
+                'response' => $response
             ]);
         });
 
@@ -381,9 +382,9 @@ class KlaimController extends Controller
         try {
             $groupingData = [
                 "no_sep"    => $sep,
-                "code_cbg"  => $hasilGrouping->response->cbg->code,
-                "deskripsi" => $hasilGrouping->response->cbg->description,
-                "tarif"     => $hasilGrouping->response->cbg ? $hasilGrouping->response->cbg->tariff : null,
+                "code_cbg"  => $hasilGrouping?->response?->cbg?->code,
+                "deskripsi" => $hasilGrouping?->response?->cbg?->description,
+                "tarif"     => $hasilGrouping?->response?->cbg ? $hasilGrouping?->response?->cbg?->tariff : null,
             ];
 
             \Illuminate\Support\Facades\DB::transaction(function () use ($sep,  $groupingData) {
@@ -404,6 +405,8 @@ class KlaimController extends Controller
     private function cekNaikKelas($sep, $groupResponse)
     {
         $sep = \App\Models\BridgingSep::where('no_sep', $sep)->first();
+
+        if ($sep->jnspelayanan == 2) return;
 
         // Pastikan sep valid dan kelas naik tidak lebih dari 3
         if (!$sep || $sep->klsnaik > 3) return;
