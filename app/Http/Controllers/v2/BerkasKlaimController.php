@@ -60,27 +60,16 @@ class BerkasKlaimController extends Controller
     {
         $params = $request->query();
 
-        \Illuminate\Support\Facades\Artisan::call('cache:clear');
-
-        $bSep = \Illuminate\Support\Facades\Cache::remember("bsep_{$sep}", 3600, function () use ($sep) {
-            return \App\Models\BridgingSep::with(['pasien', 'reg_periksa', 'dokter.pegawai.sidikjari', 'surat_kontrol', 'naikKelas'])->where('no_sep', $sep)->first();
-        });
-
-        $regPeriksa = \Illuminate\Support\Facades\Cache::remember("regPeriksa_{$sep}", 3600, function () use ($bSep) {
-            return \App\Models\RegPeriksa::with(['pasien', 'poliklinik', 'diagnosaPasien.penyakit', 'prosedurPasien.penyakit', 'catatanPerawatan', 'caraBayar'])->where('no_rawat', $bSep->no_rawat)->first();
-        });
-
+        $bSep = \App\Models\BridgingSep::with(['pasien', 'reg_periksa', 'dokter.pegawai.sidikjari', 'surat_kontrol', 'naikKelas'])->where('no_sep', $sep)->first();
+        $regPeriksa = \App\Models\RegPeriksa::with(['pasien', 'poliklinik', 'diagnosaPasien.penyakit', 'prosedurPasien.penyakit', 'catatanPerawatan', 'caraBayar'])->where('no_rawat', $bSep->no_rawat)->first();
         $kamarInap = \App\Models\KamarInap::with('kamar.bangsal')->where('no_rawat', $bSep->no_rawat)->where('stts_pulang', '<>', 'Pindah Kamar')->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
         $operasi = \App\Models\RsiaOperasiSafe::withAllRelations()->where('no_rawat', $bSep->no_rawat)->get();
         $resumePasienRanap = \App\Models\ResumePasienRanap::where('no_rawat', $bSep->no_rawat)->first();
         $obat = $this->groupDetailPemberianObat(\App\Models\DetailPemberianObat::select('tgl_perawatan', 'jam', 'no_rawat', 'kode_brng', 'jml')->with('obat')->whereIn('no_rawat', $this->cekGabung($bSep->no_rawat))->get());
 
-        $radiologi = \Illuminate\Support\Facades\Cache::remember("radiologi_{$sep}", 3600, function () use ($bSep) {
-            $radiologiSelect = ['no_rawat', 'nip', 'kd_jenis_prw', 'tgl_periksa', 'jam', 'dokter_perujuk', 'kd_dokter', 'status'];
-            $radiologiWith = ['dokter.sidikjari', 'dokterPerujuk', 'hasilRadiologi', 'jenisPerawatan', 'petugas.sidikjari'];
-
-            return \App\Models\PeriksaRadiologi::select($radiologiSelect)->with($radiologiWith)->where('no_rawat', $bSep->no_rawat)->orderBy('tgl_periksa', 'ASC')->orderBy('jam', 'ASC')->get();
-        });
+        $radiologiSelect = ['no_rawat', 'nip', 'kd_jenis_prw', 'tgl_periksa', 'jam', 'dokter_perujuk', 'kd_dokter', 'status'];
+        $radiologiWith = ['dokter.sidikjari', 'dokterPerujuk', 'hasilRadiologi', 'jenisPerawatan', 'petugas.sidikjari'];
+        $radiologi = \App\Models\PeriksaRadiologi::select($radiologiSelect)->with($radiologiWith)->where('no_rawat', $bSep->no_rawat)->orderBy('tgl_periksa', 'ASC')->orderBy('jam', 'ASC')->get();
 
         $berkasPendukung   = \App\Models\RsiaUpload::where('no_rawat', $bSep->no_rawat)->get()->map(function ($item) {
             $item->kategori = strtolower($item->kategori);
@@ -169,33 +158,7 @@ class BerkasKlaimController extends Controller
 
         // if action in query and action is export
         if (isset($params['action']) && $params['action'] == 'export') {
-            $fileName = 'berkas-klaim-' . $sep . '.pdf';
-            try {
-                \Halim\EKlaim\Builders\BodyBuilder::setMetadata('claim_final');
-                \Halim\EKlaim\Builders\BodyBuilder::setData([
-                    "nomor_sep" => $sep,
-                    "coder_nik" => '3326105603750002',
-                ]);
-
-                \Halim\EKlaim\Services\EklaimService::send(\Halim\EKlaim\Builders\BodyBuilder::prepared())->then(function ($response) use ($sep) {
-                    \Log::channel(config('eklaim.log_channel'))->info("Final klaim success - Export Action", [
-                        "sep"      => $sep,
-                        "response" => $response
-                    ]);
-                });
-
-                \App\Models\BerkasDigitalPerawatan::updateOrCreate(
-                    ['no_rawat' => $bSep->no_rawat, 'kode'     => '009'],
-                    ['lokasi_file' => $fileName]
-                );
-
-                $st = new \Illuminate\Support\Facades\Storage();
-                $st::disk('sftp')->put('/simrsiav2/file/berkas_klaim_pengajuan/' . $fileName, $pdf->output());
-
-                return response()->json(['message' => 'Berkas klaim berhasil diexport']);
-            } catch (\Throwable $th) {
-                return response()->json(['message' => 'Berkas klaim gagal diexport', 'error' => $th->getMessage()]);
-            }
+            return $pdf->output();
         }
 
         return response($pdf->stream(), 200)
@@ -218,12 +181,7 @@ class BerkasKlaimController extends Controller
 
         $tambahanBiaya = \App\Models\TambahanBiaya::where('no_rawat', $no_rawat)->orderBy('nama_biaya', 'desc')->get();
         $potonganBiaya = \App\Models\PenguranganBiaya::where('no_rawat', $no_rawat)->orderBy('nama_pengurangan', 'desc')->get();
-        $returObat     = \Illuminate\Support\Facades\Cache::remember("retur_obat_{$no_rawat}", 3600, function () use ($no_rawat) {
-            return \App\Models\DetReturJual::with('obat')
-                ->where('no_retur_jual', 'like', "%$no_rawat%")
-                ->get()->groupBy("kode_brng");
-        });
-
+        $returObat     = \App\Models\DetReturJual::with('obat')->where('no_retur_jual', 'like', "%$no_rawat%")->get()->groupBy("kode_brng");
         $kasir         = \App\Helpers\JurnalHelper::determinePetugas($no_rawat);
         $asmenKeuangan = \App\Models\Pegawai::select('id', 'nik', 'nama', 'jnj_jabatan')->with('sidikjari')->where('jnj_jabatan', 'RS7')->first();
 
@@ -382,9 +340,7 @@ class BerkasKlaimController extends Controller
             return null;
         }
 
-        $triase = \Illuminate\Support\Facades\Cache::remember("triase_{$bSep->no_sep}", 3600, function () use ($regPeriksa) {
-            return \App\Models\RsiaTriaseUgd::where('no_rawat', $regPeriksa->no_rawat)->first();
-        });
+        $triase = \App\Models\RsiaTriaseUgd::where('no_rawat', $regPeriksa->no_rawat)->first();
 
         if (!$triase) {
             return null;
@@ -525,15 +481,9 @@ class BerkasKlaimController extends Controller
      */
     public function genHasilLab($sep, $regPeriksa)
     {
-        $lab = \Illuminate\Support\Facades\Cache::remember("lab_{$sep}", 3600, function () use ($regPeriksa, $sep) {
-            $labWih = ['pegawai.sidikjari', 'dokter.sidikjari', 'perujuk', 'jenisPerawatan', 'detailPeriksaLab.template'];
-
-            $labData = \App\Models\PeriksaLab::with($labWih)
-                ->whereIn('no_rawat', $this->getRegisterLabDouble($regPeriksa->kd_poli, $sep->no_rawat, $sep->nomr))
-                ->orderBy('tgl_periksa', 'DESC')->orderBy('jam', 'DESC')->get();
-
-            return $this->groupPeriksaLabData($labData);
-        });
+        $labWih = ['pegawai.sidikjari', 'dokter.sidikjari', 'perujuk', 'jenisPerawatan', 'detailPeriksaLab.template'];
+        $labData = \App\Models\PeriksaLab::with($labWih)->whereIn('no_rawat', $this->getRegisterLabDouble($regPeriksa->kd_poli, $sep->no_rawat, $sep->nomr))->orderBy('tgl_periksa', 'DESC')->orderBy('jam', 'DESC')->get();
+        $lab = $this->groupPeriksaLabData($labData);
 
         $hasilLab = [];
 
@@ -810,87 +760,75 @@ class BerkasKlaimController extends Controller
         $selectRawatData = ['no_rawat', 'kd_jenis_prw', 'biaya_rawat'];
         // $rawat_inap_pr = $rawat_inap_dr = $rawat_inap_drpr = $rawat_jl_pr = $rawat_jl_dr = $rawat_jl_drpr = null;
 
-        $rawat_inap_pr = \Illuminate\Support\Facades\Cache::remember("rawat_inap_pr_{$no_rawat}", 3600, function () use ($no_rawat, $selectRawatData) {
-            return \App\Models\RawatInapPr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
-                $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
-                    $qq->select('kd_kategori', 'nm_kategori');
-                }]);
-            }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
-                return $item->jenisPerawatan->kategori->nm_kategori;
-            })->map(function ($group) {
-                return $group->groupBy(function ($item) {
-                    return $item->jenisPerawatan->nm_perawatan;
-                });
+        $rawat_inap_pr = \App\Models\RawatInapPr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
+            $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
+                $qq->select('kd_kategori', 'nm_kategori');
+            }]);
+        }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
+            return $item->jenisPerawatan->kategori->nm_kategori;
+        })->map(function ($group) {
+            return $group->groupBy(function ($item) {
+                return $item->jenisPerawatan->nm_perawatan;
             });
         });
 
-        $rawat_inap_dr = \Illuminate\Support\Facades\Cache::remember("rawat_inap_dr_{$no_rawat}", 3600, function () use ($no_rawat, $selectRawatData) {
-            return \App\Models\RawatInapDr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
-                $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
-                    $qq->select('kd_kategori', 'nm_kategori');
-                }]);
-            }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
-                return $item->jenisPerawatan->kategori->nm_kategori;
-            })->map(function ($group) {
-                return $group->groupBy(function ($item) {
-                    return $item->jenisPerawatan->nm_perawatan;
-                });
+        $rawat_inap_dr = \App\Models\RawatInapDr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
+            $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
+                $qq->select('kd_kategori', 'nm_kategori');
+            }]);
+        }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
+            return $item->jenisPerawatan->kategori->nm_kategori;
+        })->map(function ($group) {
+            return $group->groupBy(function ($item) {
+                return $item->jenisPerawatan->nm_perawatan;
             });
         });
 
-        $rawat_inap_drpr = \Illuminate\Support\Facades\Cache::remember("rawat_inap_drpr_{$no_rawat}", 3600, function () use ($no_rawat, $selectRawatData) {
-            return \App\Models\RawatInapDrPr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
-                $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
-                    $qq->select('kd_kategori', 'nm_kategori');
-                }]);
-            }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
-                return $item->jenisPerawatan->kategori->nm_kategori;
-            })->map(function ($group) {
-                return $group->groupBy(function ($item) {
-                    return $item->jenisPerawatan->nm_perawatan;
-                });
+        $rawat_inap_drpr = \App\Models\RawatInapDrPr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
+            $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
+                $qq->select('kd_kategori', 'nm_kategori');
+            }]);
+        }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
+            return $item->jenisPerawatan->kategori->nm_kategori;
+        })->map(function ($group) {
+            return $group->groupBy(function ($item) {
+                return $item->jenisPerawatan->nm_perawatan;
             });
         });
 
-        $rawat_jl_pr = \Illuminate\Support\Facades\Cache::remember("rawat_jl_pr_{$no_rawat}", 3600, function () use ($no_rawat, $selectRawatData) {
-            return \App\Models\RawatJalanPr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
-                $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
-                    $qq->select('kd_kategori', 'nm_kategori');
-                }]);
-            }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
-                return $item->jenisPerawatan->kategori->nm_kategori;
-            })->map(function ($group) {
-                return $group->groupBy(function ($item) {
-                    return $item->jenisPerawatan->nm_perawatan;
-                });
+        $rawat_jl_pr = \App\Models\RawatJalanPr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
+            $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
+                $qq->select('kd_kategori', 'nm_kategori');
+            }]);
+        }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
+            return $item->jenisPerawatan->kategori->nm_kategori;
+        })->map(function ($group) {
+            return $group->groupBy(function ($item) {
+                return $item->jenisPerawatan->nm_perawatan;
             });
         });
 
-        $rawat_jl_dr = \Illuminate\Support\Facades\Cache::remember("rawat_jl_dr_{$no_rawat}", 3600, function () use ($no_rawat, $selectRawatData) {
-            return \App\Models\RawatJalanDr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
-                $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
-                    $qq->select('kd_kategori', 'nm_kategori');
-                }]);
-            }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
-                return $item->jenisPerawatan->kategori->nm_kategori;
-            })->map(function ($group) {
-                return $group->groupBy(function ($item) {
-                    return $item->jenisPerawatan->nm_perawatan;
-                });
+        $rawat_jl_dr = \App\Models\RawatJalanDr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
+            $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
+                $qq->select('kd_kategori', 'nm_kategori');
+            }]);
+        }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
+            return $item->jenisPerawatan->kategori->nm_kategori;
+        })->map(function ($group) {
+            return $group->groupBy(function ($item) {
+                return $item->jenisPerawatan->nm_perawatan;
             });
         });
 
-        $rawat_jl_drpr = \Illuminate\Support\Facades\Cache::remember("rawat_jl_drpr_{$no_rawat}", 3600, function () use ($no_rawat, $selectRawatData) {
-            return \App\Models\RawatJalanDrPr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
-                $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
-                    $qq->select('kd_kategori', 'nm_kategori');
-                }]);
-            }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
-                return $item->jenisPerawatan->kategori->nm_kategori;
-            })->map(function ($group) {
-                return $group->groupBy(function ($item) {
-                    return $item->jenisPerawatan->nm_perawatan;
-                });
+        $rawat_jl_drpr = \App\Models\RawatJalanDrPr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
+            $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
+                $qq->select('kd_kategori', 'nm_kategori');
+            }]);
+        }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
+            return $item->jenisPerawatan->kategori->nm_kategori;
+        })->map(function ($group) {
+            return $group->groupBy(function ($item) {
+                return $item->jenisPerawatan->nm_perawatan;
             });
         });
 
@@ -902,30 +840,16 @@ class BerkasKlaimController extends Controller
 
         $operasi = null;
         if (\Str::lower($statusLanjut->status_lanjut) == 'ranap') {
-            $operasi = \Illuminate\Support\Facades\Cache::remember("operasi_{$no_rawat}", 3600, function () use ($no_rawat) {
-                return (new \App\Http\Resources\Pasien\Tarif\TarifOperasi($no_rawat))->toArray(new Request(), false);
-            });
+            $operasi = (new \App\Http\Resources\Pasien\Tarif\TarifOperasi($no_rawat))->toArray(new Request(), false);
         }
 
-        $periksaLab = \Illuminate\Support\Facades\Cache::remember("periksa_lab_{$no_rawat}", 3600, function () use ($no_rawat) {
-            return \App\Models\PeriksaLab::with('jenisPerawatan')
-                ->where('no_rawat', $no_rawat)
-                ->get()->groupBy("kd_jenis_prw");
-        });
+        $periksaLab = \App\Models\PeriksaLab::with('jenisPerawatan')->where('no_rawat', $no_rawat)->get()->groupBy("kd_jenis_prw");
+        $periksaRadiologi = \App\Models\PeriksaRadiologi::with('jenisPerawatan')->where('no_rawat', $no_rawat)->get()->groupBy("kd_jenis_prw");
 
-        $periksaRadiologi = \Illuminate\Support\Facades\Cache::remember("periksa_radiologi_{$no_rawat}", 3600, function () use ($no_rawat) {
-            return \App\Models\PeriksaRadiologi::with('jenisPerawatan')
-                ->where('no_rawat', $no_rawat)
-                ->get()->groupBy("kd_jenis_prw");
-        });
-
-        $obatDanBhp = \Illuminate\Support\Facades\Cache::remember("obat_bhp_{$no_rawat}", 3600, function () use ($no_rawat) {
-            return \App\Models\DetailPemberianObat::with('obat')
-                ->where('jml', '<>', 0)->where('no_rawat', $no_rawat)
-                ->get()->groupBy(function ($q) {
-                    return $q->obat->nama_brng;
-                })->sortKeys();
-        });
+        $obatDanBhp = \App\Models\DetailPemberianObat::with('obat')->where('jml', '<>', 0)->where('no_rawat', $no_rawat)
+            ->get()->groupBy(function ($q) {
+                return $q->obat->nama_brng;
+            })->sortKeys();
 
         // +==========+==========+==========+
 

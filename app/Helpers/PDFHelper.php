@@ -24,9 +24,7 @@ class PDFHelper
         $cacheKey = 'pdf_' . md5($view . serialize($data));
 
         // Check if PDF already exists in cache
-        return Cache::remember($cacheKey, 3600, function () use ($view, $data, $f4, $orientation) {
-            return Pdf::loadView($view, $data)->setPaper($f4, $orientation)->output();
-        });
+        return Pdf::loadView($view, $data)->setPaper($f4, $orientation)->output();
     }
 
     /**
