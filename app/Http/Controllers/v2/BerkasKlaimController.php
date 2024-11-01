@@ -49,6 +49,15 @@ class BerkasKlaimController extends Controller
         ["laborat"],
     ];
 
+    public function export($sep)
+    {
+        \App\Jobs\ExportPdfJob::dispatch($sep)->delay(now()->addSeconds(5));
+
+        return response()->json([
+            'message' => 'berkas klaim akan segera di export.'
+        ]);
+    }
+
     /**
      * Cetak berkas klaim
      * 

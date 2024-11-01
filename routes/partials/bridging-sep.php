@@ -8,6 +8,7 @@ Route::middleware(['user-aes', 'custom-user', 'claim:role,pegawai'])->group(func
     ->parameters(['sep' => 'no_sep']);
     
     Route::get('/sep/{no_sep}/print', [\App\Http\Controllers\v2\BerkasKlaimController::class, 'print']);
+    Route::get('/sep/{no_sep}/export', [\App\Http\Controllers\v2\BerkasKlaimController::class, 'export']);
     Route::get('/sep/{no_sep}/klaim/sync', [\App\Http\Controllers\v2\KlaimController::class, 'sync']);
     
     Route::resource('/sep/{no_sep}/klaim/status', \App\Http\Controllers\RsiaStatusKlaimController::class)->only(['store']);
