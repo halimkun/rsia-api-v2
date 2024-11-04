@@ -63,12 +63,12 @@
                     <td class="border text-center" style="width: 70%; border-color: #333;">
                         <table class="table w-full table-auto">
                             @foreach ([
-                                'No. RM'     => SafeAccess::object($sep, 'nomr'),
-                                'Nama'       => SafeAccess::object($pasien, 'nm_pasien'),
-                                'Umur'       => SafeAccess::object($regPeriksa, 'umurdaftar') . ' ' . SafeAccess::object($regPeriksa, 'sttsumur'),
-                                'Tgl. Lahir' => SafeAccess::object($sep, 'tanggal_lahir'),
-                                'Alamat'     => SafeAccess::object($pasien, 'alamat'),
-                                'No. HP'     => SafeAccess::object($pasien, 'no_tlp'),
+                                'No. RM'     => \App\Helpers\SafeAccess::object($sep, 'nomr'),
+                                'Nama'       => \App\Helpers\SafeAccess::object($pasien, 'nm_pasien'),
+                                'Umur'       => \App\Helpers\SafeAccess::object($regPeriksa, 'umurdaftar') . ' ' . \App\Helpers\SafeAccess::object($regPeriksa, 'sttsumur'),
+                                'Tgl. Lahir' => \App\Helpers\SafeAccess::object($sep, 'tanggal_lahir'),
+                                'Alamat'     => \App\Helpers\SafeAccess::object($pasien, 'alamat'),
+                                'No. HP'     => \App\Helpers\SafeAccess::object($pasien, 'no_tlp'),
                             ] as $key => $value)
                                 <tr>
                                     <td class="text-nowrap whitespace-nowrap px-1 text-left text-sm leading-4">{{ $key }}</td>
@@ -96,8 +96,8 @@
             $los = null;
         }
 
-        $QRDokter = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . SafeAccess::object($sep, 'nmdpdjp') . '. ID : ' . SafeAccess::object($ttdDpjp, 'sidikjari->sidikjari');
-        $QRKoor = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . SafeAccess::object($ttdResume, 'nama') . '. ID : ' . SafeAccess::object($ttdResume, 'sidikjari->sidikjari');
+        $QRDokter = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . \App\Helpers\SafeAccess::object($sep, 'nmdpdjp') . '. ID : ' . \App\Helpers\SafeAccess::object($ttdDpjp, 'sidikjari->sidikjari');
+        $QRKoor = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . \App\Helpers\SafeAccess::object($ttdResume, 'nama') . '. ID : ' . \App\Helpers\SafeAccess::object($ttdResume, 'sidikjari->sidikjari');
     @endphp
 
     <main style="margin-top: 125px;">
@@ -106,7 +106,7 @@
                 <td colspan="2" class="border p-1" style="border-color: #333;">
                     <table class="table table-auto">
                         @foreach ([
-                            'Tanggal Masuk'  => SafeAccess::object($regPeriksa, 'tgl_registrasi'),
+                            'Tanggal Masuk'  => \App\Helpers\SafeAccess::object($regPeriksa, 'tgl_registrasi'),
                             'Tanggal Keluar' => $tglKeluar,
                             'Lama Rawat'     => $los . ' Hari',
                             'Ruang Rawat'    => !$kamarInap->isEmpty() ? $kamarInap[0]->kamar->bangsal->nm_bangsal : '-',
@@ -134,10 +134,10 @@
                 <td class="border p-1" style="border-color: #333;">
                     <table class="table table-auto">
                         @foreach ([
-                            'Cara Bayar'     => SafeAccess::object($regPeriksa, 'caraBayar->png_jawab', '-'),
-                            'Indikasi Rawat' => SafeAccess::object($resume, 'alasan', '-'),
-                            'Diagnosa Awal'  => SafeAccess::object($resume, 'diagnosa_awal', '-'),
-                            'DPJP'           => SafeAccess::object($sep, 'nmdpdjp', '-'),
+                            'Cara Bayar'     => \App\Helpers\SafeAccess::object($regPeriksa, 'caraBayar->png_jawab', '-'),
+                            'Indikasi Rawat' => \App\Helpers\SafeAccess::object($resume, 'alasan', '-'),
+                            'Diagnosa Awal'  => \App\Helpers\SafeAccess::object($resume, 'diagnosa_awal', '-'),
+                            'DPJP'           => \App\Helpers\SafeAccess::object($sep, 'nmdpdjp', '-'),
                         ] as $k => $v)
                             <tr>
                                 <td class="text-nowrap whitespace-nowrap leading-none">{{ $k }}</td>

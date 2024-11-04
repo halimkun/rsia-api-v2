@@ -18,7 +18,7 @@
     @endpush
 
     @php
-        $QRText = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $spri->nm_dokter_bpjs . '. ID : ' . SafeAccess::object($sep, 'dokter->pegawai->sidikjari->sdk');
+        $QRText = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $spri->nm_dokter_bpjs . '. ID : ' . \App\Helpers\SafeAccess::object($sep, 'dokter->pegawai->sidikjari->sdk');
     @endphp
 
     <main style="margin-top: 30px">

@@ -31,12 +31,12 @@
                     <td class="border text-center" style="width: 70%; border-color: #333;">
                         <table class="table w-full table-auto">
                             @foreach ([
-            'No. RM' => SafeAccess::object($regPeriksa, 'no_rkm_medis', '-'),
-            'Nama' => SafeAccess::object($regPeriksa, 'pasien->nm_pasien', '-'),
-            'Umur' => SafeAccess::object($regPeriksa, 'umurdaftar', '-') . ' ' . SafeAccess::object($regPeriksa, 'sttsumur', '-'),
-            'Tgl. Lahir' => SafeAccess::object($regPeriksa, 'pasien->tgl_lahir', '-'),
-            'Alamat' => SafeAccess::object($regPeriksa, 'pasien->alamat', '-'),
-            'No. HP' => SafeAccess::object($regPeriksa, 'pasien->no_tlp', '-'),
+            'No. RM' => \App\Helpers\SafeAccess::object($regPeriksa, 'no_rkm_medis', '-'),
+            'Nama' => \App\Helpers\SafeAccess::object($regPeriksa, 'pasien->nm_pasien', '-'),
+            'Umur' => \App\Helpers\SafeAccess::object($regPeriksa, 'umurdaftar', '-') . ' ' . \App\Helpers\SafeAccess::object($regPeriksa, 'sttsumur', '-'),
+            'Tgl. Lahir' => \App\Helpers\SafeAccess::object($regPeriksa, 'pasien->tgl_lahir', '-'),
+            'Alamat' => \App\Helpers\SafeAccess::object($regPeriksa, 'pasien->alamat', '-'),
+            'No. HP' => \App\Helpers\SafeAccess::object($regPeriksa, 'pasien->no_tlp', '-'),
         ] as $key => $value)
                                 <tr class="align-top">
                                     <td class="text-nowrap whitespace-nowrap px-1 text-left text-sm leading-4">{{ $key }}</td>
@@ -186,7 +186,7 @@
                         {{ $triase->tgl_kunjungan }}
                     </td>
                     <td class="border px-1 py-5 text-center leading-none" colspan="3" style="border-color: #333;">
-                        <?php $QRDokter = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . SafeAccess::object($regPeriksa, 'dokter->nm_dokter', '-') . '. ID : ' . SafeAccess::object($regPeriksa, 'dokter->sidikjari->sidikjari', null); ?>
+                        <?php $QRDokter = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . \App\Helpers\SafeAccess::object($regPeriksa, 'dokter->nm_dokter', '-') . '. ID : ' . \App\Helpers\SafeAccess::object($regPeriksa, 'dokter->sidikjari->sidikjari', null); ?>
 
                         <div class="relative inline-block h-28 w-28">
                             <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG($QRDokter, 'QRCODE') }}" alt="barcode" class="h-28 w-28" />
@@ -194,7 +194,7 @@
                         </div>
 
                         <div class="mt-1">
-                            {{ SafeAccess::object($regPeriksa, 'dokter->nm_dokter', '-') }}
+                            {{ \App\Helpers\SafeAccess::object($regPeriksa, 'dokter->nm_dokter', '-') }}
                         </div>
                     </td>
                 </tr>

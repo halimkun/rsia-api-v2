@@ -64,7 +64,7 @@
 								'Nama Pasien' => $regPeriksa->pasien->nm_pasien,
 								'JK / Umur'   => $regPeriksa->pasien->jk . ' / ' . $regPeriksa->umurdaftar . ' ' . $regPeriksa->sttsumur,
 								'Alamat'      => $regPeriksa->pasien->alamat,
-								'No. Periksa' => SafeAccess::object($frlab, 'no_rawat'),
+								'No. Periksa' => \App\Helpers\SafeAccess::object($frlab, 'no_rawat'),
 							] as $key => $val)
                                 <tr class="align-top">
                                     <td class="text-nowrap whitespace-nowrap leading-5">{{ $key }}</td>
@@ -77,11 +77,11 @@
                     <td>
                         <table class="table w-full">
                             @foreach ([
-								'Penanggung Jawab' => SafeAccess::object($frlab, 'dokter->nm_dokter'),
-								'Dokter Pengirim'  => SafeAccess::object($frlab, 'perujuk->nm_dokter'),
-								'Tgl. Pemeriksaan' => SafeAccess::object($frlab, 'tgl_periksa'),
-								'Jam pemeriksaan'  => SafeAccess::object($frlab, 'jam'),
-								'Poli'             => SafeAccess::object($regPeriksa, 'poliklinik->nm_poli'),
+								'Penanggung Jawab' => \App\Helpers\SafeAccess::object($frlab, 'dokter->nm_dokter'),
+								'Dokter Pengirim'  => \App\Helpers\SafeAccess::object($frlab, 'perujuk->nm_dokter'),
+								'Tgl. Pemeriksaan' => \App\Helpers\SafeAccess::object($frlab, 'tgl_periksa'),
+								'Jam pemeriksaan'  => \App\Helpers\SafeAccess::object($frlab, 'jam'),
+								'Poli'             => \App\Helpers\SafeAccess::object($regPeriksa, 'poliklinik->nm_poli'),
 							] as $key => $val)
                                 <tr class="align-top">
                                     <td class="text-nowrap whitespace-nowrap leading-5">{{ $key }}</td>
@@ -96,8 +96,8 @@
         </div>
 
         @php
-            $QRDokter = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . SafeAccess::object($frlab, 'dokter->nm_dokter') . '. ID : ' . SafeAccess::object($frlab, 'dokter->sidikjari->sidikjari');
-            $QRPetugas = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . SafeAccess::object($frlab, 'pegawai->nama') . '. ID : ' . SafeAccess::object($frlab, 'pegawai->sidikjari->sidikjari');
+            $QRDokter = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . \App\Helpers\SafeAccess::object($frlab, 'dokter->nm_dokter') . '. ID : ' . \App\Helpers\SafeAccess::object($frlab, 'dokter->sidikjari->sidikjari');
+            $QRPetugas = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . \App\Helpers\SafeAccess::object($frlab, 'pegawai->nama') . '. ID : ' . \App\Helpers\SafeAccess::object($frlab, 'pegawai->sidikjari->sidikjari');
             $tglCetak = null;
         @endphp
 

@@ -52,7 +52,7 @@
     @endpush
 
     @php
-        $QRText = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $regPeriksa->dokter->nm_dokter . '. ID : ' . SafeAccess::object($regPeriksa, "dokter->sidikjari->sidikjari");
+        $QRText = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $regPeriksa->dokter->nm_dokter . '. ID : ' . \App\Helpers\SafeAccess::object($regPeriksa, "dokter->sidikjari->sidikjari");
     @endphp
 
     <main>

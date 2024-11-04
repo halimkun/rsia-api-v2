@@ -23,11 +23,11 @@
         <div class="my-3">
             <table class="table w-full">
                 @foreach ([
-                    'No. Nota' => SafeAccess::object($nota, 'no_nota', '-'),
-                    'No. RM' => SafeAccess::object($regPeriksa, 'no_rkm_medis', '-'),
-                    'Nama Pasien' => SafeAccess::object($regPeriksa, 'pasien->nm_pasien', '-'),
-                    'JK / Umur' => (\Str::lower(SafeAccess::object($regPeriksa, 'pasien->jk', '')) == 'p' ? 'Perempuan' : 'Laki-laki') . ' / ' . SafeAccess::object($regPeriksa, 'umurdaftar', '-') . ' ' . SafeAccess::object($regPeriksa, 'sttsumur', '-'),
-                    'Cara Bayar' => SafeAccess::object($regPeriksa, 'caraBayar->png_jawab', '-'),
+                    'No. Nota' => \App\Helpers\SafeAccess::object($nota, 'no_nota', '-'),
+                    'No. RM' => \App\Helpers\SafeAccess::object($regPeriksa, 'no_rkm_medis', '-'),
+                    'Nama Pasien' => \App\Helpers\SafeAccess::object($regPeriksa, 'pasien->nm_pasien', '-'),
+                    'JK / Umur' => (\Str::lower(\App\Helpers\SafeAccess::object($regPeriksa, 'pasien->jk', '')) == 'p' ? 'Perempuan' : 'Laki-laki') . ' / ' . \App\Helpers\SafeAccess::object($regPeriksa, 'umurdaftar', '-') . ' ' . \App\Helpers\SafeAccess::object($regPeriksa, 'sttsumur', '-'),
+                    'Cara Bayar' => \App\Helpers\SafeAccess::object($regPeriksa, 'caraBayar->png_jawab', '-'),
                 ] as $key => $val)
                     <tr class="align-top">
                         <td class="text-nowrap whitespace-nowrap text-sm leading-4" style="width: 128px;">{{ $key }}</td>
@@ -36,17 +36,18 @@
                     </tr>
                 @endforeach
 
-                @php
-                    $firstRuang = $ruang->first();
-                @endphp
 
                 @if (\Str::lower($regPeriksa->status_lanjut) == 'ranap')
+                    @php
+                        $firstRuang = $ruang->first();
+                    @endphp
+                    
                     <tr class="align-top">
                         <td class="text-nowrap whitespace-nowrap text-sm leading-4">Bangsal / Kamar</td>
                         <td class="px-2 text-sm leading-4">:</td>
                         <td class="w-full text-sm leading-none">
-                            {{ SafeAccess::object($firstRuang, 'kamar->bangsal->nm_bangsal', '-') }} /
-                            {{ SafeAccess::object($firstRuang, 'kd_kamar', '-') }}
+                            {{ \App\Helpers\SafeAccess::object($firstRuang, 'kamar->bangsal->nm_bangsal', '-') }} /
+                            {{ \App\Helpers\SafeAccess::object($firstRuang, 'kd_kamar', '-') }}
                         </td>
                     </tr>
                 @else
@@ -74,7 +75,7 @@
                     <td class="w-full text-sm leading-none">
                         {{ $regPeriksa->tgl_registrasi . ' ' . $regPeriksa->jam_reg }}
                         @if (\Str::lower($regPeriksa->status_lanjut) == 'ranap')
-                            <span class="font-bold"> s/d </span> {{ SafeAccess::object($firstRuang, 'tgl_keluar', '-') . ' ' . SafeAccess::object($firstRuang, 'jam_keluar', '-') }}
+                            <span class="font-bold"> s/d </span> {{ \App\Helpers\SafeAccess::object($firstRuang, 'tgl_keluar', '-') . ' ' . \App\Helpers\SafeAccess::object($firstRuang, 'jam_keluar', '-') }}
                         @endif
                     </td>
                 </tr>
@@ -107,8 +108,8 @@
                                     <span class="px-1 font-bold">Dokter Rawat</span>
                                 @endif
                             </td>
-                            <td class="border-b px-1 text-sm leading-none" style="padding: 3px 3px; border-color: lightgray; max-width: 250px;" colspan="2">{{ SafeAccess::object($frvd, 'dokter->nm_dokter', '-') }}</td>
-                            <td class="border-b px-1 text-sm leading-none" style="padding: 3px 3px; border-color: lightgray; max-width: 250px;" colspan="3">{{ SafeAccess::object($frvd, 'dokter->spesialis->nm_sps', '-') }}</td>
+                            <td class="border-b px-1 text-sm leading-none" style="padding: 3px 3px; border-color: lightgray; max-width: 250px;" colspan="2">{{ \App\Helpers\SafeAccess::object($frvd, 'dokter->nm_dokter', '-') }}</td>
+                            <td class="border-b px-1 text-sm leading-none" style="padding: 3px 3px; border-color: lightgray; max-width: 250px;" colspan="3">{{ \App\Helpers\SafeAccess::object($frvd, 'dokter->spesialis->nm_sps', '-') }}</td>
                         </tr>
                     @endforeach
 
@@ -144,14 +145,14 @@
                                     <span class="font-bold">Kamar Rawat</span>
                                 @endif
                             </td>
-                            <td class="border-b px-1 text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray; max-width: 250px;">{{ $k }} {{ SafeAccess::object($frv, 'kamar->bangsal->nm_bangsal', '') }}</td>
-                            <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ number_format(SafeAccess::object($frv, 'trf_kamar', 0), 0, ',', '.') }}</td>
+                            <td class="border-b px-1 text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray; max-width: 250px;">{{ $k }} {{ \App\Helpers\SafeAccess::object($frv, 'kamar->bangsal->nm_bangsal', '') }}</td>
+                            <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ number_format(\App\Helpers\SafeAccess::object($frv, 'trf_kamar', 0), 0, ',', '.') }}</td>
                             <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ $v->sum('lama') }}</td>
                             <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray"></td>
-                            <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ number_format(SafeAccess::object($frv, 'ttl_biaya', 0), 0, ',', '.') }}</td>
+                            <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ number_format(\App\Helpers\SafeAccess::object($frv, 'ttl_biaya', 0), 0, ',', '.') }}</td>
                         </tr>
 
-                        <?php $totalRuang += SafeAccess::object($frv, 'ttl_biaya', 0); ?>
+                        <?php $totalRuang += \App\Helpers\SafeAccess::object($frv, 'ttl_biaya', 0); ?>
                     @endforeach
 
                     <tr>
@@ -206,7 +207,7 @@
                                     </td>
 
                                     <td colspan="5" class="border-b px-1 text-sm font-bold leading-none" style="padding:3px 3px;border-color: lightgray; max-width: 250px;">
-                                        {{ SafeAccess::object($v, 'detailPaket->nm_perawatan') }}
+                                        {{ \App\Helpers\SafeAccess::object($v, 'detailPaket->nm_perawatan') }}
                                     </td>
                                 </tr>
 
@@ -246,7 +247,7 @@
                                     @if (\Str::contains(\Str::lower($kategori), ['obat', 'bhp']))
                                         {{ $k }}
                                     @else
-                                        {{ SafeAccess::object($frv, 'jenisPerawatan->nm_perawatan', 'Invalid Params') }}
+                                        {{ \App\Helpers\SafeAccess::object($frv, 'jenisPerawatan->nm_perawatan', 'Invalid Params') }}
                                     @endif
 
                                     {{-- float right --}}
@@ -255,11 +256,11 @@
 
                                 <td class="border-b px-1 text-right text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
                                     @if (\Str::contains(\Str::lower($kategori), ['obat', 'bhp']))
-                                        {{ number_format(SafeAccess::object($frv, 'biaya_obat', 0), 0, ',', '.') }}
+                                        {{ number_format(\App\Helpers\SafeAccess::object($frv, 'biaya_obat', 0), 0, ',', '.') }}
                                     @elseif (\Str::contains(\Str::lower($kategori), ['lab', 'radiologi']))
-                                        {{ number_format(SafeAccess::object($frv, 'biaya', 0), 0, ',', '.') }}
+                                        {{ number_format(\App\Helpers\SafeAccess::object($frv, 'biaya', 0), 0, ',', '.') }}
                                     @else
-                                        <span class="whitespace-nowrap">{{ number_format(SafeAccess::object($frv, 'biaya_rawat', 0), 0, ',', '.') }}</span>
+                                        <span class="whitespace-nowrap">{{ number_format(\App\Helpers\SafeAccess::object($frv, 'biaya_rawat', 0), 0, ',', '.') }}</span>
                                     @endif
                                 </td>
 
@@ -325,26 +326,26 @@
                                 <tr>
                                     <td></td>
                                     <td class="border-b px-1 text-left text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
-                                        {{ SafeAccess::object($frrov, 'obat->nama_brng') }}
+                                        {{ \App\Helpers\SafeAccess::object($frrov, 'obat->nama_brng') }}
 
                                         {{-- float right --}}
                                         <span class="float-right">:</span>
                                     </td>
                                     <td class="border-b px-1 text-right text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
-                                        {{ number_format(SafeAccess::object($frrov, 'h_retur', 0), 0, ',', '.') }}
+                                        {{ number_format(\App\Helpers\SafeAccess::object($frrov, 'h_retur', 0), 0, ',', '.') }}
                                     </td>
                                     <td class="border-b px-1 text-right text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
-                                        - {{ SafeAccess::object($frrov, 'jml_retur', 0) }}
+                                        - {{ \App\Helpers\SafeAccess::object($frrov, 'jml_retur', 0) }}
                                     </td>
                                     <td class="border-b px-1 text-right text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
                                         0
                                     </td>
                                     <td class="border-b px-1 text-right text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
-                                        - {{ number_format(SafeAccess::object($frrov, 'subtotal', 0), 0, ',', '.') }}
+                                        - {{ number_format(\App\Helpers\SafeAccess::object($frrov, 'subtotal', 0), 0, ',', '.') }}
                                     </td>
                                 </tr>
 
-                                <?php $totalRetur += SafeAccess::object($frrov, 'subtotal', 0); ?>
+                                <?php $totalRetur += \App\Helpers\SafeAccess::object($frrov, 'subtotal', 0); ?>
                             @endforeach
 
                             <tr>
@@ -399,14 +400,14 @@
                                     <span class="font-bold">Resep Pulang</span>
                                 @endif
                             </td>
-                            <td class="border-b px-1 text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray; max-width: 250px;">{{ SafeAccess::object($frpv, 'obat->nama_brng', '') }}</td>
-                            <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ number_format(SafeAccess::object($frpv, 'harga', 0), 0, ',', '.') }}</td>
+                            <td class="border-b px-1 text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray; max-width: 250px;">{{ \App\Helpers\SafeAccess::object($frpv, 'obat->nama_brng', '') }}</td>
+                            <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ number_format(\App\Helpers\SafeAccess::object($frpv, 'harga', 0), 0, ',', '.') }}</td>
                             <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ number_format($rpv->sum('jml_barang'), 0, ',', '.') }}</td>
                             <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">0</td>
-                            <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ number_format(SafeAccess::object($frpv, 'total', 0), 0, ',', '.') }}</td>
+                            <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ number_format(\App\Helpers\SafeAccess::object($frpv, 'total', 0), 0, ',', '.') }}</td>
                         </tr>
 
-                        <?php $totalResepPulang += SafeAccess::object($frpv, 'total', 0); ?>
+                        <?php $totalResepPulang += \App\Helpers\SafeAccess::object($frpv, 'total', 0); ?>
                     @endforeach
 
                     <tr>
@@ -536,8 +537,8 @@
                             Kabid Umum dan Keuangan
                         </p>
                         @php
-                            $HASHKoor = SafeAccess::object($asmenKeuangan, 'sidikjari->sidikjari', \Hash::make($asmenKeuangan->nik));
-                            $QRKoor = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . SafeAccess::object($asmenKeuangan, 'nama', '- null -') . '. ID : ' . $HASHKoor;
+                            $HASHKoor = \App\Helpers\SafeAccess::object($asmenKeuangan, 'sidikjari->sidikjari', \Hash::make($asmenKeuangan->nik));
+                            $QRKoor = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . \App\Helpers\SafeAccess::object($asmenKeuangan, 'nama', '- null -') . '. ID : ' . $HASHKoor;
                         @endphp
 
                         <div class="relative inline-block h-28 w-28">
@@ -545,7 +546,7 @@
                             <img src="{{ asset('assets/images/logo.png') }}" alt="logo" class="h-8 w-8" style="position: absolute !important; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;" />
                         </div>
 
-                        <p class="mt-3">{{ SafeAccess::object($asmenKeuangan, 'nama', '- null -') }}</p>
+                        <p class="mt-3">{{ \App\Helpers\SafeAccess::object($asmenKeuangan, 'nama', '- null -') }}</p>
                     </td>
                     <td class="w-full text-center">
                         <p class="mb-3">
@@ -553,8 +554,8 @@
                             Kasir
                         </p>
                         @php
-                            $hash = SafeAccess::object($kasir, 'sidikjari->sidikjari', \Hash::make($kasir->nip));
-                            $QRPetugas = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . SafeAccess::object($kasir, 'nama', '- null -') . '. ID : ' . $hash;
+                            $hash = \App\Helpers\SafeAccess::object($kasir, 'sidikjari->sidikjari', \Hash::make($kasir ? $kasir->nip : "- null -"));
+                            $QRPetugas = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . \App\Helpers\SafeAccess::object($kasir, 'nama', '- null -') . '. ID : ' . $hash;
                         @endphp
 
                         <div class="relative inline-block h-28 w-28">
@@ -562,7 +563,7 @@
                             <img src="{{ asset('assets/images/logo.png') }}" alt="logo" class="h-8 w-8" style="position: absolute !important; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;" />
                         </div>
 
-                        <p class="mt-3">{{ SafeAccess::object($kasir, 'nama', '- null -') }}</p>
+                        <p class="mt-3">{{ \App\Helpers\SafeAccess::object($kasir, 'nama', '- null -') }}</p>
                     </td>
                 </tr>
             </table>

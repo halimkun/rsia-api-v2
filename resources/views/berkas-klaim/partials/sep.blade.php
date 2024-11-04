@@ -20,16 +20,16 @@
                     <table class="table w-full table-auto">
                         <tbody>
                             @foreach ([
-        'No. SEP' => SafeAccess::object($sep, 'no_sep', '-'),
-        'Tgl. SEP' => SafeAccess::object($sep, 'tglsep', '-'),
-        'No. Kartu' => SafeAccess::object($sep, 'no_kartu', '-'),
-        'Nama Peserta' => SafeAccess::object($sep, 'pasien->nm_pasien', '-'),
-        'Tgl. Lahir' => SafeAccess::object($sep, 'tanggal_lahir', '-'),
-        'No. Telepon' => SafeAccess::object($sep, 'notelep', '-'),
-        'Sub/Spesialis' => SafeAccess::object($sep, 'nmpolitujuan', '-'),
-        'Dokter' => SafeAccess::object($sep, 'nmdpdjp', '-'),
-        'Faskes Perujuk' => SafeAccess::object($sep, 'nmppkrujukan', '-'),
-        'Diagnosa Awal' => SafeAccess::object($sep, 'nmdiagnosaawal', '-'),
+        'No. SEP' => \App\Helpers\SafeAccess::object($sep, 'no_sep', '-'),
+        'Tgl. SEP' => \App\Helpers\SafeAccess::object($sep, 'tglsep', '-'),
+        'No. Kartu' => \App\Helpers\SafeAccess::object($sep, 'no_kartu', '-'),
+        'Nama Peserta' => \App\Helpers\SafeAccess::object($sep, 'pasien->nm_pasien', '-'),
+        'Tgl. Lahir' => \App\Helpers\SafeAccess::object($sep, 'tanggal_lahir', '-'),
+        'No. Telepon' => \App\Helpers\SafeAccess::object($sep, 'notelep', '-'),
+        'Sub/Spesialis' => \App\Helpers\SafeAccess::object($sep, 'nmpolitujuan', '-'),
+        'Dokter' => \App\Helpers\SafeAccess::object($sep, 'nmdpdjp', '-'),
+        'Faskes Perujuk' => \App\Helpers\SafeAccess::object($sep, 'nmppkrujukan', '-'),
+        'Diagnosa Awal' => \App\Helpers\SafeAccess::object($sep, 'nmdiagnosaawal', '-'),
         'Catatan' => '-',
     ] as $col => $val)
                                 <tr class="align-top">
@@ -39,7 +39,7 @@
                                         {{ $val }}
 
                                         @if ($col == 'No. Kartu')
-                                            (MR : {{ SafeAccess::object($sep, 'nomr', '-') }})
+                                            (MR : {{ \App\Helpers\SafeAccess::object($sep, 'nomr', '-') }})
                                         @endif
                                     </td>
                                 </tr>
@@ -52,15 +52,15 @@
                     <table class="table mt-2 w-full table-auto">
                         <tbody>
                             @foreach ([
-                                'No.Rawat' => SafeAccess::object($sep, 'no_rawat', '-'),
-                                'No.Reg' => SafeAccess::object($sep, 'reg_periksa->no_reg', '-'),
-                                'Peserta' => SafeAccess::object($sep, 'peserta', '-'),
-                                'Jns Rawat' => SafeAccess::object($sep, 'jnspelayanan') == '1' ? 'Rawat Inap' : 'Rawat Jalan',
-                                'Jns Kunjungan' => SafeAccess::object($sep, 'tujuankunjungan') == 0 ? 'Konsultasi Dokter (pertama)' : 'Kunjungan Kontrol(ulangan)',
+                                'No.Rawat' => \App\Helpers\SafeAccess::object($sep, 'no_rawat', '-'),
+                                'No.Reg' => \App\Helpers\SafeAccess::object($sep, 'reg_periksa->no_reg', '-'),
+                                'Peserta' => \App\Helpers\SafeAccess::object($sep, 'peserta', '-'),
+                                'Jns Rawat' => \App\Helpers\SafeAccess::object($sep, 'jnspelayanan') == '1' ? 'Rawat Inap' : 'Rawat Jalan',
+                                'Jns Kunjungan' => \App\Helpers\SafeAccess::object($sep, 'tujuankunjungan') == 0 ? 'Konsultasi Dokter (pertama)' : 'Kunjungan Kontrol(ulangan)',
                                 '' => '',
                                 'Poli Perujuk' => '-',
-                                'Kelas Hak' => 'Kelas ' . SafeAccess::object($sep, 'klsrawat', '-'),
-                                'Kelas Rawat' => SafeAccess::object($sep, 'klsnaik', '-'),
+                                'Kelas Hak' => 'Kelas ' . \App\Helpers\SafeAccess::object($sep, 'klsrawat', '-'),
+                                'Kelas Rawat' => \App\Helpers\SafeAccess::object($sep, 'klsnaik', '-'),
                                 'Penjamin' => '',
                             ] as $col => $val)
                                 <tr class="align-top">
@@ -181,7 +181,7 @@
         </div>
 
         @php
-            $QRText = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . SafeAccess::object($sep, 'nmdpdjp', '-') . '. ID : ' . SafeAccess::object($sep, 'dokter->pegawai->sidikjari->sdk', null);
+            $QRText = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . \App\Helpers\SafeAccess::object($sep, 'nmdpdjp', '-') . '. ID : ' . \App\Helpers\SafeAccess::object($sep, 'dokter->pegawai->sidikjari->sdk', null);
         @endphp
 
         <div class="mt-3">
@@ -190,7 +190,7 @@
                     <td class="w-full justify-center text-center align-middle">
                         <p class="mb-2">Pasien</p>
                         <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG($sep->no_kartu ?? 0, 'QRCODE') }}" alt="barcode" class="h-2w-28 w-28" />
-                        <p class="mt-2">{{ SafeAccess::object($sep, 'pasien->nm_pasien', '-') }}</p>
+                        <p class="mt-2">{{ \App\Helpers\SafeAccess::object($sep, 'pasien->nm_pasien', '-') }}</p>
                     </td>
                     <td class="relative w-full justify-center text-center align-middle">
                         <p class="mb-2">Dokter</p>
@@ -200,7 +200,7 @@
                             <img src="{{ asset('assets/images/logo.png') }}" alt="logo" class="h-9 w-9" style="position: absolute !important; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;" />
                         </div>
 
-                        <p class="mt-2">{{ SafeAccess::object($sep, 'nmdpdjp', '-') }}</p>
+                        <p class="mt-2">{{ \App\Helpers\SafeAccess::object($sep, 'nmdpdjp', '-') }}</p>
                     </td>
 
                 </tr>
