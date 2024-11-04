@@ -2,14 +2,14 @@
 
 namespace App\Jobs;
 
-use App\Http\Controllers\v2\BerkasKlaimController;
 use App\Models\BridgingSep;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldBeUnique;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\SerializesModels;
+use App\Http\Controllers\v2\BerkasKlaimController;
 
 class ExportPdfJob implements ShouldQueue
 {
@@ -43,7 +43,7 @@ class ExportPdfJob implements ShouldQueue
         $brigdingSep = BridgingSep::where('no_sep', $this->sep)->first();
 
         if (!$brigdingSep) {
-            \Log::channel(config('eklaim.log_channel'))->info("Final klaim failed - Export Action", [
+            Log::channel(config('eklaim.log_channel'))->info("Final klaim failed - Export Action", [
                 "sep"      => $this->sep,
                 "response" => "Data SEP tidak ditemukan"
             ]);
@@ -58,7 +58,7 @@ class ExportPdfJob implements ShouldQueue
             ]);
 
             \Halim\EKlaim\Services\EklaimService::send(\Halim\EKlaim\Builders\BodyBuilder::prepared())->then(function ($response) use ($brigdingSep) {
-                \Log::channel(config('eklaim.log_channel'))->info("Final klaim success - Export Action", [
+                Log::channel(config('eklaim.log_channel'))->info("Final klaim success - Export Action", [
                     "sep"      => $brigdingSep->no_sep,
                     "response" => $response
                 ]);
@@ -80,9 +80,9 @@ class ExportPdfJob implements ShouldQueue
             $st = new \Illuminate\Support\Facades\Storage();
             $st::disk('sftp')->put('/simrsiav2/file/berkas_klaim_pengajuan/' . $fileName, $output);
 
-            \Log::channel(config('eklaim.log_channel'))->info("Berkas Klaim berhasil di export - Export Action");
+            Log::channel(config('eklaim.log_channel'))->info("Berkas Klaim berhasil di export - Export Action");
         } catch (\Throwable $th) {
-            \Log::channel(config('eklaim.log_channel'))->error("Berkas Klaim gagal di export - Export Action", [
+            Log::channel(config('eklaim.log_channel'))->error("Berkas Klaim gagal di export - Export Action", [
                 "sep"     => $brigdingSep,
                 "message" => $th->getMessage(),
                 "trace"   => $th->getTrace()

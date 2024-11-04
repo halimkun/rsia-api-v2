@@ -31,13 +31,13 @@
                     <td class="border text-center" style="width: 70%; border-color: #333;">
                         <table class="table w-full table-auto">
                             @foreach ([
-            'No. RM' => $regPeriksa?->no_rkm_medis,
-            'Nama' => $regPeriksa?->pasien?->nm_pasien,
-            'Umur' => $regPeriksa?->umurdaftar . ' ' . $regPeriksa?->sttsumur,
-            'Tgl. Lahir' => $regPeriksa?->pasien?->tgl_lahir,
-            'Alamat' => $regPeriksa?->pasien?->alamat,
-            'No. HP' => $regPeriksa?->pasien?->no_tlp,
-        ] as $key => $value)
+                                'No. RM'        => SafeAccess::object($regPeriksa, 'no_rkm_medis', '-'),
+                                'Nama'          => SafeAccess::object($regPeriksa, 'pasien->nm_pasien', '-'),
+                                'Umur'          => (SafeAccess::object($regPeriksa, 'umurdaftar', '-') . ' ' . SafeAccess::object($regPeriksa, 'sttsumur', '-')),
+                                'Tgl. Lahir'    => SafeAccess::object($regPeriksa, 'pasien->tgl_lahir', '-'),
+                                'Alamat'        => SafeAccess::object($regPeriksa, 'pasien->alamat', '-'),
+                                'No. HP'        => SafeAccess::object($regPeriksa, 'pasien->no_tlp', '-'),
+                            ] as $key           => $value)
                                 <tr class="align-top">
                                     <td class="text-nowrap whitespace-nowrap px-1 text-left text-sm leading-4">{{ $key }}</td>
                                     <td class="px-1 text-left text-sm leading-4" style="width: 1px;">:</td>

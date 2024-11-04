@@ -42,11 +42,11 @@
 					<td>
 						<table class="table w-full">
 							@foreach ([
-								'No. RM'      => $regPeriksa?->no_rkm_medis,
-								'Nama Pasien' => $regPeriksa?->pasien?->nm_pasien,
-								'JK / Umur'   => $regPeriksa?->pasien?->jk . ' / ' . $regPeriksa?->umurdaftar . ' ' . $regPeriksa?->sttsumur,
-								'Alamat'      => $regPeriksa?->pasien?->alamat,
-								'No. Periksa' => $radiologi?->no_rawat,
+								'No. RM'      => $regPeriksa->no_rkm_medis,
+								'Nama Pasien' => $regPeriksa->pasien->nm_pasien,
+								'JK / Umur'   => $regPeriksa->pasien->jk . ' / ' . $regPeriksa->umurdaftar . ' ' . $regPeriksa->sttsumur,
+								'Alamat'      => $regPeriksa->pasien->alamat,
+								'No. Periksa' => $radiologi->no_rawat,
 							] as $key => $val)
 								<tr class="align-top">
 									<td class="text-nowrap whitespace-nowrap leading-5">{{ $key }}</td>
@@ -59,11 +59,11 @@
 					<td>
 						<table class="table w-full">
 							@foreach ([
-								'Penanggung Jawab' => $radiologi?->dokter?->nm_dokter,
-								'Dokter Pengirim'  => $radiologi?->dokterPerujuk?->nm_dokter,
-								'Tgl. Pemeriksaan' => $radiologi?->tgl_periksa,
-								'Jam pemeriksaan'  => $radiologi?->jam,
-                                'Jenis Perawan'    => $radiologi?->jenisPerawatan?->nm_perawatan,
+								'Penanggung Jawab' => $radiologi->dokter->nm_dokter,
+								'Dokter Pengirim'  => $radiologi->dokterPerujuk->nm_dokter,
+								'Tgl. Pemeriksaan' => $radiologi->tgl_periksa,
+								'Jam pemeriksaan'  => $radiologi->jam,
+                                'Jenis Perawan'    => $radiologi->jenisPerawatan->nm_perawatan,
 							] as $key => $val)
 								<tr class="align-top">
 									<td class="text-nowrap whitespace-nowrap leading-5">{{ $key }}</td>
@@ -82,13 +82,13 @@
 				<div class="border-t border-b mb-2" style="border-top: 1px solid #333; border-bottom: 1px solid #333;">
 					<h4 class="text-base font-bold">Hasil Pemeriksaan :</h4>
 				</div>
-				<p class="leading-none pb-2">{!! nl2br($radiologi?->hasilRadiologi?->hasil) !!}</p>
+				<p class="leading-none pb-2">{!! nl2br($radiologi->hasilRadiologi->hasil) !!}</p>
 			</div>
 		</div>
 
 		@php
-			$QRDokter = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $radiologi?->dokter?->nm_dokter . '. ID : ' . \Hash::make($radiologi?->dokter?->kd_dokter);
-			$QRPetugas = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $radiologi?->petugas?->nama . '. ID : ' . $radiologi?->petugas?->sidikjari?->sidikjari;
+			$QRDokter = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $radiologi->dokter->nm_dokter . '. ID : ' . \Hash::make($radiologi->dokter->kd_dokter);
+			$QRPetugas = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $radiologi->petugas->nama . '. ID : ' . $radiologi->petugas->sidikjari->sidikjari;
 		@endphp
 	
 		<div class="mt-5">
@@ -101,16 +101,16 @@
 							<img src="data:image/png;base64,{{ DNS2D::getBarcodePNG($QRDokter, 'QRCODE') }}" alt="barcode" class="h-2w-28 w-28" />
 							<img src="{{ asset('assets/images/logo.png') }}" alt="logo" class="h-8 w-8" style="position: absolute !important; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;" />
 						</div>
-						<div class="mt-2">{{ $radiologi?->dokter?->nm_dokter }}</div>
+						<div class="mt-2">{{ $radiologi->dokter->nm_dokter }}</div>
 					</td>
 					<td class="text-center">
-						<div class="text-base leading-none">Tgl. Cetak : {{ date('d/m/Y H:i:s', strtotime($radiologi?->tgl_periksa . ' ' . $radiologi?->jam)) }}</div>
+						<div class="text-base leading-none">Tgl. Cetak : {{ date('d/m/Y H:i:s', strtotime($radiologi->tgl_periksa . ' ' . $radiologi->jam)) }}</div>
 						<div class="mb-2">Petugas Radiologi</div>
 						<div class="relative inline-block h-28 w-28">
 							<img src="data:image/png;base64,{{ DNS2D::getBarcodePNG($QRPetugas, 'QRCODE') }}" alt="barcode" class="h-2w-28 w-28" />
 							<img src="{{ asset('assets/images/logo.png') }}" alt="logo" class="h-8 w-8" style="position: absolute !important; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;" />
 						</div>
-						<div class="mt-2">{{ $radiologi?->petugas?->nama }}</div>
+						<div class="mt-2">{{ $radiologi->petugas->nama }}</div>
 					</td>
 				</tr>
 			</table>
