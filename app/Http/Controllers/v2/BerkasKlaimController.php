@@ -54,6 +54,8 @@ class BerkasKlaimController extends Controller
     {
         \App\Jobs\ExportPdfJob::dispatch($sep)->delay(now()->addSeconds(5));
 
+        sleep(3);
+
         return response()->json([
             'message' => 'berkas klaim akan segera di export.',
         ]);
