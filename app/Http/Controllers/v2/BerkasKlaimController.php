@@ -3,43 +3,44 @@
 namespace App\Http\Controllers\v2;
 
 use App\Helpers\PDFHelper;
-use Illuminate\Support\Str;
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
-use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class BerkasKlaimController extends Controller
 {
     /**
      * Ukuran kertas F4
-     * 
+     *
      * @var array
      */
     protected $f4 = [0, 0, 609.448, 935.432];
 
     /**
      * Orientasi kertas
-     * 
+     *
      * @var string
      */
     protected $orientation = 'portrait';
 
     /**
      * Koordinat berdasarkan departemen
-     * 
+     *
      * @var array
      */
     protected $koorByDepartemen = [
         'Anak'      => 'Anak',
         'Kandungan' => 'Nifas',
         'BY'        => 'PERINATOLOGI',
-        'VK'        => 'VK'
+        'VK'        => 'VK',
     ];
 
     /**
      * PDF Merger
-     * 
+     *
      * @var \Webklex\PDFMerger\PDFMerger
      */
     protected $berkasPendukung = [
@@ -54,13 +55,13 @@ class BerkasKlaimController extends Controller
         \App\Jobs\ExportPdfJob::dispatch($sep)->delay(now()->addSeconds(5));
 
         return response()->json([
-            'message' => 'berkas klaim akan segera di export.'
+            'message' => 'berkas klaim akan segera di export.',
         ]);
     }
 
     /**
      * Cetak berkas klaim
-     * 
+     *
      * @param string $sep
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
@@ -69,24 +70,24 @@ class BerkasKlaimController extends Controller
     {
         $params = $request->query();
 
-        $bSep = \App\Models\BridgingSep::with(['pasien', 'reg_periksa', 'dokter.pegawai.sidikjari', 'surat_kontrol', 'naikKelas'])->where('no_sep', $sep)->first();
-        $regPeriksa = \App\Models\RegPeriksa::with(['pasien', 'poliklinik', 'diagnosaPasien.penyakit', 'prosedurPasien.penyakit', 'catatanPerawatan', 'caraBayar'])->where('no_rawat', $bSep->no_rawat)->first();
-        $kamarInap = \App\Models\KamarInap::with('kamar.bangsal')->where('no_rawat', $bSep->no_rawat)->where('stts_pulang', '<>', 'Pindah Kamar')->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
-        $operasi = \App\Models\RsiaOperasiSafe::withAllRelations()->where('no_rawat', $bSep->no_rawat)->get();
+        $bSep              = \App\Models\BridgingSep::with(['pasien', 'reg_periksa', 'dokter.pegawai.sidikjari', 'surat_kontrol', 'naikKelas'])->where('no_sep', $sep)->first();
+        $regPeriksa        = \App\Models\RegPeriksa::with(['pasien', 'poliklinik', 'diagnosaPasien.penyakit', 'prosedurPasien.penyakit', 'catatanPerawatan', 'caraBayar'])->where('no_rawat', $bSep->no_rawat)->first();
+        $kamarInap         = \App\Models\KamarInap::with('kamar.bangsal')->where('no_rawat', $bSep->no_rawat)->where('stts_pulang', '<>', 'Pindah Kamar')->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
+        $operasi           = \App\Models\RsiaOperasiSafe::withAllRelations()->where('no_rawat', $bSep->no_rawat)->get();
         $resumePasienRanap = \App\Models\ResumePasienRanap::where('no_rawat', $bSep->no_rawat)->first();
-        $obat = $this->groupDetailPemberianObat(\App\Models\DetailPemberianObat::select('tgl_perawatan', 'jam', 'no_rawat', 'kode_brng', 'jml')->with('obat')->whereIn('no_rawat', $this->cekGabung($bSep->no_rawat))->get());
+        $obat              = $this->groupDetailPemberianObat(\App\Models\DetailPemberianObat::select('tgl_perawatan', 'jam', 'no_rawat', 'kode_brng', 'jml')->with('obat')->whereIn('no_rawat', $this->cekGabung($bSep->no_rawat))->get());
 
         $radiologiSelect = ['no_rawat', 'nip', 'kd_jenis_prw', 'tgl_periksa', 'jam', 'dokter_perujuk', 'kd_dokter', 'status'];
-        $radiologiWith = ['dokter.sidikjari', 'dokterPerujuk', 'hasilRadiologi', 'jenisPerawatan', 'petugas.sidikjari'];
-        $radiologi = \App\Models\PeriksaRadiologi::select($radiologiSelect)->with($radiologiWith)->where('no_rawat', $bSep->no_rawat)->orderBy('tgl_periksa', 'ASC')->orderBy('jam', 'ASC')->get();
+        $radiologiWith   = ['dokter.sidikjari', 'dokterPerujuk', 'hasilRadiologi', 'jenisPerawatan', 'petugas.sidikjari'];
+        $radiologi       = \App\Models\PeriksaRadiologi::select($radiologiSelect)->with($radiologiWith)->where('no_rawat', $bSep->no_rawat)->orderBy('tgl_periksa', 'ASC')->orderBy('jam', 'ASC')->get();
 
-        $berkasPendukung   = \App\Models\RsiaUpload::where('no_rawat', $bSep->no_rawat)->get()->map(function ($item) {
+        $berkasPendukung = \App\Models\RsiaUpload::where('no_rawat', $bSep->no_rawat)->get()->map(function ($item) {
             $item->kategori = strtolower($item->kategori);
             return $item;
         });
 
-        $ttdPasien         = \App\Models\RsiaVerifSep::where('no_sep', $sep)->first();
-        $ttdResume         = \App\Models\Pegawai::with(['sidikjari', 'dep'])->whereHas('dep', function ($q) use ($kamarInap) {
+        $ttdPasien = \App\Models\RsiaVerifSep::where('no_sep', $sep)->first();
+        $ttdResume = \App\Models\Pegawai::with(['sidikjari', 'dep'])->whereHas('dep', function ($q) use ($kamarInap) {
             return $q->where('nama', \Illuminate\Support\Str::upper($this->getDepartemen($kamarInap)));
         })->where('status_koor', '1')->first();
 
@@ -114,7 +115,7 @@ class BerkasKlaimController extends Controller
             $pdfs[] = $this->genSuratRencanaKontrol($bSep, $regPeriksa);
         }
 
-        if ($this->genBerkasPendukung(['skl'], $berkasPendukung) && !empty($this->genBerkasPendukung(['skl'], $berkasPendukung))) {
+        if ($berkasPendukung->where('kategori', 'skl')->first()) {
             $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['skl'], $berkasPendukung));
         }
 
@@ -122,28 +123,30 @@ class BerkasKlaimController extends Controller
             $pdfs[] = $this->genHasilPemeriksaanUsg($bSep, $regPeriksa->pasien, $regPeriksa);
         }
 
-        if ($this->genBerkasPendukung(['surat rujukan'], $berkasPendukung) && !empty($this->genBerkasPendukung(['surat rujukan'], $berkasPendukung))) {
+        if ($berkasPendukung->where('kategori', 'surat rujukan')->first()) {
             $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['surat rujukan'], $berkasPendukung));
         }
 
-        if ($this->genBerkasPendukung(['usg'], $berkasPendukung) && !empty($this->genBerkasPendukung(['usg'], $berkasPendukung))) {
+        if ($berkasPendukung->where('kategori', 'usg')->first()) {
             $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['usg'], $berkasPendukung));
         }
 
-        if ($this->genHasilLab($bSep, $regPeriksa) && !empty($this->genHasilLab($bSep, $regPeriksa))) {
+        $hasilLab = $this->genHasilLab($bSep, $regPeriksa);
+        if (!empty($hasilLab)) {
             $pdfs = array_merge($pdfs, $this->genHasilLab($bSep, $regPeriksa));
         }
 
-        if ($this->genHasilPeriksaRadiologi($regPeriksa, $radiologi) && !empty($this->genHasilPeriksaRadiologi($regPeriksa, $radiologi))) {
-            $pdfs = array_merge($pdfs, $this->genHasilPeriksaRadiologi($regPeriksa, $radiologi));
+        $hasilRadiologi = $this->genHasilPeriksaRadiologi($regPeriksa, $radiologi);
+        if (!empty($hasilRadiologi)) {
+            $pdfs = array_merge($pdfs, $hasilRadiologi);
         }
 
-        if ($this->genBerkasPendukung(['laborat'], $berkasPendukung) && !empty($this->genBerkasPendukung(['laborat'], $berkasPendukung))) {
+        if ($berkasPendukung->where('kategori', 'laborat')->first()) {
             $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['laborat'], $berkasPendukung));
         }
 
-        if ($this->genBerkasPendukung(['skl', 'surat rujukan', 'usg', 'laborat'], $berkasPendukung, true) && !empty($this->genBerkasPendukung(['skl', 'surat rujukan', 'usg', 'laborat'], $berkasPendukung, true))) {
-            $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['skl', 'surat rujukan', 'usg', 'laborat'], $berkasPendukung, true));
+        if ($berkasPendukung->whereNotIn('kategori', ['skl', 'surat rujukan', 'usg', 'laborat'])->first()) {
+            $pdfs = array_merge($pdfs, $this->genBerkasPendukung($berkasPendukung->whereNotIn('kategori', ['skl', 'surat rujukan', 'usg', 'laborat'])->pluck('kategori')->toArray(), $berkasPendukung));
         }
 
         $pdfs = array_merge($pdfs, $this->genDetailObat($obat, $regPeriksa));
@@ -180,12 +183,12 @@ class BerkasKlaimController extends Controller
     {
         $billing = $this->billingData($no_rawat);
 
-        if (\Str::lower($regPeriksa->status_lanjut) == 'ranap') {
-            $resepPulang   = \App\Models\ResepPulang::with('obat')->where('no_rawat', $no_rawat)->get()->groupBy('kode_brng');
-            $ruang         = \App\Models\KamarInap::with('kamar')->where('no_rawat', $no_rawat)->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
+        if (Str::lower($regPeriksa->status_lanjut) == 'ranap') {
+            $resepPulang = \App\Models\ResepPulang::with('obat')->where('no_rawat', $no_rawat)->get()->groupBy('kode_brng');
+            $ruang       = \App\Models\KamarInap::with('kamar')->where('no_rawat', $no_rawat)->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
         } else {
-            $resepPulang   = null;
-            $ruang         = null;
+            $resepPulang = null;
+            $ruang       = null;
         }
 
         $tambahanBiaya = \App\Models\TambahanBiaya::where('no_rawat', $no_rawat)->orderBy('nama_biaya', 'desc')->get();
@@ -195,13 +198,13 @@ class BerkasKlaimController extends Controller
         $asmenKeuangan = \App\Models\Pegawai::select('id', 'nik', 'nama', 'jnj_jabatan')->with('sidikjari')->where('jnj_jabatan', 'RS7')->first();
 
         $dokters = null;
-        $nota = null;
+        $nota    = null;
 
         if (Str::lower($regPeriksa->status_lanjut) == 'ralan') {
             $nota = \App\Models\NotaJalan::where('no_rawat', $no_rawat)->first();
         } else if (Str::lower($regPeriksa->status_lanjut) == 'ranap') {
             $dokters = \App\Models\RawatInapDr::with('dokter.spesialis')->where('no_rawat', $no_rawat)->get()->groupBy('kd_dokter');
-            $nota = \App\Models\NotaInap::where('no_rawat', $no_rawat)->first();
+            $nota    = \App\Models\NotaInap::where('no_rawat', $no_rawat)->first();
         }
 
         // if dokter not null, sort by nm_dokter
@@ -228,7 +231,7 @@ class BerkasKlaimController extends Controller
 
     /**
      * Generate INACBG report
-     * 
+     *
      * @param string $sep
      * @return string
      */
@@ -236,7 +239,7 @@ class BerkasKlaimController extends Controller
     {
         \Halim\EKlaim\Builders\BodyBuilder::setMetadata('claim_print');
         \Halim\EKlaim\Builders\BodyBuilder::setData([
-            "nomor_sep"     => $sep,
+            "nomor_sep" => $sep,
         ]);
 
         $response = \Halim\EKlaim\Services\EklaimService::send(\Halim\EKlaim\Builders\BodyBuilder::prepared());
@@ -245,8 +248,8 @@ class BerkasKlaimController extends Controller
             $resp = $response->getData();
 
             if (!$resp->data) {
-                \Log::channel(config('eklaim.log_channel'))->error('Berkas Klaim Print - Failed to generate INACBG report', [
-                    'sep' => $sep,
+                Log::channel(config('eklaim.log_channel'))->error('Berkas Klaim Print - Failed to generate INACBG report', [
+                    'sep'      => $sep,
                     'response' => $resp,
                 ]);
 
@@ -256,7 +259,7 @@ class BerkasKlaimController extends Controller
             return base64_decode($resp->data);
         }
 
-        \Log::channel(config('eklaim.log_channel'))->error('Berkas Klaim Print - Failed to generate INACBG report', [
+        Log::channel(config('eklaim.log_channel'))->error('Berkas Klaim Print - Failed to generate INACBG report', [
             'sep'      => $sep,
             'response' => $response->getData(),
         ]);
@@ -308,7 +311,7 @@ class BerkasKlaimController extends Controller
         if (!$kasir) {
             $kasir = \App\Models\Pegawai::with('sidikjari')->where('jnj_jabatan', 'RS7')->first();
 
-            \Log::channel('eklaim')->error('Berkas Klaim Print - Failed to determine kasir using jurnal logs', [
+            Log::channel('eklaim')->error('Berkas Klaim Print - Failed to determine kasir using jurnal logs', [
                 'sep' => $sep,
             ]);
         }
@@ -365,11 +368,11 @@ class BerkasKlaimController extends Controller
 
     /**
      * Generate SEP PDF
-     * 
+     *
      * @param \App\Models\BridgingSep $brigdingSep
      * @param \Illuminate\Support\Collection $diagnosa
      * @param \Illuminate\Support\Collection $prosedur
-     * 
+     *
      * @return \Barryvdh\DomPDF\PDF
      */
     public function genSep($brigdingSep, $diagnosa, $prosedur)
@@ -385,7 +388,7 @@ class BerkasKlaimController extends Controller
 
     /**
      * Generate Resume Medis PDF
-     * 
+     *
      * @param \App\Models\BridgingSep $brigdingSep
      * @param \App\Models\Pasien $pasien
      * @param \App\Models\RegPeriksa $regPeriksa
@@ -394,7 +397,7 @@ class BerkasKlaimController extends Controller
      * @param \App\Models\Pegawai $ttdResume
      * @param \App\Models\Pegawai $ttdDpjp
      * @param \App\Models\RsiaVerifSep $ttdPasien
-     * 
+     *
      * @return \Barryvdh\DomPDF\PDF
      */
     public function genResumeMedis($brigdingSep, $pasien, $regPeriksa, $kamarInap, $resume, $ttdResume, $ttdDpjp, $ttdPasien)
@@ -441,11 +444,11 @@ class BerkasKlaimController extends Controller
 
     /**
      * Generate Surat Perintah Rawat Inap PDF
-     * 
+     *
      * @param \App\Models\BridgingSep $brigdingSep
      * @param \App\Models\Pasien $pasien
      * @param \App\Models\BridgingSuratPriBpjs $spri
-     * 
+     *
      * @return \Barryvdh\DomPDF\PDF
      */
     public function genSuratPerintahRawatInap($brigdingSep, $pasien)
@@ -481,18 +484,18 @@ class BerkasKlaimController extends Controller
 
     /**
      * Generate Hasil Lab PDF
-     * 
+     *
      * @param \App\Models\BridgingSep $sep
      * @param \App\Models\RegPeriksa $regPeriksa
      * @param \Illuminate\Support\Collection $lab
-     * 
+     *
      * @return array
      */
     public function genHasilLab($sep, $regPeriksa)
     {
-        $labWih = ['pegawai.sidikjari', 'dokter.sidikjari', 'perujuk', 'jenisPerawatan', 'detailPeriksaLab.template'];
+        $labWih  = ['pegawai.sidikjari', 'dokter.sidikjari', 'perujuk', 'jenisPerawatan', 'detailPeriksaLab.template'];
         $labData = \App\Models\PeriksaLab::with($labWih)->whereIn('no_rawat', $this->getRegisterLabDouble($regPeriksa->kd_poli, $sep->no_rawat, $sep->nomr))->orderBy('tgl_periksa', 'DESC')->orderBy('jam', 'DESC')->get();
-        $lab = $this->groupPeriksaLabData($labData);
+        $lab     = $this->groupPeriksaLabData($labData);
 
         $hasilLab = [];
 
@@ -513,11 +516,11 @@ class BerkasKlaimController extends Controller
 
     /**
      * Generate Hasil Lab PDF
-     * 
+     *
      * @param \App\Models\BridgingSep $sep
      * @param \App\Models\RegPeriksa $regPeriksa
      * @param \Illuminate\Support\Collection $lab
-     * 
+     *
      * @return array
      */
     public function genHasilPeriksaRadiologi($regPeriksa, $radiologi)
@@ -540,7 +543,7 @@ class BerkasKlaimController extends Controller
 
     public function genDetailObat($obat, $regPeriksa)
     {
-        $tempPdf = [];
+        $tempPdf    = [];
         $detailObat = [];
 
         $regPeriksa = $regPeriksa->whereIn('no_rawat', array_keys($obat->toArray()))->get()->keyBy('no_rawat');
@@ -549,7 +552,7 @@ class BerkasKlaimController extends Controller
             foreach ($value as $sk => $sv) {
                 // table obat
                 $detailObat[$key] = \Illuminate\Support\Facades\View::make('berkas-klaim.partials.obat', [
-                    'obat'       => $value,
+                    'obat' => $value,
                 ]);
             }
         }
@@ -590,48 +593,23 @@ class BerkasKlaimController extends Controller
 
     /**
      * Generate Berkas Pendukung PDF
-     * 
+     *
      * @param array $kategori
      * @param \Illuminate\Support\Collection $berkasPendukung
      * @param bool $notInKategori
-     * 
+     *
      * @return array
      */
-    public function genBerkasPendukung(array $kategori, $berkasPendukung, bool $notInKategori = false)
+    public function genBerkasPendukung(array $kategori, $berkasPendukung)
     {
-        if ($berkasPendukung->isEmpty()) {
-            return [];
-        }
-
         $pendukung = [];
-
-        if ($notInKategori) {
-            foreach ($berkasPendukung as $key => $value) {
-                if (!$berkasPendukung->where('kategori', $value->kategori)->first()) {
-                    continue;
-                }
-
-                if (!in_array($value->kategori, $kategori)) {
-                    $files = explode(',', $value->file);
-
-                    foreach ($files as $file) {
-                        $pendukung[] = PDFHelper::generate('berkas-klaim.partials.image', [
-                            'image' => $file,
-                            'alt'   => Str::title($value->kategori),
-                        ]);
-                    }
-                }
-            }
-
-            return $pendukung;
-        }
 
         foreach ($kategori as $key => $value) {
             if (!$berkasPendukung->where('kategori', $value)->first()) {
                 continue;
             }
 
-            $file = $berkasPendukung->where('kategori', $value)->first()->file;
+            $file  = $berkasPendukung->where('kategori', $value)->first()->file;
             $files = explode(',', $file);
 
             foreach ($files as $file) {
@@ -649,9 +627,9 @@ class BerkasKlaimController extends Controller
 
     /**
      * Cek gabung
-     * 
+     *
      * Cek pasien rawat gabung atau tidak
-     * 
+     *
      * @param string $no_rawat
      * @return array
      */
@@ -669,7 +647,7 @@ class BerkasKlaimController extends Controller
 
     /**
      * Get the departemen
-     * 
+     *
      * @param \Illuminate\Support\Collection $kamarInap
      * @return string|null
      */
@@ -685,14 +663,14 @@ class BerkasKlaimController extends Controller
 
         $values = array_values(array_intersect_key($this->koorByDepartemen, array_flip($filteredKeys)));
 
-        return $values[0] ?? null;  // Return the first value or null if empty         
+        return $values[0] ?? null; // Return the first value or null if empty
     }
 
     /**
      * Group periksa lab data
-     * 
+     *
      * Group the periksa lab data by tgl_periksa and jam
-     * 
+     *
      * @param \Illuminate\Support\Collection $data
      * @return \Illuminate\Support\Collection
      */
@@ -705,9 +683,9 @@ class BerkasKlaimController extends Controller
 
     /**
      * Group detail pemberian obat data
-     * 
+     *
      * Group the periksa lab data by tgl_perawatan and jam
-     * 
+     *
      * @param \Illuminate\Support\Collection $data
      * @return \Illuminate\Support\Collection
      */
@@ -722,7 +700,7 @@ class BerkasKlaimController extends Controller
 
     /**
      * Get the register lab double
-     * 
+     *
      * @param string $kd_poli
      * @param string $no_rawat
      * @param string $no_rkm_medis
@@ -747,10 +725,9 @@ class BerkasKlaimController extends Controller
         return [$no_rawat];
     }
 
-
     public function billingData(string $no_rawat)
     {
-        $tarif = [];
+        $tarif     = [];
         $cekGabung = \App\Models\RanapGabung::where('no_rawat', $no_rawat)->first();
 
         $tarif[$no_rawat] = $this->getTarif($no_rawat);
@@ -848,17 +825,17 @@ class BerkasKlaimController extends Controller
         // +==========+==========+==========+
 
         $operasi = null;
-        if (\Str::lower($statusLanjut->status_lanjut) == 'ranap') {
+        if (Str::lower($statusLanjut->status_lanjut) == 'ranap') {
             $operasi = (new \App\Http\Resources\Pasien\Tarif\TarifOperasi($no_rawat))->toArray(new Request(), false);
         }
 
-        $periksaLab = \App\Models\PeriksaLab::with('jenisPerawatan')->where('no_rawat', $no_rawat)->get()->groupBy("kd_jenis_prw");
+        $periksaLab       = \App\Models\PeriksaLab::with('jenisPerawatan')->where('no_rawat', $no_rawat)->get()->groupBy("kd_jenis_prw");
         $periksaRadiologi = \App\Models\PeriksaRadiologi::with('jenisPerawatan')->where('no_rawat', $no_rawat)->get()->groupBy("kd_jenis_prw");
 
         $obatDanBhp = \App\Models\DetailPemberianObat::with('obat')->where('jml', '<>', 0)->where('no_rawat', $no_rawat)
             ->get()->groupBy(function ($q) {
-                return $q->obat->nama_brng;
-            })->sortKeys();
+            return $q->obat->nama_brng;
+        })->sortKeys();
 
         // +==========+==========+==========+
 
