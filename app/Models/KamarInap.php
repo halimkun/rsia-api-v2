@@ -63,7 +63,7 @@ class KamarInap extends Model
 
     public $timestamps = false;
 
-    
+
     public function regPeriksa()
     {
         return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat');
@@ -85,16 +85,23 @@ class KamarInap extends Model
             ->select('pasien.no_rkm_medis', 'pasien.nm_pasien', 'pasien.jk', 'pasien.tmp_lahir', 'pasien.tgl_lahir');
     }
 
-    public function sep() {
+    public function sep()
+    {
         return $this->hasOne(BridgingSep::class, 'no_rawat', 'no_rawat');
     }
 
-    public function sepSimple() {
+    public function sepSimple()
+    {
         return $this->hasOne(BridgingSep::class, 'no_rawat', 'no_rawat')->select('no_sep', 'no_rawat', 'diagawal', 'klsrawat');
     }
 
     public function kamar()
     {
         return $this->belongsTo(\App\Models\Kamar::class, 'kd_kamar', 'kd_kamar')->select("kd_kamar", 'kd_bangsal', 'status');
+    }
+
+    public function berkas_perawatan()
+    {
+        return $this->belongsTo(\App\Models\BerkasDigitalPerawatan::class, 'no_rawat', 'no_rawat');
     }
 }

@@ -54,12 +54,15 @@ class PasienRanapCollection extends ResourceCollection
                     "status_lanjut" => $item->regPeriksa->status_lanjut
                 ] : null,
 
+                "berkas_perawatan" => $item->berkas_perawatan,
+
                 // data sep
                 "sep" => $item->sep ? [
                     'no_sep' => $item->sep->no_sep,
                     'diagawal' => $item->sep->diagawal,
                     'klsrawat' => $item->sep->klsrawat,
                     'klsnaik' => $item->sep->klsnaik,
+                    'status_klaim' => $item->sep->status_klaim,
                 ] : null,
             ];
         });

@@ -266,4 +266,9 @@ class BridgingSep extends Model
     {
         return $this->hasOne(InacbgGropingStage12::class, 'no_sep', 'no_sep');
     }
+
+    public function berkasPerawatan(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(BerkasDigitalPerawatan::class, 'no_rawat', 'no_rawat');
+    }
 }
