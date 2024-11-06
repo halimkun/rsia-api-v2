@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\v2;
 
+use DB;
 use App\Helpers\ApiResponse;
+use App\Models\RsiaStatusKlaim;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreRsiaStatusKlaimRequest;
 use App\Http\Requests\UpdateRsiaStatusKlaimRequest;
-use App\Models\RsiaStatusKlaim;
-use DB;
 
 class RsiaStatusKlaimController extends Controller
 {
