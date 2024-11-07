@@ -17,3 +17,8 @@ Route::middleware(['user-aes', 'custom-user', 'claim:role,pegawai'])->group(func
     
     Route::resource('/sep/{no_sep}/klaim/latest', \App\Http\Controllers\v2\HasilGroupingController::class)->only(['index']);
 });
+
+Route::middleware(['user-aes', 'custom-user', 'claim:role,pegawai'])->group(function ($router) {
+    Route::get('klaim/bupel', [\App\Http\Controllers\RsiaKlaimBupelRsController::class, 'index']);
+    Route::post('klaim/bupel', [\App\Http\Controllers\RsiaKlaimBupelRsController::class, 'update']);
+});
