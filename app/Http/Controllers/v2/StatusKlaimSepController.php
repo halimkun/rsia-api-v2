@@ -42,11 +42,15 @@ class StatusKlaimSepController extends Controller
             ->groupBy(['jnspelayanan', 'status_klaim.status']); // Group by jnspelayanan and status
 
         // Format the result as needed
-        $formattedData = collect($this->jnsPelayanan)->mapWithKeys(function ($jnsPelayanan) use ($data) {
+        $formattedData = collect($this->jnsPelayanan)->mapWithKeys(function ($jnsPelayanan) use ($data, $year, $month) {
             $jnsPelayanan = (int) $jnsPelayanan;
 
+            // jumlah sep per jnsPelayanan
+            $statusDetails['total_sep'] = $this->getJumlahSep($jnsPelayanan, $year, $month);
+            $statusDetails['total_berkas_terkirim'] = $this->getJumlahBerkasTerkirim($jnsPelayanan, $year, $month);
+
             // Prepare status group translation
-            $statusDetails = collect($this->statuses)->mapWithKeys(function ($status) use ($data, $jnsPelayanan) {
+            $statusDetails['status'] = collect($this->statuses)->mapWithKeys(function ($status) use ($data, $jnsPelayanan) {
                 $status = strtolower($status);
 
                 // Get the claims for this status and jnspelayanan
@@ -71,5 +75,22 @@ class StatusKlaimSepController extends Controller
 
         // Return the data in the API response
         return ApiResponse::successWithData($formattedData, "Data status klaim bulan $year-$month");
+    }
+
+    protected function getJumlahSep($jnsPelayanan, $year, $month)
+    {
+        return \App\Models\BridgingSep::where('jnspelayanan', $jnsPelayanan)
+            ->whereYear('tglsep', $year)
+            ->whereMonth('tglsep', $month)
+            ->count();
+    }
+
+    protected function getJumlahBerkasTerkirim($jnsPelayanan, $year, $month)
+    {
+        return \App\Models\BridgingSep::where('jnspelayanan', $jnsPelayanan)
+            ->whereYear('tglsep', $year)
+            ->whereMonth('tglsep', $month)
+            ->whereHas('berkasPerawatan')
+            ->count();
     }
 }
