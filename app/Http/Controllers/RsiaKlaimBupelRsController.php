@@ -32,11 +32,13 @@ class RsiaKlaimBupelRsController extends Controller
             'bulan' => 'required|date|date_format:Y-m',
         ]);
 
-        \DB::transaction(function () use ($request) {
+        try {
             RsiaBupelKlaimRs::truncate();
             RsiaBupelKlaimRs::create($request->all());
-        }, 5);
-
-        return ApiResponse::success('Data berhasil diupdate');
+            
+            return ApiResponse::success('Data berhasil diupdate');
+        } catch (\Throwable $th) {
+            return ApiResponse::error($th->getMessage(), 500);
+        }
     }
 }
