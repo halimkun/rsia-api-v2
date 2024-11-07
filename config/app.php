@@ -175,6 +175,8 @@ return [
 
         // Clockwork\Support\Laravel\ClockworkServiceProvider::class
 
+        Madnest\Madzipper\MadzipperServiceProvider::class,
+
         /*
          * Application Service Providers...
          */
