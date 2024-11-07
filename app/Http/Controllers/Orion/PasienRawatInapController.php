@@ -62,7 +62,7 @@ class PasienRawatInapController extends Controller
      */
     public function sortableBy(): array
     {
-        return ['no_rawat', 'kd_kamar', 'tgl_masuk', 'tgl_keluar', 'stts_pulang'];
+        return ['no_rawat', 'kd_kamar', 'tgl_masuk', 'tgl_keluar', 'stts_pulang', 'regPeriksa.tgl_registrasi'];
     }
 
     /**
