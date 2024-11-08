@@ -90,7 +90,9 @@ class StatusKlaimSepController extends Controller
         return \App\Models\BridgingSep::where('jnspelayanan', $jnsPelayanan)
             ->whereYear('tglsep', $year)
             ->whereMonth('tglsep', $month)
-            ->whereHas('berkasPerawatan')
+            ->whereHas('berkasPerawatan', function ($query) {
+                $query->where('kode', '009');
+            })
             ->count();
     }
 }

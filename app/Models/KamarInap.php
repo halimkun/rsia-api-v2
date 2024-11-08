@@ -64,6 +64,13 @@ class KamarInap extends Model
     public $timestamps = false;
 
 
+    public function scopeHasBerkasPerawatan($query, $kode = '009')
+    {
+        return $query->whereHas('berkas_perawatan', function ($query) use ($kode) {
+            $query->where('kode', $kode);
+        });
+    }
+
     public function regPeriksa()
     {
         return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat');
@@ -102,6 +109,6 @@ class KamarInap extends Model
 
     public function berkas_perawatan()
     {
-        return $this->belongsTo(\App\Models\BerkasDigitalPerawatan::class, 'no_rawat', 'no_rawat');
+        return $this->hasMany(\App\Models\BerkasDigitalPerawatan::class, 'no_rawat', 'no_rawat');
     }
 }

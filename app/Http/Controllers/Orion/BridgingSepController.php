@@ -22,7 +22,7 @@ class BridgingSepController extends \Orion\Http\Controllers\Controller
 
     public function exposedScopes(): array
     {
-        return [];
+        return ['hasBerkasPerawatan'];
     }
 
     /**

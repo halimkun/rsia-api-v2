@@ -45,6 +45,11 @@ class PasienRawatInapController extends Controller
         return \Illuminate\Support\Facades\Auth::guard('user-aes')->user();
     }
 
+    public function exposedScopes(): array
+    {
+        return ['hasBerkasPerawatan'];
+    }
+
     /**
      * The attributes that are used for filtering.
      *
