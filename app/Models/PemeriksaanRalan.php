@@ -62,27 +62,67 @@ class PemeriksaanRalan extends Model
 {
     use HasFactory, HasCompositeKey;
 
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'pemeriksaan_ralan';
 
+    /**
+     * The primary key for the model.
+     *
+     * @var string
+     */
     protected $primaryKey = ['no_rawat', 'tgl_perawatan', 'jam_rawat'];
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
     protected $guarded = [];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
     protected $casts = [
         'no_rawat' => 'string',
         'no_resep' => 'string',
     ];
 
+    /**
+     * The "booted" method of the model.
+     *
+     * @return void
+     */
     public $timestamps = false;
 
+    /**
+     * The "booted" method of the model.
+     *
+     * @return void
+     */
     public $incrementing = false;
 
 
+    /**
+     * Get the regPeriksa that owns the PemeriksaanRalan
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function regPeriksa()
     {
         return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat');
     }
 
+    /**
+     * Get the petugas that owns the PemeriksaanRalan
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function petugas()
     {
         return $this->belongsTo(Petugas::class, 'nip', 'nip')->select('nip', 'nama');

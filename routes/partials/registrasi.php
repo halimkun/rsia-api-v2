@@ -5,8 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['claim:role,pegawai|pasien|dokter'])->group(function ($router) {
     Route::prefix('registrasi')->group(function($router) {
-        Orion::resource('periksa', \App\Http\Controllers\Orion\RegPeriksaController::class)->only(['search', 'show'])
-            ->parameters([ '' => 'base64-no_rawat' ]); 
+        Orion::resource('periksa', \App\Http\Controllers\Orion\RegPeriksaController::class)->only(['search', 'show'])->parameters([ '' => 'base64-no_rawat' ]);
     });
 
     Route::prefix('booking')->group(function ($router) {
