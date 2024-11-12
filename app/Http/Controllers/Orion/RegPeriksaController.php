@@ -17,10 +17,10 @@ class RegPeriksaController extends \Orion\Http\Controllers\Controller
     protected $model = \App\Models\RegPeriksa::class;
 
     /**
-     * Resource class for RegPeriksa
-     * 
-     * @var string
-     * */
+     * The attributes that are used for sorting.
+     *
+     * @var array
+     */
     protected $collectionResource = \App\Http\Resources\RegistrasiPeriksaCollection::class;
 
     /**

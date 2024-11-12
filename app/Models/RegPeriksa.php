@@ -118,6 +118,29 @@ class RegPeriksa extends Model
         'no_rkm_medis' => 'string',
     ];
 
+
+    public function scopeSepData($query, $fields)
+    {
+        return $query->with(['sep' => function ($query) use ($fields) {
+            $query->select($fields);
+        }]);
+    }
+
+    public function scopePemeriksaanRalanData($query, $fields)
+    {
+        return $query->with(['pemeriksaanRalan' => function ($query) use ($fields) {
+            $query->select($fields);
+        }]);
+    }
+
+    public function scopePemeriksaanRanapData($query, $fields)
+    {
+        return $query->with(['pemeriksaanRanap' => function ($query) use ($fields) {
+            $query->select($fields);
+        }]);
+    }
+
+
     /**
      * Get the pasien that owns the registrasi.
      *
@@ -180,7 +203,7 @@ class RegPeriksa extends Model
     {
         return $this->hasMany(ResepObat::class, 'no_rawat', 'no_rawat');
     }
-    
+
     /**
      * Get the pemeriksaan ranap that owns the registrasi.
      * 
@@ -194,11 +217,11 @@ class RegPeriksa extends Model
     /**
      * Get the pemeriksaan ralan that owns the registrasi.
      * 
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function pemeriksaanRalan()
     {
-        return $this->hasMany(PemeriksaanRalan::class, 'no_rawat', 'no_rawat');
+        return $this->belongsTo(PemeriksaanRalan::class, 'no_rawat', 'no_rawat');
     }
 
     /**
@@ -262,8 +285,23 @@ class RegPeriksa extends Model
         return $this->hasMany(ProsedurPasien::class, 'no_rawat', 'no_rawat');
     }
 
+    /**
+     * Get the catatan perawatan that owns the registrasi.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * */
     public function catatanPerawatan()
     {
         return $this->belongsTo(CatatanPerawatan::class, 'no_rawat', 'no_rawat');
+    }
+
+    /**
+     * Get the bridging sep that owns the registrasi.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * */
+    public function sep()
+    {
+        return $this->belongsTo(BridgingSep::class, 'no_rawat', 'no_rawat');
     }
 }
