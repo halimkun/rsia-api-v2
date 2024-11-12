@@ -21,6 +21,7 @@ class PasienRanapCollection extends ResourceCollection
 
             // sum lama from kamar inap where item->no_rawat
             $lamaInap = KamarInap::where('no_rawat', $item->no_rawat)->sum('lama');
+            $berkasPerawatan = \App\Models\BerkasDigitalPerawatan::where('no_rawat', $item->no_rawat)->where('kode', '009')->first();
 
             return [
                 // data kamar inap
@@ -54,7 +55,7 @@ class PasienRanapCollection extends ResourceCollection
                     "status_lanjut" => $item->regPeriksa->status_lanjut
                 ] : null,
 
-                "berkas_perawatan" => $item->berkas_perawatan,
+                "berkas_perawatan" => $berkasPerawatan,
 
                 // data sep
                 "sep" => $item->sep ? [

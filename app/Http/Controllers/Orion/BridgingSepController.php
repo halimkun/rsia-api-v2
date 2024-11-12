@@ -6,8 +6,18 @@ use Illuminate\Http\Request;
 
 class BridgingSepController extends \Orion\Http\Controllers\Controller
 {
+    /**
+     * The model class name used in the controller.
+     *
+     * @var string
+     */
     use \Orion\Concerns\DisableAuthorization;
 
+    /**
+     * The model class name used in the controller.
+     *
+     * @var string
+     */
     protected $model = \App\Models\BridgingSep::class;
 
     /**
@@ -22,7 +32,7 @@ class BridgingSepController extends \Orion\Http\Controllers\Controller
 
     public function exposedScopes(): array
     {
-        return [];
+        return ['hasBerkasPerawatan'];
     }
 
     /**

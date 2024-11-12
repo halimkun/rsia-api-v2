@@ -167,6 +167,13 @@ class BridgingSep extends Model
         return $query->where('no_rawat', $noRawat)->where('stts_pulang', '!=', 'Pindah Kamar')->first();
     }
 
+    public function scopeHasBerkasPerawatan($query, $kode = '009')
+    {
+        return $query->whereHas('berkasPerawatan', function ($query) use ($kode) {
+            $query->where('kode', $kode);
+        });
+    }
+
     /**
      * Get the status_klaim that owns the BridgingSep
      * 

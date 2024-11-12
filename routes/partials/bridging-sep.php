@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['user-aes', 'custom-user', 'claim:role,pegawai'])->group(function ($router) {
     Orion::resource('sep', \App\Http\Controllers\Orion\BridgingSepController::class)->only(['search', 'show'])->parameters(['sep' => 'no_sep']);
     
+    Route::get('/sep/download/{bulan}/{jenis}', [\App\Http\Controllers\v2\BerkasKlaimDownload::class, 'get']);
     Route::post('/sep/download', [\App\Http\Controllers\v2\BerkasKlaimDownload::class, 'download']);
     
     Route::get('/sep/{no_sep}/print', [\App\Http\Controllers\v2\BerkasKlaimController::class, 'print']);
