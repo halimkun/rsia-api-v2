@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Awobaz\Compoships\Compoships;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Thiagoprz\CompositeKey\HasCompositeKey;
@@ -60,7 +61,7 @@ use Thiagoprz\CompositeKey\HasCompositeKey;
  */
 class PemeriksaanRalan extends Model
 {
-    use HasFactory, HasCompositeKey;
+    use HasFactory, HasCompositeKey, Compoships;
 
     /**
      * The table associated with the model.
@@ -115,7 +116,9 @@ class PemeriksaanRalan extends Model
      */
     public function regPeriksa()
     {
-        return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat');
+        return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'no_rkm_medis', 'tgl_registrasi', 'jam_reg', 'kd_poli', 'kd_dokter')->with(['dokter', 'poliklinik', 'sep' => function ($query) {
+            $query->select('no_sep', 'no_rawat');
+        }]);
     }
 
     /**
@@ -126,5 +129,15 @@ class PemeriksaanRalan extends Model
     public function petugas()
     {
         return $this->belongsTo(Petugas::class, 'nip', 'nip')->select('nip', 'nama');
+    }
+
+    /**
+     * Get the pemeriksaanKlaim that owns the PemeriksaanRalan
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function pemeriksaanKlaim()
+    {
+        return $this->hasOne(PemeriksaanRalanKlaim::class, ['no_rawat', 'tgl_perawatan', 'jam_rawat'], ['no_rawat', 'tgl_perawatan', 'jam_rawat'])->select('no_rawat', 'tgl_perawatan', 'jam_rawat');
     }
 }

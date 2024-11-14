@@ -12,11 +12,11 @@ class RiwayatPemeriksaanRalan extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index($rm, $noRawat)
+    public function index($no_rkm_medis, $noRawat, Request $request)
     {
         // check pasien exists
-        if (!\App\Models\Pasien::where('no_rkm_medis', $rm)->exists()) {
-            return \App\Helpers\ApiResponse::notFound("Pasien dengan no_rkm_medis: $rm tidak ditemukan");
+        if (!\App\Models\Pasien::where('no_rkm_medis', $no_rkm_medis)->exists()) {
+            return \App\Helpers\ApiResponse::notFound("Pasien dengan no_rkm_medis: $no_rkm_medis tidak ditemukan");
         }
 
         try {
@@ -29,13 +29,31 @@ class RiwayatPemeriksaanRalan extends Controller
             return \App\Helpers\ApiResponse::notFound("Riwayat pemeriksaan dengan no_rawat: $noRawat tidak ditemukan");
         }
 
-        $riwayat = \App\Models\PemeriksaanRalan::with('petugas')->where('no_rawat', $noRawat)
-            ->orderBy('no_rawat', 'desc')
-            ->orderBy('tgl_perawatan', 'desc')
-            ->orderBy('jam_rawat', 'desc')
-            ->paginate(10);
+        if ($request->has('interval') && $request->interval) {
+            $currentData = \App\Models\RegPeriksa::where('no_rawat', $noRawat)->first();
+            $add30Days = date('Y-m-d', strtotime($currentData->tgl_registrasi . ' +30 days'));
+            $sub30Days = date('Y-m-d', strtotime($currentData->tgl_registrasi . ' -30 days'));
 
-        return new \App\Http\Resources\RealDataCollection($riwayat);
+            $realData = \App\Models\RegPeriksa::where('no_rkm_medis', $no_rkm_medis)
+                ->whereBetween('tgl_registrasi', [$sub30Days, $add30Days])
+                ->orderBy('tgl_registrasi', 'desc')->paginate(10);
+
+            $riwayat = \App\Models\PemeriksaanRalan::with(['petugas', 'regPeriksa', 'pemeriksaanKlaim'])->whereIn('no_rawat', $realData->pluck('no_rawat')->toArray())
+                ->orderBy('no_rawat', 'desc')
+                ->orderBy('tgl_perawatan', 'desc')
+                ->orderBy('jam_rawat', 'desc')
+                ->paginate(10);
+
+            return new \App\Http\Resources\RealDataCollection($riwayat);
+        } else {
+            $riwayat = \App\Models\PemeriksaanRalan::with('petugas')->where('no_rawat', $noRawat)
+                ->orderBy('no_rawat', 'desc')
+                ->orderBy('tgl_perawatan', 'desc')
+                ->orderBy('jam_rawat', 'desc')
+                ->paginate(10);
+
+            return new \App\Http\Resources\RealDataCollection($riwayat);
+        }
     }
 
     /**
@@ -102,6 +120,82 @@ class RiwayatPemeriksaanRalan extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    /**
+     * Sync data from pemeriksaan ralan to pemeriksaan klaim
+     * 
+     * @param \Illuminate\Http\Request $request
+     * 
+     * @return \App\Helpers\ApiResponse
+     * */
+    public function syncKlaim(Request $request)
+    {
+        // validate 3 items, (no_rawat, tgl_perawatan, jam_rawat)
+        $request->validate([
+            'no_rawat'      => 'required',
+            'tgl_perawatan' => 'required|date',
+            'jam_rawat'     => 'required',
+        ]);
+
+        // find data by no_rawat, tgl_perawatan, jam_rawat in pemeriksaan_ralan
+        $pemeriksaanRalan = \App\Models\PemeriksaanRalan::where('no_rawat', $request->no_rawat)
+            ->where('tgl_perawatan', $request->tgl_perawatan)
+            ->where('jam_rawat', $request->jam_rawat)
+            ->first();
+
+        // update or create data in pemeriksaan klaim
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($request, $pemeriksaanRalan) {
+                \App\Models\PemeriksaanRalanKlaim::updateOrCreate([
+                    'no_rawat'      => $request->no_rawat,
+                    'tgl_perawatan' => $request->tgl_perawatan,
+                    'jam_rawat'     => $request->jam_rawat,
+                ], $pemeriksaanRalan->toArray());
+            }, 5);
+
+            return \App\Helpers\ApiResponse::success('Data pemeriksaan klaim berhasil disinkronkan');
+        } catch (\Throwable $th) {
+            return \App\Helpers\ApiResponse::error($th->getMessage(), 'unable to sync data', 500);
+        }
+    }
+
+    /**
+     * Delete synced data from pemeriksaan klaim
+     * 
+     * @param \Illuminate\Http\Request $request
+     * 
+     * @return \App\Helpers\ApiResponse
+     * */
+    public function deleteSyncedData(Request $request)
+    {
+        // validate 3 items, (no_rawat, tgl_perawatan, jam_rawat)
+        $request->validate([
+            'no_rawat'      => 'required',
+            'tgl_perawatan' => 'required|date',
+            'jam_rawat'     => 'required',
+        ]);
+
+        // find data by no_rawat, tgl_perawatan, jam_rawat in pemeriksaan_ralan
+        $pemeriksaanRalanKlaim = \App\Models\PemeriksaanRalanKlaim::where('no_rawat', $request->no_rawat)
+            ->where('tgl_perawatan', $request->tgl_perawatan)
+            ->where('jam_rawat', $request->jam_rawat)
+            ->first();
+
+        if (!$pemeriksaanRalanKlaim) {
+            return \App\Helpers\ApiResponse::notFound('Data pemeriksaan klaim tidak ditemukan');
+        }
+
+        // update or create data in pemeriksaan klaim
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($request, $pemeriksaanRalanKlaim) {
+                $pemeriksaanRalanKlaim->delete();
+            }, 5);
+
+            return \App\Helpers\ApiResponse::success('Data pemeriksaan klaim berhasil dihapus');
+        } catch (\Throwable $th) {
+            return \App\Helpers\ApiResponse::error($th->getMessage(), 'unable to delete data', 500);
+        }
     }
 
     /**

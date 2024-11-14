@@ -26,6 +26,13 @@ class PemeriksaanRalanKlaim extends Model
     protected $primaryKey = ['no_rawat', 'tgl_perawatan', 'jam_rawat'];
 
     /**
+     * The attributes that aren't mass assignable.
+     *
+     * @var array
+     */
+    protected $guarded = [];
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var array
