@@ -39,7 +39,7 @@ class ExportPdfJob implements ShouldQueue
      */
     public function handle()
     {
-        $fileName    = 'berkas-klaim-' . $this->sep . '.pdf';
+        $fileName    = $this->sep . '_009' . '.pdf';
         $brigdingSep = BridgingSep::where('no_sep', $this->sep)->first();
 
         if (!$brigdingSep) {
