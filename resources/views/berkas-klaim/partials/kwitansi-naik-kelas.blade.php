@@ -89,7 +89,7 @@
                 <tr class="align-top">
                     <td class="w-full text-center">
                         <p class="mb-3">Pasien</p>
-                        @if ($ttdPasien->verifikasi)
+                        @if ($ttdPasien && $ttdPasien->verifikasi)
                             <img src="http://192.168.100.31/rsiap/file/verif_sep/{{ $ttdPasien->verifikasi }}" width="70%">
                         @endif
                     </td>
