@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Awobaz\Compoships\Compoships;
 use Illuminate\Database\Eloquent\Model;
 use Thiagoprz\CompositeKey\HasCompositeKey;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * App\Models\PemeriksaanRanap
@@ -58,31 +59,83 @@ use Thiagoprz\CompositeKey\HasCompositeKey;
  */
 class PemeriksaanRanap extends Model
 {
-    use HasFactory, HasCompositeKey;
+    use HasFactory, HasCompositeKey, Compoships;
 
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'pemeriksaan_ranap';
 
+    /**
+     * The primary key associated with the table.
+     *
+     * @var string
+     */
     protected $primaryKey = ['no_rawat', 'tgl_perawatan', 'jam_rawat'];
 
+    /**
+     * The attributes that aren't mass assignable.
+     *
+     * @var array
+     */
     protected $guarded = [];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
     protected $casts = [
         'no_rawat' => 'string',
         'no_resep' => 'string',
     ];
 
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
     public $timestamps = false;
 
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
     public $incrementing = false;
 
 
+    /**
+     * Get the regPeriksa that owns the PemeriksaanRanap
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function regPeriksa()
     {
-        return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat');
+        return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'no_rkm_medis', 'tgl_registrasi', 'jam_reg', 'kd_poli', 'kd_dokter')->with(['dokter', 'poliklinik', 'sep' => function ($query) {
+            $query->select('no_sep', 'no_rawat');
+        }]);
     }
 
+    /**
+     * Get the petugas that owns the PemeriksaanRanap
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function petugas()
     {
         return $this->belongsTo(Petugas::class, 'nip', 'nip')->select('nip', 'nama');
+    }
+
+    /**
+     * Get the pemeriksaanKlaim that owns the PemeriksaanRanap
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function pemeriksaanKlaim()
+    {
+        return $this->hasOne(PemeriksaanRanapKlaim::class, ['no_rawat', 'tgl_perawatan', 'jam_rawat'], ['no_rawat', 'tgl_perawatan', 'jam_rawat'])->select('no_rawat', 'tgl_perawatan', 'jam_rawat');
     }
 }

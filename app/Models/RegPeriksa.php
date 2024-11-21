@@ -304,4 +304,9 @@ class RegPeriksa extends Model
     {
         return $this->belongsTo(BridgingSep::class, 'no_rawat', 'no_rawat');
     }
+
+    public function sepSimple()
+    {
+        return $this->hasOne(BridgingSep::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'no_sep', 'tglsep');
+    }
 }

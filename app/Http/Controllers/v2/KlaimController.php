@@ -361,7 +361,7 @@ class KlaimController extends Controller
             if (SafeAccess::object($response, 'metadata->code') == 200) {
                 Log::channel(config('eklaim.log_channel'))->info("GROUPPING - stage 1", ["sep" => $sep, 'response' => $response]);
             } else {
-                Log::channel(config('eklaim.log_channel'))->info("GROUPPING - stage 1", ["sep" => $sep, 'response' => $response]);
+                Log::channel(config('eklaim.log_channel'))->error("GROUPPING - stage 1", ["sep" => $sep, 'response' => $response]);
             }
         });
 
@@ -378,7 +378,7 @@ class KlaimController extends Controller
                 if (SafeAccess::object($response, 'metadata->code') == 200) {
                     Log::channel(config('eklaim.log_channel'))->info("GROUPPING - stage 2", ["sep" => $sep, 'response' => $response, "special_cmg" => $special_cmg_option_code ?? '']);
                 } else {
-                    Log::channel(config('eklaim.log_channel'))->info("GROUPPING - stage 2", ["sep" => $sep, 'response' => $response, "special_cmg" => $special_cmg_option_code ?? '']);
+                    Log::channel(config('eklaim.log_channel'))->error("GROUPPING - stage 2", ["sep" => $sep, 'response' => $response, "special_cmg" => $special_cmg_option_code ?? '']);
                 }
             });
 
@@ -414,38 +414,44 @@ class KlaimController extends Controller
     {
         $sep = \App\Models\BridgingSep::where('no_sep', $sep)->first();
 
-        if ($sep->jnspelayanan == 2) {
-            return;
-        }
-
-        // Pastikan sep valid dan kelas naik tidak lebih dari 3
-        if (!$sep || $sep->klsnaik > 3) {
+        if (!$sep || $sep->jnspelayanan == 2) {
             return;
         }
 
         // Periksa spesialis dokter, lanjutkan hanya jika spesialisnya kandungan
         $regPeriksa = \App\Models\RegPeriksa::with('dokter.spesialis')->where('no_rawat', $sep->no_rawat)->first();
-        if (!Str::contains(Str::lower($regPeriksa->dokter->spesialis->nm_sps), 'kandungan')) {
-            return;
+        if (Str::contains(Str::lower($regPeriksa->dokter->spesialis->nm_sps), 'kandungan')) {
+            $kamarInap = \App\Models\KamarInap::where('no_rawat', $sep->no_rawat)->latest('tgl_masuk')->latest('jam_masuk')->first();
+            
+            // // Periksa kelas VIP A atau VIP B
+            // if (!Str::contains(Str::lower($kamarInap->kd_kamar), ['kandungan va', 'kandungan vb1', 'kandungan vb2'])) {
+            //    // TODO: ......
+            // }
+            
+            // Ambil tarif dan tarif alternatif kelas 1
+            $cbgTarif      = SafeAccess::object($groupResponse, 'response->cbg->tariff', 0);
+            $altTariKelas1 = SafeAccess::object(collect($groupResponse->tarif_alt)->where('kelas', 'kelas_1')->first(), 'tarif_inacbg', 0);
+            
+            if (!$altTariKelas1) {
+                return ApiResponse::error("Pasien Naik Kelas namun, alt tarif kelas tidak ditemukan", 500);
+            }
+
+            // Tentukan presentase dan hitung tarif tambahan berdasarkan kelas kamar inap
+            $presentase    = Str::contains(Str::lower($kamarInap->kd_kamar), 'kandungan va') ? 73 : 43;
+            $tambahanBiaya = $altTariKelas1 - $cbgTarif + ($altTariKelas1 * $presentase / 100);
+        } else {
+            // Ambil tarif dan tarif alternatif kelas 1
+            $cbgTarif      = SafeAccess::object($groupResponse, 'response->cbg->tariff', 0);
+            $altTariKelas1 = SafeAccess::object(collect($groupResponse->tarif_alt)->where('kelas', 'kelas_1')->first(), 'tarif_inacbg', 0);
+            
+            if (!$altTariKelas1) {
+                return ApiResponse::error("Pasien Naik Kelas namun, alt tarif kelas tidak ditemukan", 500);
+            }
+
+            // Tentukan presentase dan hitung tarif tambahan berdasarkan kelas kamar inap
+            $presentase    = 75;
+            $tambahanBiaya = $altTariKelas1 - $cbgTarif + ($altTariKelas1 * $presentase / 100);
         }
-
-        // Periksa kelas VIP A atau VIP B
-        $kamarInap = \App\Models\KamarInap::where('no_rawat', $sep->no_rawat)->latest('tgl_masuk')->latest('jam_masuk')->first();
-        if (!Str::contains(Str::lower($kamarInap->kd_kamar), ['kandungan va', 'kandungan vb1', 'kandungan vb2'])) {
-            return;
-        }
-
-        // Ambil tarif dan tarif alternatif kelas 1
-        $cbgTarif      = SafeAccess::object($groupResponse, 'response->cbg->tariff', 0);
-        $altTariKelas1 = SafeAccess::object(collect($groupResponse->tarif_alt)->where('kelas', 'kelas_1')->first(), 'tarif_inacbg', 0);
-
-        if (!$altTariKelas1) {
-            return ApiResponse::error("Pasien Naik Kelas namun, alt tarif kelas tidak ditemukan", 500);
-        }
-
-        // Tentukan presentase dan hitung tarif tambahan berdasarkan kelas kamar inap
-        $presentase    = Str::contains(Str::lower($kamarInap->kd_kamar), 'kandungan va') ? 73 : 43;
-        $tambahanBiaya = $altTariKelas1 - $cbgTarif + ($altTariKelas1 * $presentase / 100);
 
         // Simpan data naik kelas
         \App\Models\RsiaNaikKelas::updateOrCreate(

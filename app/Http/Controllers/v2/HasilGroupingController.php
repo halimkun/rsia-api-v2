@@ -15,7 +15,7 @@ class HasilGroupingController extends Controller
      */
     public function index($sep)
     {
-        $hasil = \App\Models\InacbgGropingStage12::where('no_sep', $sep)->first();
+        $hasil = \App\Models\InacbgGropingStage12::with('naikKelas')->where('no_sep', $sep)->first();
         return ApiResponse::successWithData($hasil, 'Data berhasil diambil');
     }
 }

@@ -57,7 +57,7 @@ class DokterController extends \Orion\Http\Controllers\Controller
      */
     public function searchableBy(): array
     {
-        return ['kd_dokter', 'almt_tgl', 'nm_dokter', 'tgl_lahir', 'no_ijn_praktek', 'alumni'];
+        return ['kd_dokter', 'nm_dokter', 'tgl_lahir', 'no_ijn_praktek'];
     }
 
     /**

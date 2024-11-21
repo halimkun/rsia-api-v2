@@ -77,7 +77,7 @@ class BerkasKlaimDownload extends Controller
 
             // make tar.gz file per 100 files from chunks in directory /var/www/html/simrsiav2/file/berkas_klaim_pengajuan/ using tar -czf with --no-recursion
             foreach ($chunks as $key => $chunk) {
-                $tarFile = $tempStorage . date('Y-m') . '_batch' . ($key + 1) . '.tar.gz';
+                $tarFile = $tempStorage . date('Y-m') . ($request->jenis == 1 ? '_rawat-inap' : '_rawat-jalan') . '_batch' . ($key + 1) . '.tar.gz';
                 $tarCommand = 'tar -czf ' . $tarFile . ' -C ' . $rootPath . ' ' . implode(' ', $chunk) . ' --no-recursion';
                 exec($tarCommand, $output, $return);
 
@@ -87,11 +87,11 @@ class BerkasKlaimDownload extends Controller
             }
 
             // combine all tar.gz files into one tar.gz file
-            $tarFiles = array_map(function ($key) use ($tempStorage) {
-                return date('Y-m') . '_batch' . ($key + 1) . '.tar.gz';
+            $tarFiles = array_map(function ($key) use ($tempStorage, $request) {
+                return date('Y-m') . ($request->jenis == 1 ? '_rawat-inap' : '_rawat-jalan') . '_batch' . ($key + 1) . '.tar.gz';
             }, array_keys($chunks));
 
-            $tarAll = $tempStorage . date('Y-m') . '_all.tar.gz';
+            $tarAll = $tempStorage . date('Y-m') . ($request->jenis == 1 ? '_rawat-inap' : '_rawat-jalan') . '_all.tar.gz';
             $tarCommand = 'tar -czf ' . $tarAll . ' -C ' . $tempStorage . ' ' . implode(' ', $tarFiles) . ' --no-recursion';
 
             exec($tarCommand, $output, $return);
@@ -105,7 +105,7 @@ class BerkasKlaimDownload extends Controller
                 unlink($tempStorage . $tarFile);
             }
 
-            return response()->download($tarAll, date('Y-m') . '_all.tar.gz')->deleteFileAfterSend(true);
+            return response()->download($tarAll, date('Y-m') . ($request->jenis == 1 ? '_rawat-inap' : '_rawat-jalan') . '_all.tar.gz')->deleteFileAfterSend(true);
         } catch (\Throwable $th) {
             return response()->json(['message' => 'Gagal membuat file arsip ' . $th->getMessage()], 500);
         }

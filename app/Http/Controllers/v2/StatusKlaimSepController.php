@@ -49,6 +49,13 @@ class StatusKlaimSepController extends Controller
             $statusDetails['total_sep'] = $this->getJumlahSep($jnsPelayanan, $year, $month);
             $statusDetails['total_berkas_terkirim'] = $this->getJumlahBerkasTerkirim($jnsPelayanan, $year, $month);
 
+            // Menentukan bulan dan tahun untuk bulan sebelumnya
+            $prevMonth = ($month === 1) ? 12 : $month - 1;
+            $prevYear = ($month === 1) ? $year - 1 : $year;
+
+            // Total SEP bulan sebelumnya
+            $statusDetails['total_sep_last_month'] = $this->getJumlahSep($jnsPelayanan, $prevYear, $prevMonth);
+
             // Prepare status group translation
             $statusDetails['status'] = collect($this->statuses)->mapWithKeys(function ($status) use ($data, $jnsPelayanan) {
                 $status = strtolower($status);
