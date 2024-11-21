@@ -27,7 +27,7 @@ packages/
 packages/**/vendor
 
 # ==== build styles and scripts 
-/public/css
+# /public/css
 
 **/storage/tmp/*
 !**/storage/tmp/*.html
