@@ -86,7 +86,7 @@ class PerbaikanInventaris extends Model
 	 * 
 	 * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
 	 */
-	public function permintaan_perbaikan_inventaris()
+	public function permintaan_perbaikan()
 	{
 		return $this->belongsTo(PermintaanPerbaikanInventaris::class, 'no_permintaan');
 	}

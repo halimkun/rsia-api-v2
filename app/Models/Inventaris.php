@@ -95,7 +95,7 @@ class Inventaris extends Model
 	 * 
 	 * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
 	 */
-	public function inventaris_barang()
+	public function barang()
 	{
 		return $this->belongsTo(InventarisBarang::class, 'kode_barang');
 	}
@@ -105,7 +105,7 @@ class Inventaris extends Model
 	 * 
 	 * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
 	 */
-	public function inventaris_ruang()
+	public function ruang()
 	{
 		return $this->belongsTo(InventarisRuang::class, 'id_ruang');
 	}
@@ -125,7 +125,7 @@ class Inventaris extends Model
 	 * 
 	 * @return \Illuminate\Database\Eloquent\Relations\HasOne
 	 */
-	public function inventaris_gambar()
+	public function gambar()
 	{
 		return $this->hasOne(InventarisGambar::class, 'no_inventaris');
 	}
@@ -135,7 +135,7 @@ class Inventaris extends Model
 	 * 
 	 * @return \Illuminate\Database\Eloquent\Relations\HasMany
 	 */
-	public function inventaris_peminjamen()
+	public function peminjamen()
 	{
 		return $this->hasMany(InventarisPeminjaman::class, 'no_inventaris');
 	}
@@ -145,7 +145,7 @@ class Inventaris extends Model
 	 * 
 	 * @return \Illuminate\Database\Eloquent\Relations\HasMany
 	 */
-	public function pemeliharaan_inventaris()
+	public function pemeliharaan()
 	{
 		return $this->hasMany(PemeliharaanInventaris::class, 'no_inventaris');
 	}
@@ -155,7 +155,7 @@ class Inventaris extends Model
 	 * 
 	 * @return \Illuminate\Database\Eloquent\Relations\HasMany
 	 */
-	public function permintaan_perbaikan_inventaris()
+	public function permintaan_perbaikan()
 	{
 		return $this->hasMany(PermintaanPerbaikanInventaris::class, 'no_inventaris');
 	}

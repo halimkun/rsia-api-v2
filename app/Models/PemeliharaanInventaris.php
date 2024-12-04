@@ -6,8 +6,10 @@
 
 namespace App\Models;
 
+use Awobaz\Compoships\Compoships;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Thiagoprz\CompositeKey\HasCompositeKey;
 
 /**
  * Class PemeliharaanInventaris
@@ -27,6 +29,15 @@ use Illuminate\Database\Eloquent\Model;
  */
 class PemeliharaanInventaris extends Model
 {
+	use HasCompositeKey, Compoships;
+
+	/**
+	 * Primary key
+	 *
+	 * @var string
+	 */
+	protected $primaryKey = ['no_inventaris', 'tanggal'];
+
 	/**
 	 * Table name
 	 *

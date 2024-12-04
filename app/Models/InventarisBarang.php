@@ -96,7 +96,7 @@ class InventarisBarang extends Model
 	 * 
 	 * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
 	 */
-	public function inventaris_produsen()
+	public function produsen()
 	{
 		return $this->belongsTo(InventarisProdusen::class, 'kode_produsen');
 	}
@@ -106,7 +106,7 @@ class InventarisBarang extends Model
 	 * 
 	 * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
 	 */
-	public function inventaris_merk()
+	public function merk()
 	{
 		return $this->belongsTo(InventarisMerk::class, 'id_merk');
 	}
@@ -116,7 +116,7 @@ class InventarisBarang extends Model
 	 * 
 	 * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
 	 */
-	public function inventaris_kategori()
+	public function kategori()
 	{
 		return $this->belongsTo(InventarisKategori::class, 'id_kategori');
 	}
@@ -126,7 +126,7 @@ class InventarisBarang extends Model
 	 * 
 	 * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
 	 */
-	public function inventaris_jenis()
+	public function jenis()
 	{
 		return $this->belongsTo(InventarisJenis::class, 'id_jenis');
 	}

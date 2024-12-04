@@ -74,7 +74,7 @@ class InventarisJenis extends Model
 	 * 
 	 * @return \Illuminate\Database\Eloquent\Relations\HasMany
 	 */
-	public function inventaris_barangs()
+	public function barang()
 	{
 		return $this->hasMany(InventarisBarang::class, 'id_jenis');
 	}
