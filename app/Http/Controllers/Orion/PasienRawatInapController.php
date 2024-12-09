@@ -45,6 +45,11 @@ class PasienRawatInapController extends Controller
         return \Illuminate\Support\Facades\Auth::guard('user-aes')->user();
     }
 
+    public function exposedScopes(): array
+    {
+        return ['hasBerkasPerawatan'];
+    }
+
     /**
      * The attributes that are used for filtering.
      *
@@ -52,7 +57,7 @@ class PasienRawatInapController extends Controller
      */
     public function filterableBy(): array
     {
-        return ['no_rawat', 'kd_kamar', 'tgl_masuk', 'tgl_keluar', 'jam_masuk', 'jam_keluar', 'stts_pulang', 'regPeriksa.tgl_registrasi', "regPeriksa.kd_pj"];
+        return ['no_rawat', 'kd_kamar', 'tgl_masuk', 'tgl_keluar', 'jam_masuk', 'jam_keluar', 'stts_pulang', 'regPeriksa.tgl_registrasi', 'regPeriksa.kd_pj', 'sep.status_klaim.status'];
     }
 
     /**
@@ -62,7 +67,7 @@ class PasienRawatInapController extends Controller
      */
     public function sortableBy(): array
     {
-        return ['no_rawat', 'kd_kamar', 'tgl_masuk', 'tgl_keluar', 'stts_pulang'];
+        return ['no_rawat', 'kd_kamar', 'tgl_masuk', 'tgl_keluar', 'stts_pulang', 'regPeriksa.tgl_registrasi'];
     }
 
     /**
@@ -92,7 +97,7 @@ class PasienRawatInapController extends Controller
      */
     public function includes(): array
     {
-        return ['regPeriksa', 'pasien', 'lamaInap', 'sep', 'sepSimple', 'regPeriksaSimple'];
+        return ['regPeriksa', 'pasien', 'lamaInap', 'sep', 'sep.status_klaim', 'sepSimple', 'regPeriksaSimple'];
     }
 
     /**

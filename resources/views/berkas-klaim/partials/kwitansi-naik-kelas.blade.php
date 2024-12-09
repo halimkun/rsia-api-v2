@@ -80,19 +80,21 @@
                 </tr>
             </table>
 
-            <table class="w-full mt-8">
+            <table class="mt-8 w-full">
                 <tr class="align-middle">
-                    <td class="text-center w-full">&nbsp;</td>
-                    <td class="text-center w-full">&nbsp;</td>
-                    <td class="text-center w-full">Pekalongan, {{ \Carbon\Carbon::parse($kamarInap->first()->tgl_keluar)->format('d F Y') }}</td>
+                    <td class="w-full text-center">&nbsp;</td>
+                    <td class="w-full text-center">&nbsp;</td>
+                    <td class="w-full text-center">Pekalongan, {{ \Carbon\Carbon::parse($kamarInap->first()->tgl_keluar)->format('d F Y') }}</td>
                 </tr>
                 <tr class="align-top">
-                    <td class="text-center w-full">
+                    <td class="w-full text-center">
                         <p class="mb-3">Pasien</p>
-                        <img src="http://192.168.100.31/rsiap/file/verif_sep/{{ $ttdPasien?->verifikasi }}" width="70%" >
+                        @if ($ttdPasien && $ttdPasien->verifikasi)
+                            <img src="http://192.168.100.31/rsiap/file/verif_sep/{{ $ttdPasien->verifikasi }}" width="70%">
+                        @endif
                     </td>
-                    <td class="text-center w-full">&nbsp;</td>
-                    <td class="text-center w-full">
+                    <td class="w-full text-center">&nbsp;</td>
+                    <td class="w-full text-center">
                         <p class="mb-1">Kasir</p>
                         @php
                             $hash = $kasir->sidikjari ? $kasir->sidikjari->sidikjari : \Hash::make($kasir->nip);

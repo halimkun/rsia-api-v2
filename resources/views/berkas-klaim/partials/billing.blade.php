@@ -23,12 +23,12 @@
         <div class="my-3">
             <table class="table w-full">
                 @foreach ([
-        'No. Nota' => $nota?->no_nota,
-        'No. RM' => $regPeriksa?->no_rkm_medis,
-        'Nama Pasien' => $regPeriksa?->pasien?->nm_pasien,
-        'JK / Umur' => (\Str::lower($regPeriksa?->pasien?->jk) == 'p' ? 'Perempuan' : 'Laki-laki') . ' / ' . $regPeriksa?->umurdaftar . ' ' . $regPeriksa?->sttsumur,
-        'Cara Bayar' => $regPeriksa?->caraBayar?->png_jawab,
-    ] as $key => $val)
+                    'No. Nota' => \App\Helpers\SafeAccess::object($nota, 'no_nota', '-'),
+                    'No. RM' => \App\Helpers\SafeAccess::object($regPeriksa, 'no_rkm_medis', '-'),
+                    'Nama Pasien' => \App\Helpers\SafeAccess::object($regPeriksa, 'pasien->nm_pasien', '-'),
+                    'JK / Umur' => (\Str::lower(\App\Helpers\SafeAccess::object($regPeriksa, 'pasien->jk', '')) == 'p' ? 'Perempuan' : 'Laki-laki') . ' / ' . \App\Helpers\SafeAccess::object($regPeriksa, 'umurdaftar', '-') . ' ' . \App\Helpers\SafeAccess::object($regPeriksa, 'sttsumur', '-'),
+                    'Cara Bayar' => \App\Helpers\SafeAccess::object($regPeriksa, 'caraBayar->png_jawab', '-'),
+                ] as $key => $val)
                     <tr class="align-top">
                         <td class="text-nowrap whitespace-nowrap text-sm leading-4" style="width: 128px;">{{ $key }}</td>
                         <td class="px-2 text-sm leading-4">:</td>
@@ -36,11 +36,19 @@
                     </tr>
                 @endforeach
 
+
                 @if (\Str::lower($regPeriksa->status_lanjut) == 'ranap')
+                    @php
+                        $firstRuang = $ruang->first();
+                    @endphp
+                    
                     <tr class="align-top">
                         <td class="text-nowrap whitespace-nowrap text-sm leading-4">Bangsal / Kamar</td>
                         <td class="px-2 text-sm leading-4">:</td>
-                        <td class="w-full text-sm leading-none">{{ $ruang?->first()?->kamar->bangsal->nm_bangsal }} / {{ $ruang?->first()?->kd_kamar }}</td>
+                        <td class="w-full text-sm leading-none">
+                            {{ \App\Helpers\SafeAccess::object($firstRuang, 'kamar->bangsal->nm_bangsal', '-') }} /
+                            {{ \App\Helpers\SafeAccess::object($firstRuang, 'kd_kamar', '-') }}
+                        </td>
                     </tr>
                 @else
                     <tr class="align-top">
@@ -65,9 +73,9 @@
                     </td>
                     <td class="px-2 text-sm leading-4">:</td>
                     <td class="w-full text-sm leading-none">
-                        {{ $regPeriksa?->tgl_registrasi . ' ' . $regPeriksa?->jam_reg }}
+                        {{ $regPeriksa->tgl_registrasi . ' ' . $regPeriksa->jam_reg }}
                         @if (\Str::lower($regPeriksa->status_lanjut) == 'ranap')
-                            <span class="font-bold"> s/d </span> {{ $ruang?->first()?->tgl_keluar . ' ' . $ruang?->first()?->jam_keluar }}
+                            <span class="font-bold"> s/d </span> {{ \App\Helpers\SafeAccess::object($firstRuang, 'tgl_keluar', '-') . ' ' . \App\Helpers\SafeAccess::object($firstRuang, 'jam_keluar', '-') }}
                         @endif
                     </td>
                 </tr>
@@ -93,14 +101,15 @@
                 </thead>
                 <tbody>
                     @foreach ($dokters as $kd => $vd)
+                        <?php $frvd = $vd->first(); ?>
                         <tr>
                             <td class="px-1 text-sm font-bold leading-none" style="padding: 3px 3px; border-color: #333; width: 150px;">
                                 @if ($loop->first)
                                     <span class="px-1 font-bold">Dokter Rawat</span>
                                 @endif
                             </td>
-                            <td class="border-b px-1 text-sm leading-none" style="padding: 3px 3px; border-color: lightgray; max-width: 250px;" colspan="2">{{ $vd?->first()?->dokter?->nm_dokter }}</td>
-                            <td class="border-b px-1 text-sm leading-none" style="padding: 3px 3px; border-color: lightgray; max-width: 250px;" colspan="3">{{ $vd?->first()?->dokter?->spesialis?->nm_sps }}</td>
+                            <td class="border-b px-1 text-sm leading-none" style="padding: 3px 3px; border-color: lightgray; max-width: 250px;" colspan="2">{{ \App\Helpers\SafeAccess::object($frvd, 'dokter->nm_dokter', '-') }}</td>
+                            <td class="border-b px-1 text-sm leading-none" style="padding: 3px 3px; border-color: lightgray; max-width: 250px;" colspan="3">{{ \App\Helpers\SafeAccess::object($frvd, 'dokter->spesialis->nm_sps', '-') }}</td>
                         </tr>
                     @endforeach
 
@@ -129,20 +138,21 @@
                 </thead>
                 <tbody>
                     @foreach ($ruang->groupBy('kd_kamar')->sortKeys() as $k => $v)
+                        <?php $frv = $v->first(); ?>
                         <tr>
                             <td class="px-1 text-sm font-bold leading-none" style="padding: 3px, 3px; border-color: #333; width: 150px;">
                                 @if ($loop->first)
                                     <span class="font-bold">Kamar Rawat</span>
                                 @endif
                             </td>
-                            <td class="border-b px-1 text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray; max-width: 250px;">{{ $k }} {{ $v?->first()?->kamar->bangsal->nm_bangsal ?? '' }}</td>
-                            <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ number_format($v?->first()?->trf_kamar ?? 0, 0, ',', '.') }}</td>
+                            <td class="border-b px-1 text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray; max-width: 250px;">{{ $k }} {{ \App\Helpers\SafeAccess::object($frv, 'kamar->bangsal->nm_bangsal', '') }}</td>
+                            <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ number_format(\App\Helpers\SafeAccess::object($frv, 'trf_kamar', 0), 0, ',', '.') }}</td>
                             <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ $v->sum('lama') }}</td>
                             <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray"></td>
-                            <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ number_format($v?->first()?->ttl_biaya ?? 0, 0, ',', '.') }}</td>
+                            <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ number_format(\App\Helpers\SafeAccess::object($frv, 'ttl_biaya', 0), 0, ',', '.') }}</td>
                         </tr>
 
-                        <?php $totalRuang += $v?->first()?->ttl_biaya ?? 0; ?>
+                        <?php $totalRuang += \App\Helpers\SafeAccess::object($frv, 'ttl_biaya', 0); ?>
                     @endforeach
 
                     <tr>
@@ -163,6 +173,7 @@
         @endif
 
         <h4 class="text-base font-bold" style="margin-bottom: 2px">&#x2022; Rincian Biaya</h4>
+        <?php $semuanyaIni = 0; ?>
         @foreach ($billing as $noRawat => $items)
             <table class="table mb-5 w-full">
                 <thead>
@@ -184,6 +195,7 @@
 
                         {{-- Looping item --}}
                         @foreach ($item as $k => $v)
+                            <?php $frv = $v->first(); ?>
                             @if (\Str::contains(\Str::lower($kategori), ['operasi']))
                                 <tr>
                                     <td class="relative px-1 text-sm font-bold leading-none" style="padding:3px 3px;border-color: #333; width: 150px;">
@@ -195,7 +207,7 @@
                                     </td>
 
                                     <td colspan="5" class="border-b px-1 text-sm font-bold leading-none" style="padding:3px 3px;border-color: lightgray; max-width: 250px;">
-                                        {{ $v?->detailPaket?->nm_perawatan }}
+                                        {{ \App\Helpers\SafeAccess::object($v, 'detailPaket->nm_perawatan') }}
                                     </td>
                                 </tr>
 
@@ -235,7 +247,7 @@
                                     @if (\Str::contains(\Str::lower($kategori), ['obat', 'bhp']))
                                         {{ $k }}
                                     @else
-                                        {{ $v?->first()?->jenisPerawatan?->nm_perawatan ?? 'invalid params' }}
+                                        {{ \App\Helpers\SafeAccess::object($frv, 'jenisPerawatan->nm_perawatan', 'Invalid Params') }}
                                     @endif
 
                                     {{-- float right --}}
@@ -244,11 +256,11 @@
 
                                 <td class="border-b px-1 text-right text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
                                     @if (\Str::contains(\Str::lower($kategori), ['obat', 'bhp']))
-                                        {{ number_format($v?->first()?->biaya_obat ?? 0, 0, ',', '.') }}
+                                        {{ number_format(\App\Helpers\SafeAccess::object($frv, 'biaya_obat', 0), 0, ',', '.') }}
                                     @elseif (\Str::contains(\Str::lower($kategori), ['lab', 'radiologi']))
-                                        {{ number_format($v?->first()?->biaya ?? 0, 0, ',', '.') }}
+                                        {{ number_format(\App\Helpers\SafeAccess::object($frv, 'biaya', 0), 0, ',', '.') }}
                                     @else
-                                        <span class="whitespace-nowrap">{{ number_format($v?->first()?->biaya_rawat ?? 0, 0, ',', '.') }}</span>
+                                        <span class="whitespace-nowrap">{{ number_format(\App\Helpers\SafeAccess::object($frv, 'biaya_rawat', 0), 0, ',', '.') }}</span>
                                     @endif
                                 </td>
 
@@ -310,29 +322,30 @@
 
                             <?php $totalRetur = 0; ?>
                             @foreach ($returObat as $rok => $rov)
+                                <?php $frrov = $rov->first(); ?>
                                 <tr>
                                     <td></td>
                                     <td class="border-b px-1 text-left text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
-                                        {{ $rov?->first()?->obat?->nama_brng }}
+                                        {{ \App\Helpers\SafeAccess::object($frrov, 'obat->nama_brng') }}
 
                                         {{-- float right --}}
                                         <span class="float-right">:</span>
                                     </td>
                                     <td class="border-b px-1 text-right text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
-                                        {{ number_format($rov?->first()?->h_retur, 0, ',', '.') }}
+                                        {{ number_format(\App\Helpers\SafeAccess::object($frrov, 'h_retur', 0), 0, ',', '.') }}
                                     </td>
                                     <td class="border-b px-1 text-right text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
-                                        - {{ $rov?->first()?->jml_retur }}
+                                        - {{ \App\Helpers\SafeAccess::object($frrov, 'jml_retur', 0) }}
                                     </td>
                                     <td class="border-b px-1 text-right text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
                                         0
                                     </td>
                                     <td class="border-b px-1 text-right text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
-                                        - {{ number_format($rov?->first()?->subtotal, 0, ',', '.') }}
+                                        - {{ number_format(\App\Helpers\SafeAccess::object($frrov, 'subtotal', 0), 0, ',', '.') }}
                                     </td>
                                 </tr>
 
-                                <?php $totalRetur += $rov?->first()?->subtotal ?? 0; ?>
+                                <?php $totalRetur += \App\Helpers\SafeAccess::object($frrov, 'subtotal', 0); ?>
                             @endforeach
 
                             <tr>
@@ -360,6 +373,8 @@
                     @endforeach
                 </tbody>
             </table>
+
+            <?php $semuanyaIni += $totalAllkategori; ?>
         @endforeach
 
         <?php $totalResepPulang = 0; ?>
@@ -378,20 +393,21 @@
                 </thead>
                 <tbody>
                     @foreach ($resepPulang as $rpk => $rpv)
+                        <?php $frpv = $rpv->first(); ?>
                         <tr>
                             <td class="px-1 text-sm font-bold leading-none" style="padding: 3px, 3px; border-color: #333; width: 150px;">
                                 @if ($loop->first)
                                     <span class="font-bold">Resep Pulang</span>
                                 @endif
                             </td>
-                            <td class="border-b px-1 text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray; max-width: 250px;">{{ $rpv?->first()?->obat->nama_brng ?? '' }}</td>
-                            <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ number_format($rpv?->first()?->harga ?? 0, 0, ',', '.') }}</td>
+                            <td class="border-b px-1 text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray; max-width: 250px;">{{ \App\Helpers\SafeAccess::object($frpv, 'obat->nama_brng', '') }}</td>
+                            <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ number_format(\App\Helpers\SafeAccess::object($frpv, 'harga', 0), 0, ',', '.') }}</td>
                             <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ number_format($rpv->sum('jml_barang'), 0, ',', '.') }}</td>
                             <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">0</td>
-                            <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ number_format($rpv?->first()?->total ?? 0, 0, ',', '.') }}</td>
+                            <td class="border-b px-1 text-right text-sm leading-none" style="padding: 3px, 3px; border-color: lightgray">{{ number_format(\App\Helpers\SafeAccess::object($frpv, 'total', 0), 0, ',', '.') }}</td>
                         </tr>
 
-                        <?php $totalResepPulang += $rpv?->first()?->total ?? 0; ?>
+                        <?php $totalResepPulang += \App\Helpers\SafeAccess::object($frpv, 'total', 0); ?>
                     @endforeach
 
                     <tr>
@@ -505,7 +521,7 @@
                 <tr>
                     <td class="border-b px-1 text-left font-bold italic leading-none" style="padding: 4px, 4px; background-color: lightblue; border-color: #333" colspan="5">Total Keseluruhan</td>
                     <td class="border-b px-1 text-right font-bold italic leading-none" style="padding: 4px, 4px; background-color: lightblue; border-color: #333">
-                        Rp {{ number_format($totalRuang + $totalAllkategori + $totalResepPulang + $totalTambahanBiaya - $totalPotonganBiaya, 0, ',', '.') }}
+                        Rp {{ number_format($totalRuang + $semuanyaIni + $totalResepPulang + $totalTambahanBiaya - $totalPotonganBiaya, 0, ',', '.') }}
                     </td>
                 </tr>
             </tbody>
@@ -521,8 +537,8 @@
                             Kabid Umum dan Keuangan
                         </p>
                         @php
-                            $HASHKoor = $asmenKeuangan->sidikjari ? $asmenKeuangan->sidikjari->sidikjari : \Hash::make($asmenKeuangan->nik);
-                            $QRKoor = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $asmenKeuangan->nama . '. ID : ' . $HASHKoor;
+                            $HASHKoor = \App\Helpers\SafeAccess::object($asmenKeuangan, 'sidikjari->sidikjari', \Hash::make($asmenKeuangan->nik));
+                            $QRKoor = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . \App\Helpers\SafeAccess::object($asmenKeuangan, 'nama', '- null -') . '. ID : ' . $HASHKoor;
                         @endphp
 
                         <div class="relative inline-block h-28 w-28">
@@ -530,7 +546,7 @@
                             <img src="{{ asset('assets/images/logo.png') }}" alt="logo" class="h-8 w-8" style="position: absolute !important; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;" />
                         </div>
 
-                        <p class="mt-3">{{ $asmenKeuangan->nama }}</p>
+                        <p class="mt-3">{{ \App\Helpers\SafeAccess::object($asmenKeuangan, 'nama', '- null -') }}</p>
                     </td>
                     <td class="w-full text-center">
                         <p class="mb-3">
@@ -538,8 +554,8 @@
                             Kasir
                         </p>
                         @php
-                            $hash = $kasir->sidikjari ? $kasir->sidikjari->sidikjari : \Hash::make($kasir->nip);
-                            $QRPetugas = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $kasir->nama . '. ID : ' . $hash;
+                            $hash = \App\Helpers\SafeAccess::object($kasir, 'sidikjari->sidikjari', \Hash::make($kasir ? $kasir->nip : "- null -"));
+                            $QRPetugas = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . \App\Helpers\SafeAccess::object($kasir, 'nama', '- null -') . '. ID : ' . $hash;
                         @endphp
 
                         <div class="relative inline-block h-28 w-28">
@@ -547,7 +563,7 @@
                             <img src="{{ asset('assets/images/logo.png') }}" alt="logo" class="h-8 w-8" style="position: absolute !important; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;" />
                         </div>
 
-                        <p class="mt-3">{{ $kasir->nama }}</p>
+                        <p class="mt-3">{{ \App\Helpers\SafeAccess::object($kasir, 'nama', '- null -') }}</p>
                     </td>
                 </tr>
             </table>

@@ -57,8 +57,8 @@ class KamarInapController extends Controller
             ->orderBy('jam_masuk', 'desc')
             ->get();
 
-        if (!$kamarInap) {
-            return \App\Helpers\ApiResponse::notFound('Data pasien tidak ditemukan, periksa kembali nomor rawat');
+        if (!$kamarInap || $kamarInap->count() === 0 || $kamarInap->isEmpty()) {
+            return \App\Helpers\ApiResponse::errorWithData(null, 'Data pasien tidak ditemukan, periksa kembali nomor rawat', 'data_not_found', 404);
         }
 
         return new \App\Http\Resources\Kamar\Inap\ShowKamarInapCollection($kamarInap);

@@ -13,8 +13,10 @@ class PenguranganBiaya extends Model
 
     protected $primaryKey = 'no_rawat';
 
+    protected $keyType = 'string';
+    
     public $incrementing = false;
-
+  
     public $timestamps = false;
 
 

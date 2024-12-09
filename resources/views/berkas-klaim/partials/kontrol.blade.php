@@ -9,8 +9,8 @@
                         <p class="text-nowrap whitespace-nowrap text-sm leading-none">RSIA Aisyiyah Pekajangan</p>
                     </td>
                     <td class="p-2 text-left">
-                        <h5 class="text-nowrap whitespace-nowrap text-sm font-bold leading-none">No. {{ $sep?->surat_kontrol?->no_surat }}</h5>
-                        <p class="text-nowrap whitespace-nowrap text-sm leading-none">Tgl. {{ $sep?->surat_kontrol?->tgl_rencana }}</p>
+                        <h5 class="text-nowrap whitespace-nowrap text-sm font-bold leading-none">No. {{ \App\Helpers\SafeAccess::object($sep, 'surat_kontrol->no_surat') }}</h5>
+                        <p class="text-nowrap whitespace-nowrap text-sm leading-none">Tgl. {{ \App\Helpers\SafeAccess::object($sep, 'surat_kontrol->tgl_rencana') }}</p>
                     </td>
                 </tr>
             </table>
@@ -18,7 +18,7 @@
     @endpush
 
     @php
-        $QRText = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $sep?->surat_kontrol?->nm_dokter_bpjs . '. ID : ' . $sep?->dokter?->pegawai?->sidikjari?->sdk;
+        $QRText = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . \App\Helpers\SafeAccess::object($sep, 'surat_kontrol->nm_dokter_bpjs') . '. ID : ' . \App\Helpers\SafeAccess::object($sep, 'dokter->pegawai->sidikjari->sdk');
     @endphp
 
     <main style="margin-top: 30px">
@@ -26,10 +26,10 @@
             <tr class="align-top">
                 <td class="text-nowrap whitespace-nowrap">Kepada Yth</td>
                 <td class="px-2" style="width: 5px"></td>
-                <td class="text-nowrap whitespace-nowrap">{{ $sep?->surat_kontrol?->nm_dokter_bpjs }}</td>
+                <td class="text-nowrap whitespace-nowrap">{{ \App\Helpers\SafeAccess::object($sep, 'surat_kontrol->nm_dokter_bpjs') }}</td>
                 <td class="pl-2" style="width:250px;">
-                    @if ($sep?->surat_kontrol && $sep?->surat_kontrol->no_surat)
-                        <img src="data:image/png;base64,{{ DNS1D::getBarcodePNG($sep?->surat_kontrol->no_surat, 'C128') }}" alt="barcode" class="h-10 w-auto" />
+                    @if ($sep->surat_kontrol && $sep->surat_kontrol->no_surat)
+                        <img src="data:image/png;base64,{{ DNS1D::getBarcodePNG(\App\Helpers\SafeAccess::object($sep, 'surat_kontrol->no_surat'), 'C128') }}" alt="barcode" class="h-10 w-auto" />
                     @endif
                 </td>
             </tr>
@@ -38,22 +38,22 @@
                 <td></td>
             </tr>
             @foreach ([
-                'No. Kartu'     => $sep?->no_kartu,
-                'Nama Pasien'   => $regPeriksa?->pasien?->nm_pasien,
-                'Tgl. Lahir'    => $regPeriksa?->pasien?->tgl_lahir,
-                'Diagnosa Awal' => $sep?->nmdiagnosaawal,
-                'Tgl. Entry'    => $sep?->surat_kontrol?->tgl_surat,
+                'No. Kartu' => $sep->no_kartu,
+                'Nama Pasien' => $regPeriksa->pasien->nm_pasien,
+                'Tgl. Lahir' => $regPeriksa->pasien->tgl_lahir,
+                'Diagnosa Awal' => $sep->nmdiagnosaawal,
+                'Tgl. Entry' => $sep->surat_kontrol->tgl_surat,
             ] as $key => $value)
-              <tr>
-                  <td class="text-nowrap whitespace-nowrap leading-5">{{ $key }}</td>
-                  <td class="leading-5">:</td>
-                  <td class="text-nowrap whitespace-nowrap leading-5">{{ $value }}</td>
-                  <td class="leading-5"></td>
-              </tr>
+                <tr>
+                    <td class="text-nowrap whitespace-nowrap leading-5">{{ $key }}</td>
+                    <td class="leading-5">:</td>
+                    <td class="text-nowrap whitespace-nowrap leading-5">{{ $value }}</td>
+                    <td class="leading-5"></td>
+                </tr>
             @endforeach
             <tr class="align-top">
                 <td class="leading-none" colspan="3">
-                  <div class="span mt-3">Demikian Atas Bantuannya diucapkan banyak terimakasih.</div>
+                    <div class="span mt-3">Demikian Atas Bantuannya diucapkan banyak terimakasih.</div>
                 </td>
                 <td></td>
             </tr>
@@ -62,14 +62,14 @@
             </tr>
             <tr>
                 <td class="w-full text-left" colspan="3">
-                    <div class="text-sm">Tgl. Cetak <?= date('d-m-Y', strtotime($sep?->tglsep)) . ' ' . date('H:i:s') ?></div>
+                    <div class="text-sm">Tgl. Cetak <?= date('d-m-Y', strtotime($sep->tglsep)) . ' ' . date('H:i:s') ?></div>
                 </td>
                 <td class="w-full text-center">
                     <div class="relative inline-block h-28 w-28">
                         <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG($QRText, 'QRCODE') }}" alt="barcode" class="h-2w-28 w-28" />
                         <img src="{{ asset('assets/images/logo.png') }}" alt="logo" class="h-9 w-9" style="position: absolute !important; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;" />
                     </div>
-                    <div class="mt-2">{{ $sep?->surat_kontrol?->nm_dokter_bpjs }}</div>
+                    <div class="mt-2">{{ \App\Helpers\SafeAccess::object($sep, 'surat_kontrol->nm_dokter_bpjs') }}</div>
                 </td>
             </tr>
         </table>

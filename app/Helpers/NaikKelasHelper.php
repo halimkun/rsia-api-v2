@@ -24,4 +24,24 @@ class NaikKelasHelper
 
         return $data[$kelasNaik];
     }
+
+    public static function getJumlahNaik($klsRawat, $klsNaik)
+    {
+        $klsRawat = (int) $klsRawat;  // sesuai dengan kelas rawat pasien
+        $klsNaik  = (int) $klsNaik;   // Reference to $this->translate() function
+
+        if ($klsRawat == 2 && $klsNaik == 3) {
+            return 1;
+        } 
+        
+        if ($klsRawat == 2 && ($klsNaik == 1 || $klsNaik == 2)) {
+            return 2;
+        }
+
+        if ($klsRawat == 3 && ($klsNaik == 1 || $klsNaik == 2)) {
+            return 1;
+        }
+
+        return 0;
+    }
 }

@@ -31,12 +31,12 @@
                     <td class="border text-center" style="width: 70%; border-color: #333;">
                         <table class="table w-full table-auto">
                             @foreach ([
-                                'No. RM' => $sep?->nomr,
-                                'Nama' => $pasien?->nm_pasien,
-                                'Umur' => $regPeriksa?->umurdaftar . ' ' . $regPeriksa?->sttsumur,
-                                'Tgl. Lahir' => $sep?->tanggal_lahir,
-                                'Alamat' => $pasien?->alamat,
-                                'No. HP' => $pasien?->no_tlp,
+                                'No. RM'     => $sep->nomr,
+                                'Nama'       => $pasien->nm_pasien,
+                                'Umur'       => $regPeriksa->umurdaftar . ' ' . $regPeriksa->sttsumur,
+                                'Tgl. Lahir' => $sep->tanggal_lahir,
+                                'Alamat'     => $pasien->alamat,
+                                'No. HP'     => $pasien->no_tlp,
                             ] as $key => $value)
                                 <tr>
                                     <td class="text-nowrap whitespace-nowrap px-1 text-left text-sm leading-4">{{ $key }}</td>
@@ -52,7 +52,7 @@
     @endpush
 
     @php
-        $QRText = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $regPeriksa?->dokter?->nm_dokter . '. ID : ' . $regPeriksa?->dokter?->sidikjari?->sidikjari;
+        $QRText = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $regPeriksa->dokter->nm_dokter . '. ID : ' . \App\Helpers\SafeAccess::object($regPeriksa, "dokter->sidikjari->sidikjari");
     @endphp
 
     <main>
@@ -60,7 +60,7 @@
             <tr>
                 <td colspan="3" class="px-2 py-1">
                     <p class="leading-5 text-sm">
-                        {!! nl2br($usg?->catatan) !!}  
+                        {!! nl2br($usg->catatan) !!}  
                     </p>
                 </td>
             </tr>
@@ -72,7 +72,7 @@
                         <img src="data:image/png;base64,{{ DNS2D::getBarcodePNG($QRText, 'QRCODE') }}" alt="barcode" class="h-2w-28 w-28" />
                         <img src="{{ asset('assets/images/logo.png') }}" alt="logo" class="h-9 w-9" style="position: absolute !important; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 10;" />
                     </div>
-                    <div class="mt-2">{{ $regPeriksa?->dokter?->nm_dokter }}</div>
+                    <div class="mt-2">{{ $regPeriksa->dokter->nm_dokter }}</div>
                 </td>
             </tr>
         </table>

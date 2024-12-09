@@ -24,7 +24,7 @@ use Illuminate\Database\Eloquent\Model;
 class InacbgGropingStage12 extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'inacbg_grouping_stage12';
 
     protected $guarded = [];
@@ -32,4 +32,10 @@ class InacbgGropingStage12 extends Model
     public $incrementing = false;
 
     public $timestamps = false;
+
+    
+    public function naikKelas()
+    {
+        return $this->belongsTo(RsiaNaikKelas::class, 'no_sep', 'no_sep');
+    }
 }

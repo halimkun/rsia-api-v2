@@ -9,8 +9,18 @@ class RegPeriksaController extends \Orion\Http\Controllers\Controller
 {
     use \Orion\Concerns\DisableAuthorization;
 
+    /**
+     * Model class for RegPeriksa
+     * 
+     * @var string
+     * */
     protected $model = \App\Models\RegPeriksa::class;
 
+    /**
+     * The attributes that are used for sorting.
+     *
+     * @var array
+     */
     protected $collectionResource = \App\Http\Resources\RegistrasiPeriksaCollection::class;
 
     /**
@@ -79,6 +89,6 @@ class RegPeriksaController extends \Orion\Http\Controllers\Controller
      * */
     public function includes(): array
     {
-        return ['pasien', 'dokter', 'poliklinik', 'dokter.spesialis', 'pasienBayi', 'caraBayar', 'pemeriksaanRalan', 'pemeriksaanRanap'];
+        return ['pasien', 'pasienSomeData', 'dokter', 'poliklinik', 'sepSimple', 'dokter.spesialis', 'pasienBayi', 'caraBayar', 'pemeriksaanRalan', 'pemeriksaanRanap'];
     }
 }

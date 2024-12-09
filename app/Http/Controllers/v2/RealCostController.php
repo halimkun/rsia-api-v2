@@ -59,7 +59,14 @@ class RealCostController extends Controller
                 $tarif['gabung'] = $this->getTarif($gabung->no_rawat2, $request);
             }
 
-            $tarif['total'] = collect($tarif)->sum(fn ($item) => $item ? collect($item)->sum() : 0);
+            // $tarif['total'] = collect($tarif)->sum(fn ($item) => $item ? collect($item)->sum() : 0);
+            $tarif['total'] = collect($tarif)->map(function ($item, $key) {
+                if ($key === 'retur_obat' || $key === 'potongan') {
+                    return collect($item)->flatten()->sum() * -1;
+                }
+                return collect($item)->flatten()->sum();
+            })->sum();
+
             $runningTarif[$no_rawat] = $tarif;
         }
 
@@ -70,7 +77,17 @@ class RealCostController extends Controller
 
     public function getTarif($no_rawat, Request $request)
     {
+        $tambahan = \App\Models\TambahanBiaya::where('no_rawat', $no_rawat)->sum('besar_biaya');
+        $potongan = \App\Models\PenguranganBiaya::where('no_rawat', $no_rawat)->sum('besar_pengurangan');
+        $returObat = \App\Models\DetReturJual::where('no_retur_jual', $no_rawat)->sum('subtotal');
+        $resepPulang   = \App\Models\ResepPulang::where('no_rawat', $no_rawat)->sum('total');
+
         return [
+            'retur_obat'            => $returObat,
+            'potongan'              => $potongan,
+            'tambahan'              => $tambahan,
+            'resep_pulang'          => $resepPulang,
+
             'detail_pemberian_obat' => (new \App\Http\Resources\Pasien\Tarif\TarifDetailPemberianObat($no_rawat))->toArray($request),
             'kamar_inap'            => (new \App\Http\Resources\Pasien\Tarif\TarifKamarInap($no_rawat))->toArray($request),
             'operasi'               => (new \App\Http\Resources\Pasien\Tarif\TarifOperasi($no_rawat))->toArray($request),
@@ -82,7 +99,6 @@ class RealCostController extends Controller
             'rawat_jalan_dr_pr'     => (new \App\Http\Resources\Pasien\Tarif\TarifRawatJalanDrPr($no_rawat))->toArray($request),
             'rawat_jalan_pr'        => (new \App\Http\Resources\Pasien\Tarif\TarifRawatJalanPr($no_rawat))->toArray($request),
             'rawat_jalan_dr'        => (new \App\Http\Resources\Pasien\Tarif\TarifRawatJalanDr($no_rawat))->toArray($request),
-            // tambahan_biaya
         ];
     }
 }

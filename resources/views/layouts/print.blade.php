@@ -18,21 +18,6 @@
     </style>
 
     @stack('styles')
-
-    {{-- <style>
-        @page {
-            /* meaning top, right, bottom, left */
-            margin: 100px 50px 50px 50px; /* Default margins for all pages */
-        }
-
-        @page :first {
-            margin-top: 50px; /* Custom margin for the first page */
-        }
-
-        header { position: fixed; top: -10px; left: 0px; right: 0px; height: 50px; max-height: min-content !important; }
-        footer { position: fixed; bottom: -60px; left: 0px; right: 0px; background-color: lightblue; height: 50px; }
-    </style> --}}
-    
 </head>
 
 <body class="antialiased" style="font-family: 'Garamond', serif;">

@@ -2,30 +2,34 @@
 
 namespace App\Http\Controllers\v2;
 
+use App\Helpers\ApiResponse;
+use App\Helpers\SafeAccess;
 use App\Http\Controllers\Controller;
 use Halim\EKlaim\Builders\BodyBuilder;
-use Halim\EKlaim\Services\EklaimService;
 use Halim\EKlaim\Controllers\GroupKlaimController;
+use Halim\EKlaim\Services\EklaimService;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class KlaimController extends Controller
 {
     /**
      * new klaim method
-     * 
+     *
      * @param \Halim\EKlaim\Http\Requests\NewKlaimRequest $request
-     * 
+     *
      * @return \Illuminate\Http\JsonResponse
      * */
     public function new(\Halim\EKlaim\Http\Requests\NewKlaimRequest $request)
     {
         BodyBuilder::setMetadata('new_claim');
         BodyBuilder::setData([
-            "nomor_sep"     => $request->nomor_sep,
-            "nomor_kartu"   => $request->nomor_kartu,
-            "nomor_rm"      => $request->nomor_rm,
-            "nama_pasien"   => $request->nama_pasien,
-            "tgl_lahir"     => $request->tgl_lahir,
-            "gender"        => $request->gender
+            "nomor_sep"   => $request->nomor_sep,
+            "nomor_kartu" => $request->nomor_kartu,
+            "nomor_rm"    => $request->nomor_rm,
+            "nama_pasien" => $request->nama_pasien,
+            "tgl_lahir"   => $request->tgl_lahir,
+            "gender"      => $request->gender,
         ]);
 
         $response = EklaimService::send(BodyBuilder::prepared());
@@ -40,11 +44,11 @@ class KlaimController extends Controller
                 $response_data->response->hospital_admission_id
             );
         } else {
-            \Log::channel(config('eklaim.log_channel'))->error("Error while creating new klaim", json_decode(json_encode($response->getData()), true));
+            Log::channel(config('eklaim.log_channel'))->error("NEW KLAIM ERROR", json_decode(json_encode($response->getData()), true));
 
             BodyBuilder::setMetadata('get_claim_data');
             BodyBuilder::setData([
-                "nomor_sep" => $request->nomor_sep
+                "nomor_sep" => $request->nomor_sep,
             ]);
 
             $klaim_data = EklaimService::send(BodyBuilder::prepared());
@@ -59,112 +63,197 @@ class KlaimController extends Controller
             );
         }
 
-        return $response;
+        return $response_data ?? $response;
     }
 
     /**
      * set klaim data method
-     * 
+     *
      * @param string $sep
      * @param \Halim\EKlaim\Http\Requests\SetKlaimDataRequest $request
-     * 
+     *
      * @return \Illuminate\Http\JsonResponse
      * */
     public function set($sep, \Halim\EKlaim\Http\Requests\SetKlaimDataRequest $request)
     {
         // ==================================================== NEW KLAIM PROCESS
-        
-        if (!\App\Models\InacbgKlaimBaru2::where('no_sep', $sep)->exists()) {
-            $bridging_sep = \App\Models\BridgingSep::with('pasien')->where('no_sep', $sep)->first();
-            $this->new(new \Halim\EKlaim\Http\Requests\NewKlaimRequest([
-                'nomor_sep'     => $sep,
-                'nomor_kartu'   => $bridging_sep->no_kartu,
-                'nomor_rm'      => $bridging_sep->pasien->no_rkm_medis,
-                'no_rawat'      => $bridging_sep->no_rawat,
-                'nama_pasien'   => $bridging_sep->pasien->nm_pasien,
-                'tgl_lahir'     => $bridging_sep->pasien->tgl_lahir,
-                'gender'        => $bridging_sep->pasien->jk
-            ]));
-        }
+
+        // if (!\App\Models\InacbgKlaimBaru2::where('no_sep', $sep)->exists()) {
+        $bridging_sep = \App\Models\BridgingSep::with('pasien')->where('no_sep', $sep)->first();
+        $this->new(new \Halim\EKlaim\Http\Requests\NewKlaimRequest([
+            'nomor_sep'   => $sep,
+            'nomor_kartu' => $bridging_sep->no_kartu,
+            'nomor_rm'    => $bridging_sep->pasien->no_rkm_medis,
+            'no_rawat'    => $bridging_sep->no_rawat,
+            'nama_pasien' => $bridging_sep->pasien->nm_pasien,
+            'tgl_lahir'   => $bridging_sep->pasien->tgl_lahir,
+            'gender'      => $bridging_sep->pasien->jk,
+        ]));
+        // }
 
         // ==================================================== PARSE DATA
 
-        // random no_ik from rsia_coder_nik
         $required = [
-            "nomor_sep"     => $sep,
-            "coder_nik"     => $request->coder_nik ?? \App\Models\RsiaCoderNik::all()->random()->no_ik,
-            "payor_id"      => $request->payor_id,
-            "payor_cd"      => $request->payor_cd
+            "nomor_sep" => $sep,
+            // "coder_nik"     => $request->coder_nik ?? \App\Models\RsiaCoderNik::all()->random()->no_ik,
+            "coder_nik" => "3326105603750002",
+            "payor_id"  => $request->payor_id,
+            "payor_cd"  => $request->payor_cd,
         ];
 
+        Log::info("Set klaim data", [
+            "sep"  => $sep,
+            "data" => \Halim\EKlaim\Helpers\ClaimDataParser::parse($request),
+        ]);
+
         $data = array_merge($required, \Halim\EKlaim\Helpers\ClaimDataParser::parse($request));
+
+        // [0]. Re-Edit Klaim
+        $this->reEdit($sep);
+
+        // [1]. Set claim data
+        usleep(rand(500, 2000) * 1000);
 
         BodyBuilder::setMetadata('set_claim_data', ["nomor_sep" => $sep]);
         BodyBuilder::setData($data);
 
-        return EklaimService::send(BodyBuilder::prepared())->then(function ($response) use ($sep, $data) {
-            \Log::channel(config('eklaim.log_channel'))->info("Set klaim data success", [
+        EklaimService::send(BodyBuilder::prepared())->then(function ($response) use ($sep, $data) {
+            Log::channel(config('eklaim.log_channel'))->info("SET KLAIM DATA", [
                 "sep"      => $sep,
                 "data"     => json_decode(json_encode(BodyBuilder::prepared()), true),
-                "response" => $response
+                "response" => $response,
             ]);
 
-            // ==================================================== GROUPING STAGE 1 & 2
-            $group = new GroupKlaimController();
-
-            // Grouping stage 1
-            $gr1 = $group->stage1(new \Halim\EKlaim\Http\Requests\GroupingStage1Request(["nomor_sep" => $sep]))->then(function ($response) use ($sep) {
-                \Log::channel(config('eklaim.log_channel'))->info("Grouping stage 1 success", [
-                    "sep"      => $sep,
-                ]);
-            });
-            
-            $hasilGrouping = $gr1->getData();
-            if (isset($hasilGrouping->special_cmg_option)) {
-                $special_cmg_option_code = array_map(function ($item) {
-                    return $item->code;
-                }, $hasilGrouping->special_cmg_option);
-
-                $special_cmg_option_code = implode("#", $special_cmg_option_code);
-                
-                // Grouping stage 2
-                $gr2 = $group->stage2(new \Halim\EKlaim\Http\Requests\GroupingStage2Request(["nomor_sep" => $sep, "special_cmg" => $special_cmg_option_code ?? '']))->then(function ($response) use ($sep, $special_cmg_option_code) {
-                    \Log::channel(config('eklaim.log_channel'))->info("Grouping stage 2 success", [
-                        "sep" => $sep,
-                        "special_cmg" => $special_cmg_option_code ?? ''
-                    ]);
-                });
-                
-                $hasilGrouping = $gr2->getData();
-            }
-            // ==================================================== END OF GROUPING STAGE 1 & 2
-
             // ==================================================== SAVE DATAS
+
             $this->saveDiagnosaAndProcedures($data);
             $this->saveChunksData($data);
+
             // ==================================================== END OF SAVE DATAS
-
-            try {
-                $groupingData = [
-                    "no_sep"    => $sep,
-                    "code_cbg"  => $hasilGrouping->response->cbg->code,
-                    "deskripsi" => $hasilGrouping->response->cbg->description,
-                    "tarif"     => $hasilGrouping->response->cbg->tariff
-                ];
-
-                \Illuminate\Support\Facades\DB::transaction(function () use ($sep,  $groupingData) {
-                    \App\Models\InacbgGropingStage12::updateOrCreate(['no_sep' => $sep], $groupingData);
-                });
-
-                \Log::channel(config('eklaim.log_channel'))->info("Data inserted to inacbg_grouping_stage12", $groupingData);
-            } catch (\Throwable $th) {
-                \Log::channel(config('eklaim.log_channel'))->error("Error while inserting data to inacbg_grouping_stage12", [
-                    "error" => $th->getMessage()
-                ]);
-            }
-
-            return $response;
         });
+
+        // [2]. Grouping stage 1 & 2
+        usleep(rand(500, 2000) * 1000);
+
+        $hasilGrouping = $this->groupStages($sep);
+        $responseCode  = SafeAccess::object($hasilGrouping, 'response->cbg->code');
+
+        if (SafeAccess::object($hasilGrouping, "metadata->error_no")) {
+            return ApiResponse::error(SafeAccess::object($hasilGrouping, "metadata->error_no") . " : " . SafeAccess::object($hasilGrouping, "metadata->message"), SafeAccess::object($hasilGrouping, "metadata->code"));
+        }
+
+        // cekNaikKelas
+        $this->cekNaikKelas($sep, $hasilGrouping);
+
+        // [3]. Final Klaim
+        usleep(rand(500, 2000) * 1000);
+        $this->finalClaim($sep);
+
+        if (SafeAccess::object($hasilGrouping, 'metadata->code') == 200) {
+            Log::channel(config('eklaim.log_channel'))->info("HASIL", ["grouping" => $hasilGrouping, "response" => $responseCode]);
+        } else {
+            Log::channel(config('eklaim.log_channel'))->error("HASIL", ["grouping" => $hasilGrouping, "response" => $responseCode]);
+        }
+
+        if ($responseCode && (\Illuminate\Support\Str::startsWith($responseCode, 'X') || \Illuminate\Support\Str::startsWith($responseCode, 'x'))) {
+            return ApiResponse::error($hasilGrouping->response->cbg->code . " : " . $hasilGrouping->response->cbg->description, 500);
+        }
+
+        return ApiResponse::successWithData($hasilGrouping->response, "Grouping Berhasil dilakukan");
+    }
+
+    public function reEdit(String $sep)
+    {
+        BodyBuilder::setMetadata('reedit_claim');
+        BodyBuilder::setData(["nomor_sep" => $sep]);
+
+        EklaimService::send(BodyBuilder::prepared())->then(function ($response) use ($sep) {
+            Log::channel(config('eklaim.log_channel'))->info("RE-EDIT", [
+                "sep"      => $sep,
+                "response" => $response,
+            ]);
+        });
+    }
+
+    public function finalClaim(String $sep)
+    {
+        BodyBuilder::setMetadata('claim_final');
+        BodyBuilder::setData([
+            "nomor_sep" => $sep,
+            "coder_nik" => '3326105603750002',
+        ]);
+
+        EklaimService::send(BodyBuilder::prepared())->then(function ($response) use ($sep) {
+            if (SafeAccess::object($response, 'metadata->code') == 200) {
+                Log::channel(config('eklaim.log_channel'))->info("FINAL", ["sep" => $sep, "response" => $response]);
+            } else {
+                Log::channel(config('eklaim.log_channel'))->error("FINAL", ["sep" => $sep, "response" => $response]);
+            }
+        });
+    }
+
+    /**
+     * get klaim data method
+     *
+     * method to get klaim data from eklaim service and save it to our database
+     *
+     * @param string $sep
+     *
+     * @return \Illuminate\Http\JsonResponse
+     * */
+    public function sync($sep)
+    {
+        BodyBuilder::setMetadata('get_claim_data');
+        BodyBuilder::setData(["nomor_sep" => $sep]);
+
+        $response = EklaimService::send(BodyBuilder::prepared());
+
+        // Pastikan response berhasil (status code 200)
+        if ($response->getStatusCode() !== 200) {
+            return $this->logAndReturnError("SYNC - Error while getting klaim data", $response);
+        }
+
+        $responseData = SafeAccess::object($response->getData(), "response->data");
+        if (!$responseData) {
+            return $this->logAndReturnError("SYNC - Error while getting klaim data", $response);
+        }
+
+        $cbg = SafeAccess::object($responseData, "grouper->response->cbg");
+        if (!$cbg) {
+            return $this->logAndReturnError("SYNC - Error while getting klaim data", $response);
+        }
+
+        $groupingData = [
+            'no_sep'    => $sep,
+            'code_cbg'  => $cbg->code ?? null,
+            'deskripsi' => $cbg->description ?? null,
+            'tarif'     => $cbg->tariff ?? null,
+        ];
+
+        // Melakukan transaksi penyimpanan data ke database
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($sep, $groupingData) {
+                \App\Models\InacbgGropingStage12::where('no_sep', $sep)->delete();
+                \App\Models\InacbgGropingStage12::create($groupingData);
+            }, 5);
+
+            Log::channel(config('eklaim.log_channel'))->info("SYNC - inacbg_grouping_stage12", $groupingData);
+            return ApiResponse::successWithData($responseData, "Grouping Berhasil dilakukan");
+        } catch (\Throwable $th) {
+            Log::channel(config('eklaim.log_channel'))->error("SYNC - inacbg_grouping_stage12", [
+                "error" => $th->getMessage(),
+            ]);
+            return ApiResponse::error("Error while inserting data to inacbg_grouping_stage12", 500);
+        }
+    }
+
+    /**
+     * Helper method untuk log dan kembalikan error.
+     */
+    protected function logAndReturnError($message, $response)
+    {
+        Log::channel(config('eklaim.log_channel'))->error($message, json_decode(json_encode($response->getData()), true));
+        return ApiResponse::error($message, 500);
     }
 
     private function storeInacbgKlaimBaru2($no_rawat, $nomor_sep, $patient_id, $admission_id, $hospital_admission_id)
@@ -180,17 +269,17 @@ class KlaimController extends Controller
         try {
             \Illuminate\Support\Facades\DB::transaction(function () use ($dataToSave) {
                 \App\Models\InacbgKlaimBaru2::updateOrCreate([
-                    'no_sep' => $dataToSave['no_sep']
+                    'no_sep' => $dataToSave['no_sep'],
                 ], $dataToSave);
             });
 
-            \Log::channel(config('eklaim.log_channel'))->info("Update or create data to inacbg_klaim_baru2", [
-                "data"  => $dataToSave
+            Log::channel(config('eklaim.log_channel'))->info("UPDATE OR CREATE - inacbg_klaim_baru2", [
+                "data" => $dataToSave,
             ]);
         } catch (\Throwable $th) {
-            \Log::channel(config('eklaim.log_channel'))->error("Error while inserting data to inacbg_klaim_baru2", [
-                "error"    => $th->getMessage(),
-                "data"     => $dataToSave
+            Log::channel(config('eklaim.log_channel'))->error("UPDATE OR CREATE - inacbg_klaim_baru2", [
+                "error" => $th->getMessage(),
+                "data"  => $dataToSave,
             ]);
         }
     }
@@ -199,25 +288,27 @@ class KlaimController extends Controller
     {
         \Illuminate\Support\Facades\DB::transaction(function () use ($klaim_data) {
             \App\Models\RsiaGroupingChunks::updateOrCreate(['no_sep' => $klaim_data['nomor_sep']], [
-                'cara_masuk'      => $klaim_data['cara_masuk'],
+                'cara_masuk'      => $klaim_data['cara_masuk'] ?? null,
+                'sistole'         => $klaim_data['sistole'] ?? null,
+                'diastole'        => $klaim_data['diastole'] ?? null,
                 'usia_kehamilan'  => $klaim_data['persalinan']['usia_kehamilan'] ?? null,
-                'onset_kontraksi' => $klaim_data['persalinan']['onset_kontraksi'],
+                'onset_kontraksi' => $klaim_data['persalinan']['onset_kontraksi'] ?? null,
             ]);
         }, 5);
     }
 
     private function saveDiagnosaAndProcedures($klaim_data)
     {
-        $explodedDiagnosa = explode("#", $klaim_data['diagnosa']);
+        $explodedDiagnosa   = explode("#", $klaim_data['diagnosa']);
         $explodedProcedures = explode("#", $klaim_data['procedure']);
 
         $no_rawat = \App\Models\BridgingSep::where('no_sep', $klaim_data['nomor_sep'])->first()->no_rawat;
 
         if (!$no_rawat) {
-            \Log::channel(config('eklaim.log_channel'))->error("No rawat not found", [
+            Log::channel(config('eklaim.log_channel'))->error("SAVE DIAGNOSA", [
                 "no_sep"     => $klaim_data['nomor_sep'],
                 "diag"       => $explodedDiagnosa,
-                "procedures" => $explodedProcedures
+                "procedures" => $explodedProcedures,
             ]);
             return;
         }
@@ -227,28 +318,152 @@ class KlaimController extends Controller
             \App\Models\DiagnosaPasien::where('no_rawat', $no_rawat)->delete();
 
             foreach ($explodedDiagnosa as $key => $diagnosa) {
+                if (empty($diagnosa)) {
+                    continue;
+                }
+
                 \App\Models\DiagnosaPasien::create([
                     "no_rawat"    => $no_rawat,
                     "kd_penyakit" => $diagnosa,
                     "status"      => $klaim_data['jenis_rawat'] == 1 ? "Ranap" : "Ralan",
-                    "prioritas"   => $key + 1
+                    "prioritas"   => $key + 1,
                 ]);
             }
         }, 5);
-
 
         // save procedures on transaction, first delete all procedures, then insert new procedures with priority. priority is the index + 1 of the array
         \Illuminate\Support\Facades\DB::transaction(function () use ($explodedProcedures, $no_rawat, $klaim_data) {
             \App\Models\ProsedurPasien::where('no_rawat', $no_rawat)->delete();
 
             foreach ($explodedProcedures as $key => $procedure) {
+                if (empty($procedure)) {
+                    continue;
+                }
+
                 \App\Models\ProsedurPasien::create([
                     "no_rawat"  => $no_rawat,
                     "kode"      => $procedure,
                     "status"    => $klaim_data['jenis_rawat'] == 1 ? "Ranap" : "Ralan",
-                    "prioritas" => $key + 1
+                    "prioritas" => $key + 1,
                 ]);
             }
         }, 5);
+    }
+
+    private function groupStages($sep)
+    {
+        // ==================================================== GROUPING STAGE 1 & 2
+        $group = new GroupKlaimController();
+
+        // Grouping stage 1
+        $gr2 = null;
+        $gr1 = $group->stage1(new \Halim\EKlaim\Http\Requests\GroupingStage1Request(["nomor_sep" => $sep]))->then(function ($response) use ($sep) {
+            if (SafeAccess::object($response, 'metadata->code') == 200) {
+                Log::channel(config('eklaim.log_channel'))->info("GROUPPING - stage 1", ["sep" => $sep, 'response' => $response]);
+            } else {
+                Log::channel(config('eklaim.log_channel'))->error("GROUPPING - stage 1", ["sep" => $sep, 'response' => $response]);
+            }
+        });
+
+        $hasilGrouping = $gr1->getData();
+        if (isset($hasilGrouping->special_cmg_option)) {
+            $special_cmg_option_code = array_map(function ($item) {
+                return $item->code;
+            }, $hasilGrouping->special_cmg_option);
+
+            $special_cmg_option_code = implode("#", $special_cmg_option_code);
+
+            // Grouping stage 2
+            $gr2 = $group->stage2(new \Halim\EKlaim\Http\Requests\GroupingStage2Request(["nomor_sep" => $sep, "special_cmg" => $special_cmg_option_code ?? '']))->then(function ($response) use ($sep, $special_cmg_option_code) {
+                if (SafeAccess::object($response, 'metadata->code') == 200) {
+                    Log::channel(config('eklaim.log_channel'))->info("GROUPPING - stage 2", ["sep" => $sep, 'response' => $response, "special_cmg" => $special_cmg_option_code ?? '']);
+                } else {
+                    Log::channel(config('eklaim.log_channel'))->error("GROUPPING - stage 2", ["sep" => $sep, 'response' => $response, "special_cmg" => $special_cmg_option_code ?? '']);
+                }
+            });
+
+            $hasilGrouping = $gr2->getData();
+        }
+
+        // ==================================================== END OF GROUPING STAGE 1 & 2
+
+        try {
+            $groupingData = [
+                "no_sep"    => $sep,
+                "code_cbg"  => SafeAccess::object($hasilGrouping, 'response->cbg->code'),
+                "deskripsi" => SafeAccess::object($hasilGrouping, 'response->cbg->description'),
+                "tarif"     => SafeAccess::object($hasilGrouping, 'response->cbg->tariff'),
+            ];
+
+            \Illuminate\Support\Facades\DB::transaction(function () use ($sep, $groupingData) {
+                \App\Models\InacbgGropingStage12::where('no_sep', $sep)->delete();
+                \App\Models\InacbgGropingStage12::create($groupingData);
+            }, 5);
+
+            Log::channel(config('eklaim.log_channel'))->info("INSERT - inacbg_grouping_stage12", $groupingData);
+        } catch (\Throwable $th) {
+            Log::channel(config('eklaim.log_channel'))->error("INSERT - inacbg_grouping_stage12", [
+                "error" => $th->getMessage(),
+            ]);
+        }
+
+        return $hasilGrouping;
+    }
+
+    private function cekNaikKelas($sep, $groupResponse)
+    {
+        $sep = \App\Models\BridgingSep::where('no_sep', $sep)->first();
+
+        if (!$sep || $sep->jnspelayanan == 2) {
+            return;
+        }
+
+        // Periksa spesialis dokter, lanjutkan hanya jika spesialisnya kandungan
+        $regPeriksa = \App\Models\RegPeriksa::with('dokter.spesialis')->where('no_rawat', $sep->no_rawat)->first();
+        if (Str::contains(Str::lower($regPeriksa->dokter->spesialis->nm_sps), 'kandungan')) {
+            $kamarInap = \App\Models\KamarInap::where('no_rawat', $sep->no_rawat)->latest('tgl_masuk')->latest('jam_masuk')->first();
+            
+            // // Periksa kelas VIP A atau VIP B
+            // if (!Str::contains(Str::lower($kamarInap->kd_kamar), ['kandungan va', 'kandungan vb1', 'kandungan vb2'])) {
+            //    // TODO: ......
+            // }
+            
+            // Ambil tarif dan tarif alternatif kelas 1
+            $cbgTarif      = SafeAccess::object($groupResponse, 'response->cbg->tariff', 0);
+            $altTariKelas1 = SafeAccess::object(collect($groupResponse->tarif_alt)->where('kelas', 'kelas_1')->first(), 'tarif_inacbg', 0);
+            
+            if (!$altTariKelas1) {
+                return ApiResponse::error("Pasien Naik Kelas namun, alt tarif kelas tidak ditemukan", 500);
+            }
+
+            // Tentukan presentase dan hitung tarif tambahan berdasarkan kelas kamar inap
+            $presentase    = Str::contains(Str::lower($kamarInap->kd_kamar), 'kandungan va') ? 73 : 43;
+            $tambahanBiaya = $altTariKelas1 - $cbgTarif + ($altTariKelas1 * $presentase / 100);
+        } else {
+            // Ambil tarif dan tarif alternatif kelas 1
+            $cbgTarif      = SafeAccess::object($groupResponse, 'response->cbg->tariff', 0);
+            $altTariKelas1 = SafeAccess::object(collect($groupResponse->tarif_alt)->where('kelas', 'kelas_1')->first(), 'tarif_inacbg', 0);
+            
+            if (!$altTariKelas1) {
+                return ApiResponse::error("Pasien Naik Kelas namun, alt tarif kelas tidak ditemukan", 500);
+            }
+
+            // Tentukan presentase dan hitung tarif tambahan berdasarkan kelas kamar inap
+            $presentase    = 75;
+            $tambahanBiaya = $altTariKelas1 - $cbgTarif + ($altTariKelas1 * $presentase / 100);
+        }
+
+        // Simpan data naik kelas
+        \App\Models\RsiaNaikKelas::updateOrCreate(
+            ['no_sep' => $sep->no_sep], // Kondisi untuk update
+            [
+                'jenis_naik'  => "Naik " . \App\Helpers\NaikKelasHelper::getJumlahNaik($sep->klsrawat, $sep->klsnaik) . " Kelas",
+                'tarif_1'     => $altTariKelas1,
+                'tarif_2'     => $cbgTarif,
+                'presentase'  => $presentase,
+                'tarif_akhir' => $tambahanBiaya,
+                'diagnosa'    => $sep->nmdiagnosaawal,
+            ]
+        );
     }
 }

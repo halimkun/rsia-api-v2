@@ -20,7 +20,11 @@ class ShowKamarInapCollection extends ResourceCollection
         $regPeriksa = \App\Models\RegPeriksa::where('no_rawat', $this->collection->first()->no_rawat)->first();
 
         $masuk  = Carbon::parse($regPeriksa->tgl_registrasi . " " . $regPeriksa->jam_reg);
-        $keluar = Carbon::parse($this->collection->first()->tgl_keluar . " " . $this->collection->first()->jam_keluar);
+        if ($this->collection->first()->tgl_keluar == "0000-00-00" || $this->collection->first()->tgl_keluar == '00:00:00') {
+            $keluar = Carbon::now();
+        } else {
+            $keluar = Carbon::parse($this->collection->first()->tgl_keluar . " " . $this->collection->first()->jam_keluar);
+        }
 
         // Hitung selisih waktu dalam menit
         $diffMinutes = $masuk->diffInMinutes($keluar);

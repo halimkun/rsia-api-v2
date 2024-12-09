@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
  * App\Models\BridgingSep
@@ -157,16 +158,47 @@ class BridgingSep extends Model
     ];
 
     /**
+     * The attributes that are mass assignable
+     * 
+     * @var array
+     * */
+    public function scopeGetTanggalPulang($query, $noRawat)
+    {
+        return $query->where('no_rawat', $noRawat)->where('stts_pulang', '!=', 'Pindah Kamar')->first();
+    }
+
+    public function scopeHasBerkasPerawatan($query, $kode = '009')
+    {
+        return $query->whereHas('berkasPerawatan', function ($query) use ($kode) {
+            $query->where('kode', $kode);
+        });
+    }
+
+    /**
+     * Get the status_klaim that owns the BridgingSep
+     * 
+     * @var array
+     * */
+    public function status_klaim()
+    {
+        return $this->hasOne(RsiaStatusKlaim::class, 'no_sep', 'no_sep');
+    }
+
+    /**
      * Get the reg_periksa that owns the BridgingSep
      * 
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      * */
     public function reg_periksa()
     {
-        return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'tgl_registrasi', 'jam_reg', 'no_reg');
+        return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'tgl_registrasi', 'kd_dokter', 'jam_reg', 'no_reg', 'umurdaftar', 'sttsumur', 'status_poli');
     }
 
-    // dokter via reg_periksa
+    /**
+     * Get the dokter that owns the BridgingSep
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasOneThrough
+     * */
     public function dokter()
     {
         return $this->hasOneThrough(Dokter::class, RegPeriksa::class, 'no_rawat', 'kd_dokter', 'no_rawat', 'kd_dokter');
@@ -180,6 +212,16 @@ class BridgingSep extends Model
     public function kamar_inap()
     {
         return $this->belongsTo(KamarInap::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'kd_kamar', 'diagnosa_awal', 'diagnosa_akhir', 'tgl_masuk', 'tgl_keluar', 'jam_masuk', 'jam_keluar', 'lama', 'stts_pulang');
+    }
+
+    /**
+     * Get the tanggal_pulang that owns the BridgingSep
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * */
+    public function tanggal_pulang()
+    {
+        return $this->hasOne(KamarInap::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'tgl_keluar', 'jam_keluar', 'lama')->where('stts_pulang', '<>', 'Pindah Kamar');
     }
 
     /**
@@ -207,18 +249,33 @@ class BridgingSep extends Model
      * 
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
      * */
-    public function surat_kontrol()
+    public function surat_kontrol(): HasOne
     {
         return $this->hasOne(BridgingSuratKontrolBpjs::class, 'no_surat', 'noskdp');
     }
 
     /**
-     * Get the bridging_surat_kontrol_bpjs that owns the BridgingSep
+     * Get the rsia_naik_kelas that owns the BridgingSep
      * 
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
      * */
-    public function naikKelas()
+    public function naikKelas(): HasOne
     {
         return $this->hasOne(RsiaNaikKelas::class, 'no_sep', 'no_sep');
+    }
+
+    /**
+     * Get the inacbg_grouping_stage12 that owns the BridgingSep
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * */
+    public function groupStage(): HasOne
+    {
+        return $this->hasOne(InacbgGropingStage12::class, 'no_sep', 'no_sep');
+    }
+
+    public function berkasPerawatan(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(BerkasDigitalPerawatan::class, 'no_rawat', 'no_rawat');
     }
 }

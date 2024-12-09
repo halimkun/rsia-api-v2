@@ -17,9 +17,9 @@
             <table style="width: 100%; border-bottom: 1px solid #333;">
                 @foreach ([
                     'Nama Pasien' => $regPeriksa->pasien->nm_pasien,
-                    'No. RM' => $regPeriksa->no_rkm_medis,
-                    'No. Rawat' => $regPeriksa->no_rawat . "[{$regPeriksa->status_lanjut}]",
-                    'Pembiayaan' => $regPeriksa->caraBayar->png_jawab,
+                    'No. RM'      => $regPeriksa->no_rkm_medis,
+                    'No. Rawat'   => $regPeriksa->no_rawat . "[{$regPeriksa->status_lanjut}]",
+                    'Pembiayaan'  => $regPeriksa->caraBayar->png_jawab,
                 ] as $k => $v)
                     <tr>
                         <td>{{ $k }}</td>
