@@ -208,4 +208,14 @@ class Pegawai extends Model
         return $this->hasOne(SidikJari::class, 'id', 'id')
             ->select('id', DB::raw('SHA1(sidikjari) as sidikjari'));
     }
+
+    /**
+     * Jenjang jabatan data
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * */
+    public function jenjang_jabatan()
+    {
+        return $this->belongsTo(JnjJabatan::class, 'jnj_jabatan', 'kode');
+    }
 }

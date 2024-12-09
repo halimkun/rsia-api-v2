@@ -33,8 +33,8 @@ Route::middleware(['user-aes', 'claim:role,pegawai|dokter'])->group(function () 
         ->only(['show'])
         ->parameters(['undangan' => 'base64_no_surat']);
 
-    Route::get('undangan/{base64_no_surat}/notulen', [\App\Http\Controllers\v2\RsiaUndanganController::class, 'notulen'])
-        ->name('undangan.notulen');
+    Route::get('undangan/{base64_no_surat}/download', [\App\Http\Controllers\v2\RsiaUndanganController::class, 'download'])->name('undangan.download');
+    Route::get('undangan/{base64_no_surat}/notulen', [\App\Http\Controllers\v2\RsiaUndanganController::class, 'notulen'])->name('undangan.notulen');
 
     Route::resource('agenda', \App\Http\Controllers\v2\AgendaController::class)
         ->only(['index']);

@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers\v2;
 
-use App\Http\Controllers\Controller;
 use App\Models\RsiaNotulen;
-use App\Models\RsiaPenerimaUndangan;
+use App\Helpers\ApiResponse;
 use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Models\RsiaPenerimaUndangan;
 
 class RsiaUndanganController extends Controller
 {
@@ -98,6 +99,67 @@ class RsiaUndanganController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    /**
+     * Download undangan internal
+     *
+     * @param  string $base64_no_surat
+     * @return \Illuminate\Http\Response
+     */
+    public function download($base64_no_surat)
+    {
+        $noSurat = null;
+        try {
+            $noSurat = base64_decode($base64_no_surat);
+        } catch (\Throwable $th) {
+            return ApiResponse::error('Data tidak ditemukan', 404);
+        }
+
+        $penerima = \App\Models\RsiaPenerimaUndangan::where('no_surat', $noSurat)->with(['pegawai' => function ($q) {
+            $q->select('nik', 'nama', 'jbtn', 'bidang');
+        }])->get();
+
+        if ($penerima->count() == 0) {
+            return ApiResponse::error('Undangan belum memiliki penerima, setidaknya ada 1 penerima undangan', 404);
+        }
+        
+        // penerima order by pegawai nama ascending
+        $penerima = $penerima->sortBy('pegawai.nama', SORT_NATURAL | SORT_FLAG_CASE);
+
+        // reset key $penerima
+        $penerima = $penerima->values();
+        
+        $model = $penerima->first()->model;
+        $model = new $model;
+        
+        $detailUndangan = $model->with(['penanggungJawab' => function($qq) {
+            return $qq->with('jenjang_jabatan')->select('nik', 'nama', 'bidang', 'jbtn', 'jnj_jabatan');
+        }])->where('no_surat', $noSurat)->first();
+
+        $html = view('pdf.undangan.undangan', [
+            'nomor'    => $noSurat,
+            'penerima' => $penerima,
+            'undangan' => $detailUndangan,
+        ]);
+
+        // PDF
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)->setWarnings(false)->setOptions([
+            'isPhpEnabled'            => true,
+            'isRemoteEnabled'         => true,
+            'isHtml5ParserEnabled'    => true,
+            'dpi'                     => 300,
+            'defaultFont'             => 'sans-serif',
+            'isFontSubsettingEnabled' => true,
+            'isJavascriptEnabled'     => true,
+        ]);
+
+        $pdf->setOption('margin-top', 0);
+        $pdf->setOption('margin-right', 0);
+        $pdf->setOption('margin-bottom', 0);
+        $pdf->setOption('margin-left', 0);
+
+        return $pdf->stream('undangan_internal.pdf');
     }
 
     /**
