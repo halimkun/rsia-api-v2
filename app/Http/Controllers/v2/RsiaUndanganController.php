@@ -137,29 +137,39 @@ class RsiaUndanganController extends Controller
             return $qq->with('jenjang_jabatan')->select('nik', 'nama', 'bidang', 'jbtn', 'jnj_jabatan');
         }])->where('no_surat', $noSurat)->first();
 
-        $html = view('pdf.undangan.undangan', [
+        $pdf = \Mccarlosen\LaravelMpdf\Facades\LaravelMpdf::loadView('pdf.undangan.undangan', [
             'nomor'    => $noSurat,
             'penerima' => $penerima,
             'undangan' => $detailUndangan,
+        ], [], [
+            'default_font' => 'new_times',
         ]);
-
-        // PDF
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)->setWarnings(false)->setOptions([
-            'isPhpEnabled'            => true,
-            'isRemoteEnabled'         => true,
-            'isHtml5ParserEnabled'    => true,
-            'dpi'                     => 300,
-            'defaultFont'             => 'sans-serif',
-            'isFontSubsettingEnabled' => true,
-            'isJavascriptEnabled'     => true,
-        ]);
-
-        $pdf->setOption('margin-top', 0);
-        $pdf->setOption('margin-right', 0);
-        $pdf->setOption('margin-bottom', 0);
-        $pdf->setOption('margin-left', 0);
 
         return $pdf->stream('undangan_internal.pdf');
+
+        // $html = view('pdf.undangan.undangan', [
+        //     'nomor'    => $noSurat,
+        //     'penerima' => $penerima,
+        //     'undangan' => $detailUndangan,
+        // ]);
+
+        // // PDF
+        // $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadHTML($html)->setWarnings(false)->setOptions([
+        //     'isPhpEnabled'            => true,
+        //     'isRemoteEnabled'         => true,
+        //     'isHtml5ParserEnabled'    => true,
+        //     'dpi'                     => 300,
+        //     'defaultFont'             => 'sans-serif',
+        //     'isFontSubsettingEnabled' => true,
+        //     'isJavascriptEnabled'     => true,
+        // ]);
+
+        // $pdf->setOption('margin-top', 0);
+        // $pdf->setOption('margin-right', 0);
+        // $pdf->setOption('margin-bottom', 0);
+        // $pdf->setOption('margin-left', 0);
+
+        // return $pdf->stream('undangan_internal.pdf');
     }
 
     /**
