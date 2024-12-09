@@ -16,12 +16,13 @@ class PenguranganBiaya extends Model
     protected $keyType = 'string';
     
     public $incrementing = false;
-    
+  
     public $timestamps = false;
 
 
     // cast
     protected $casts = [
         'besar_pengurangan' => 'float',
+        'no_rawat'          => 'string',
     ];
 }

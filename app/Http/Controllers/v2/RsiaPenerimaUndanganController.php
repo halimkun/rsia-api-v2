@@ -5,6 +5,7 @@ namespace App\Http\Controllers\v2;
 use App\Http\Controllers\Controller;
 
 use App\Helpers\ApiResponse;
+use App\Helpers\PDFHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 
@@ -77,12 +78,12 @@ class RsiaPenerimaUndanganController extends Controller
                     'model' => \App\Models\RsiaSuratInternal::class,
                 ]);
                 break;
-            
+
             default:
                 return ApiResponse::error('Invalid data : No surat tidak valid', 'invalid_request', 400);
                 break;
         }
-        
+
         // App\\\\Models\\\\RsiaSuratInternal to App\Models\RsiaSuratInternal
         $request->merge([
             'model' => str_replace('\\\\', '\\', $request->model),
@@ -160,7 +161,7 @@ class RsiaPenerimaUndanganController extends Controller
     {
         $page = request()->get('page', 1);
         $decodedNoSurat = base64_decode($encodedNoSurat);
-        
+
         // $penerimaUndangan = \App\Models\RsiaPenerimaUndangan::where('no_surat', $decodedNoSurat)->paginate(10, ['*'], 'page', $page);
         $penerimaUndangan = \App\Models\RsiaPenerimaUndangan::where('no_surat', $decodedNoSurat)->get();
 
@@ -171,6 +172,25 @@ class RsiaPenerimaUndanganController extends Controller
 
         return new \App\Http\Resources\Undangan\Penerima\CompleteCollection($penerimaUndangan);
         // return new \App\Http\Resources\Undangan\Penerima\RealCollection($penerimaUndangan);
+    }
+
+    public function proofDownload($encodedNoSurat)
+    {
+        $decodedNoSurat = base64_decode($encodedNoSurat);
+
+        $model = $this->getModel($decodedNoSurat);
+        $surat = $model::with('penanggungJawabSimple')->where('no_surat', $decodedNoSurat)->first();
+        $penerima = \App\Models\RsiaPenerimaUndangan::with('detail')->where('no_surat', $decodedNoSurat)->get();
+        $kehadiran = \App\Models\RsiaKehadiranRapat::where('no_surat', $decodedNoSurat)->get();
+
+        $pdf = PDFHelper::generate('pdf.undangan.kehadiran', compact('surat', 'penerima', 'kehadiran'));
+
+        \Illuminate\Support\Facades\Artisan::call('cache:clear');
+
+        return response($pdf, 200, [
+            'Content-Type'        => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="proof-kehadiran-' . $decodedNoSurat . '.pdf"',
+        ]);
     }
 
     /**
@@ -205,5 +225,33 @@ class RsiaPenerimaUndanganController extends Controller
     public function destroy($encodedNoSurat)
     {
         // 
+    }
+
+    private function getModel($noSurat)
+    {
+        switch ($noSurat) {
+            case strpos($noSurat, '/A/S-RSIA/') !== false:
+                return \App\Models\RsiaSuratInternal::class;
+                break;
+            case strpos($noSurat, 'KPRT-RSIA') !== false:
+                return \App\Models\RsiaSuratInternal::class;
+                break;
+            case strpos($noSurat, 'KTKL-RSIA') !== false:
+                return \App\Models\RsiaSuratInternal::class;
+                break;
+            case strpos($noSurat, 'KOMED-RSIA') !== false:
+                return \App\Models\RsiaSuratInternal::class;
+                break;
+            case strpos($noSurat, 'PMKP-RSIA') !== false:
+                return \App\Models\RsiaSuratInternal::class;
+                break;
+            case strpos($noSurat, 'PPI-RSIA') !== false:
+                return \App\Models\RsiaSuratInternal::class;
+                break;
+
+            default:
+                return ApiResponse::error('Invalid data : No surat tidak valid', 'invalid_request', 400);
+                break;
+        }
     }
 }
