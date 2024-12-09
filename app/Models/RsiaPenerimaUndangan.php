@@ -61,10 +61,15 @@ class RsiaPenerimaUndangan extends Model
     {
         return $this->belongsTo(Pegawai::class, 'penerima', 'nik')->select('nik', 'nama', 'jbtn', 'departemen', 'bidang');
     }
-  
+
     public function pegawai()
     {
         return $this->belongsTo(Pegawai::class, 'penerima', 'nik')->select('nik', 'nama', 'jbtn', 'departemen', 'bidang');
+    }
+
+    public function petugas()
+    {
+        return $this->belongsTo(Petugas::class,  'penerima', 'nip');
     }
 
     /**
