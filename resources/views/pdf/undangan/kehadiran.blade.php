@@ -49,7 +49,7 @@
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ $item->detail->nama }}</td>
                     <td>{{ $item->detail->jbtn }}</td>
-                    <td>{{ $kehadiran->where('nik', $item->penerima)?->first()?->created_at ?? "-" }}</td>
+                    <td>{{ $kehadiran->where('nik', $item->penerima)->first()->created_at ?? "-" }}</td>
                 </tr>
             @endforeach
         </table>
