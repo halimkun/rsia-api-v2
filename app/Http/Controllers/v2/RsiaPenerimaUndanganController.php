@@ -183,14 +183,9 @@ class RsiaPenerimaUndanganController extends Controller
         $penerima = \App\Models\RsiaPenerimaUndangan::with('detail')->where('no_surat', $decodedNoSurat)->get();
         $kehadiran = \App\Models\RsiaKehadiranRapat::where('no_surat', $decodedNoSurat)->get();
 
-        $pdf = PDFHelper::generate('pdf.undangan.kehadiran', compact('surat', 'penerima', 'kehadiran'));
+        $pdf = \Mccarlosen\LaravelMpdf\Facades\LaravelMpdf::loadView('pdf.undangan.kehadiran', ['surat' => $surat, 'penerima' => $penerima, 'kehadiran' => $kehadiran]);
 
-        \Illuminate\Support\Facades\Artisan::call('cache:clear');
-
-        return response($pdf, 200, [
-            'Content-Type'        => 'application/pdf',
-            'Content-Disposition' => 'inline; filename="proof-kehadiran-' . $decodedNoSurat . '.pdf"',
-        ]);
+        return $pdf->stream('proof-kehadiran-' . $decodedNoSurat . '.pdf');
     }
 
     /**

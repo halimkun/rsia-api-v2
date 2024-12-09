@@ -174,6 +174,7 @@ return [
         Milon\Barcode\BarcodeServiceProvider::class,
 
         // Clockwork\Support\Laravel\ClockworkServiceProvider::class
+        Mccarlosen\LaravelMpdf\LaravelMpdfServiceProvider::class,
 
         /*
          * Application Service Providers...

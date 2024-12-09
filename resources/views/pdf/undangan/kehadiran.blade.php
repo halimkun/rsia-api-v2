@@ -2,49 +2,30 @@
     @push('styles')
     <style>
         @page {
-            /* size 210 mm x 330 mm */
+            header: page-header;
+            footer: page-footer;
             size: 210mm 330mm portrait;
-            margin: 100px 0px 200px 0px;
+            margin: 100px 0px 60px 0px;
         }
 
         main {
-            margin: 0px 19mm;
-        }
-
-        header {
-            position: fixed;
-            top: -100px;
-            left: 0;
-            right: 0;
-            width: 100%;
-        }
-
-        footer {
-            position: fixed;
-            bottom: -200px;
-            left: 0;
-            right: 0;
-            width: 100%;
+            margin: 0, 14mm
         }
     </style>
     @endpush
 
-    @push('header')
-    <header>
+    <htmlpageheader name="page-header">
         <img src="{{ asset('assets/images/kop-surat/header.png') }}" alt="Kop Header" />
-    </header>
-    @endpush
+    </htmlpageheader>
 
-    @push('footer')
-    <footer>
-        <img src="{{ asset('assets/images/kop-surat/footer.png') }}" alt="Kop footer" />
-    </footer>
-    @endpush
+    <htmlpagefooter name="page-footer">
+        <img src="{{ asset('assets/images/kop-surat/footer.png') }}" alt="Kop Footer" />
+    </htmlpagefooter>
 
-    <main>
+    <main class="font-normal">
         {{-- text on center --}}
         <div class="text-center">
-            <h1 class="text-2xl font-bold">BUKTI KEHADIRAN</h1>
+            <h1 class="text-xl font-bold">BUKTI KEHADIRAN</h1>
         </div>
 
         {{-- Prolog --}}
@@ -80,18 +61,18 @@
 
         {{-- daftar karyawan hadir loop $penerima --}}
         <table class="mt-4 w-full">
-            <tr class="border-b-2 font-bold p-2" style="background-color: #f0f0f0;">
-                <td class="border-b-2 px-2">No</td>
-                <td class="border-b-2 px-2">Nama</td>
-                <td class="border-b-2 px-2">Jabatan</td>
-                <td class="border-b-2 px-2">Timestamp</td>
+            <tr class="border-b-2 font-bold p-2" style="background-color: #d1d1d1;">
+                <td class="py-1 px-2" style="border: 1px solid #d1d1d1">No</td>
+                <td class="py-1 px-2" style="border: 1px solid #d1d1d1">Nama</td>
+                <td class="py-1 px-2" style="border: 1px solid #d1d1d1">Jabatan</td>
+                <td class="py-1 px-2" style="border: 1px solid #d1d1d1" width="70">Timestamp</td>
             </tr>
             @foreach ($penerima as $item)
             <tr>
-                <td class="border-b-2 px-2">{{ $loop->iteration }}.</td>
-                <td class="border-b-2 px-2">{{ $item->detail->nama }}</td>
-                <td class="border-b-2 px-2">{{ $item->detail->jbtn }}</td>
-                <td class="border-b-2 px-2">{{ $kehadiran->where('nik', $item->penerima)->first()->created_at ?? "-" }}
+                <td class="px-2 py-1" style="border-bottom: 1px solid #d1d1d1;">{{ $loop->iteration }}.</td>
+                <td class="px-2 py-1" style="border-bottom: 1px solid #d1d1d1;">{{ $item->detail->nama }}</td>
+                <td class="px-2 py-1" style="border-bottom: 1px solid #d1d1d1;">{{ $item->detail->jbtn }}</td>
+                <td class="px-2 py-1" style="border-bottom: 1px solid #d1d1d1;">{{ $kehadiran->where('nik', $item->penerima)->first()->created_at ?? "-" }}
                 </td>
             </tr>
             @endforeach
