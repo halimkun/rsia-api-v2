@@ -24,6 +24,8 @@
     @stack('header')
     
     {{ $slot }}
+
+    @stack('footer')
 </body>
 
 </html>
