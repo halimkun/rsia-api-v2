@@ -180,7 +180,7 @@ class RsiaPenerimaUndanganController extends Controller
 
         $model = $this->getModel($decodedNoSurat);
         $surat = $model::with('penanggungJawabSimple')->where('no_surat', $decodedNoSurat)->first();
-        $penerima = \App\Models\RsiaPenerimaUndangan::with('detail')->where('no_surat', $decodedNoSurat)->get();
+        $penerima = \App\Models\RsiaPenerimaUndangan::with('detail.dep')->where('no_surat', $decodedNoSurat)->get();
         $kehadiran = \App\Models\RsiaKehadiranRapat::where('no_surat', $decodedNoSurat)->get();
 
         $pdf = \Mccarlosen\LaravelMpdf\Facades\LaravelMpdf::loadView('pdf.undangan.kehadiran', ['surat' => $surat, 'penerima' => $penerima, 'kehadiran' => $kehadiran]);

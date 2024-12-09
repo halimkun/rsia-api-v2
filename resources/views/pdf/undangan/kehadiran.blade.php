@@ -71,7 +71,7 @@
             <tr>
                 <td class="px-2 py-1" style="border-bottom: 1px solid #d1d1d1;">{{ $loop->iteration }}.</td>
                 <td class="px-2 py-1" style="border-bottom: 1px solid #d1d1d1;">{{ $item->detail->nama }}</td>
-                <td class="px-2 py-1" style="border-bottom: 1px solid #d1d1d1;">{{ $item->detail->jbtn }}</td>
+                <td class="px-2 py-1" style="border-bottom: 1px solid #d1d1d1;">{{ $item->detail->dep->nama }}</td>
                 <td class="px-2 py-1" style="border-bottom: 1px solid #d1d1d1;">{{ $kehadiran->where('nik', $item->penerima)->first()->created_at ?? "-" }}
                 </td>
             </tr>

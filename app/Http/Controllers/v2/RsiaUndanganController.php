@@ -116,9 +116,7 @@ class RsiaUndanganController extends Controller
             return ApiResponse::error('Data tidak ditemukan', 404);
         }
 
-        $penerima = \App\Models\RsiaPenerimaUndangan::where('no_surat', $noSurat)->with(['pegawai' => function ($q) {
-            $q->select('nik', 'nama', 'jbtn', 'bidang');
-        }])->get();
+        $penerima = \App\Models\RsiaPenerimaUndangan::where('no_surat', $noSurat)->with(['pegawai.dep'])->get();
 
         if ($penerima->count() == 0) {
             return ApiResponse::error('Undangan belum memiliki penerima, setidaknya ada 1 penerima undangan', 404);

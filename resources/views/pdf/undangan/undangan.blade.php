@@ -78,10 +78,8 @@
             <div class="mt-6">
                 <p class="font-weight-bold"><i>Assalamu'alaikum Warahmatullahi Wabarakatuh</i></p>
                 <p style="text-indent: 50px; text-align: justify; line-height: 1.8" class="mt-3">
-                    Puji syukur kami panjatkan kepada Allah SWT atas rahmat-Nya yang melimpah. Kami bersyukur atas
-                    petunjuk-Nya yang tak
-                    pernah terputus. Semoga kita selalu berada dalam lindungan-Nya dan mendapatkan keberkahan-Nya.
-                    Aamiin. <br />
+                    Puji syukur kami panjatkan kepada Allah SWT atas rahmat-Nya yang melimpah. Kami bersyukur atas petunjuk-Nya yang tak
+                    pernah terputus. Semoga kita selalu berada dalam lindungan-Nya dan mendapatkan keberkahan-Nya. Aamiin. <br />
                     Dihomon kehadirannya pada :
                 </p>
 
@@ -156,23 +154,20 @@
             </h5>
 
             <div class="mt-4">
-                <table class="table table-sm">
+                <table class="table table-sm w-full">
                     <tr>
-                        <th class="px-2 py-1" style="background: #d1d1d1;">No.</th>
-                        <th class="px-2 py-1" style="background: #d1d1d1;">Nama</th>
-                        <th class="px-2 py-1" style="background: #d1d1d1;">Bidang</th>
-                        <th class="px-2 py-1" style="background: #d1d1d1;">Jabatan</th>
+                        <th class="px-2 py-2 text-left" style="background: #d1d1d1;">No.</th>
+                        <th class="px-2 py-2 text-left" style="background: #d1d1d1;">Nama</th>
+                        <th class="px-2 py-2 text-left" style="background: #d1d1d1;">Jabatan</th>
+                        <th class="px-2 py-2 text-left" style="background: #d1d1d1;">Departemen</th>
                     </tr>
                     <tbody>
                         @foreach ($penerima as $key => $item)
                         <tr>
                             <td class="px-2 py-2" style="border-bottom: 1px solid #d1d1d1;">{{ $key + 1 }}</td>
-                            <td class="px-2 py-2" style="border-bottom: 1px solid #d1d1d1;">{{ $item->pegawai->nama }}
-                            </td>
-                            <td class="px-2 py-2" style="border-bottom: 1px solid #d1d1d1;">{{ $item->pegawai->bidang }}
-                            </td>
-                            <td class="px-2 py-2" style="border-bottom: 1px solid #d1d1d1;">{{ $item->pegawai->jbtn }}
-                            </td>
+                            <td class="px-2 py-2" style="border-bottom: 1px solid #d1d1d1;">{{ $item->pegawai->nama }}</td>
+                            <td class="px-2 py-2" style="border-bottom: 1px solid #d1d1d1;">{{ $item->pegawai->jbtn }}</td>
+                            <td class="px-2 py-2" style="border-bottom: 1px solid #d1d1d1;">{{ $item->pegawai->dep->nama }}</td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -211,35 +206,26 @@
                         Generated automatically by system - {{ \Carbon\Carbon::now()->isoFormat('D MMMM Y HH:mm') }}
                     </small>
                 </div>
-                <table class="table table-bordered table-sm">
+                <table class="table table-bordered table-sm w-full">
                     <tr>
-                        <th class="px-2 py-1" style="background: #d1d1d1; width: 70px;">No.</th>
-                        <th class="px-2 py-1" style="background: #d1d1d1; width: 47%;">Nama</th>
-                        <th class="px-2 py-1" style="background: #d1d1d1; width: 30%;">Jabatan</th>
+                        <th class="px-2 py-1" style="background: #d1d1d1; width: 50px;">No.</th>
+                        <th class="px-2 py-1" style="background: #d1d1d1;">Nama</th>
+                        <th class="px-2 py-1" style="background: #d1d1d1;">Departemen</th>
                         <th class="px-2 py-1" style="background: #d1d1d1; width: 30%;">TTD</th>
                     </tr>
                     <tbody>
                         @foreach ($penerima as $key => $item)
                         <tr>
                             <td style="border-bottom: 1px solid #d1d1d1; padding-top: 5px; padding-bottom: 5px; border-left: 1px solid #d1d1d1;" class=" text-center">{{ $key + 1 }}.</td>
-                            <td style="border-bottom: 1px solid #d1d1d1; padding-top: 5px; padding-bottom: 5px; border-left: 1px solid #d1d1d1;" class="px-2">{{ $item->pegawai->nama }}</td>
+                            <td style="border-bottom: 1px solid #d1d1d1; padding-top: 5px; padding-bottom: 5px; border-left: 1px solid #d1d1d1;" class="px-2">
+                                <p>{{ $item->pegawai->nama }}</p>
+                            </td>
                             {{-- if in jbtn contain koordinator change to koor --}}
                             <td style="border-bottom: 1px solid #d1d1d1; padding-top: 5px; padding-bottom: 5px; border-left: 1px solid #d1d1d1;" class="px-2">
-                                @if (str_contains($item->pegawai->jbtn, 'Koordinator') || str_contains($item->pegawai->jbtn, 'koordinator'))
-                                    @if (str_contains($item->pegawai->jbtn, 'Koordinator'))
-                                        {{ str_replace('Koordinator', 'Koor', $item->pegawai->jbtn) }}
-                                    @elseif (str_contains($item->pegawai->jbtn, 'koordinator'))
-                                        {{ str_replace('koordinator', 'Koor', $item->pegawai->jbtn) }}
-                                    @endif
-                                @else
-                                    @if (strlen($item->pegawai->jbtn) > 10)
-                                        {{ ucwords(strtolower($item->pegawai->jbtn)) }}
-                                    @else
-                                        {{ strtoupper($item->pegawai->jbtn) }}
-                                    @endif
-                                @endif
+                                {{ $item->pegawai->dep->nama }}
                             </td>
                             <td style="border-bottom: 1px solid #d1d1d1; padding-top: 5px; padding-bottom: 5px; border-left: 1px solid #d1d1d1; border-right: 1px solid #d1d1d1;" class="px-2 {{ $key % 2 != 0 ? 'text-center' : '' }}">
+                                <br>
                                 <p style="width: 100%;">{{ $key + 1 }}.</p>
                             </td>
                         </tr>
