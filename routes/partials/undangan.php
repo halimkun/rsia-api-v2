@@ -16,7 +16,7 @@ Route::middleware(['user-aes', 'claim:role,pegawai|dokter'])->prefix('undangan')
 
     // add proof url to penerima
     Route::get('penerima/{base64_no_surat}/proof', [\App\Http\Controllers\v2\RsiaPenerimaUndanganController::class, 'proofDownload'])
-        ->name('penerima.proof');
+        ->name('penerima.proof'); // INFO : selesai
 
     // ==================== KEHADIRAN RAPAT
     Route::apiResource('kehadiran', \App\Http\Controllers\v2\RsiaKehadiranRapatController::class)
