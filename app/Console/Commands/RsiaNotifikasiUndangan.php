@@ -50,8 +50,9 @@ class RsiaNotifikasiUndangan extends Command
         }
 
         foreach ($suratIntetnal as $item) {
-            $petugas = $item->penerimaUndangan->pluck('petugas');
+            $petugas = $item->penerimaUndangan->pluck('petugas')->toArray();
             
+            $d = random_int(30, 90);
             foreach ($petugas as $p) {
                 if (!$this->checkValidityPhoneNumber($p['no_telp'])) {
                     continue;
@@ -72,7 +73,9 @@ class RsiaNotifikasiUndangan extends Command
                     $msg
                 )
                  ->onQueue('otp')
-                 ->delay(now()->addSeconds(random_int(10, 60)));
+                 ->delay(now()->addSeconds($d));
+
+                $d += random_int(25, 75);
             }
         }
     }
