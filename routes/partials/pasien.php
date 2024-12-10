@@ -43,8 +43,7 @@ Route::middleware(['claim:role,pegawai|dokter|pasien'])->prefix('pasien')->group
     Route::middleware(['user-aes'])->group(function () {
         // ==================== PASIEN RAWAT INAP
         Route::resource('ranap', \App\Http\Controllers\v2\PasienRawatInapController::class)->only('index');
-        Orion::resource('ranap', \App\Http\Controllers\Orion\PasienRawatInapController::class)->only('search')
-            ->parameters(['ranap' => 'base64_no_rawat']);
+        Orion::resource('ranap', \App\Http\Controllers\Orion\PasienRawatInapController::class)->only('search')->parameters(['ranap' => 'base64_no_rawat']);
 
         // ==================== PASIEN RAWAT INAP CUSTOM ROUTE
         Route::post('ranap/real-cost', [\App\Http\Controllers\v2\RealCostController::class, 'ranap'])->name('ranap.real-cost');

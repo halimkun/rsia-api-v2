@@ -31,57 +31,49 @@ class StatusKlaimSepController extends Controller
         // Extract year and month from the input
         [$year, $month] = explode('-', $request->month);
 
-        // Retrieve data grouped by jnspelayanan and status_klaim status
-        $data = \App\Models\BridgingSep::with('status_klaim')
-            ->whereHas('status_klaim') // Ensure status_klaim exists
+        $prevMonth = ($month === 1) ? 12 : $month - 1;
+        $prevYear = ($month === 1) ? $year - 1 : $year;
+
+        // Rawat Inap
+        $rj = \App\Models\BridgingSep::select('no_sep', 'jnspelayanan', 'tglsep')
+            ->where('jnspelayanan', 2)
+            ->with('status_klaim')
             ->whereYear('tglsep', $year)
             ->whereMonth('tglsep', $month)
-            ->join('rsia_status_klaim', 'bridging_sep.no_sep', '=', 'rsia_status_klaim.no_sep') // Join with the status_klaim table
-            ->select('bridging_sep.no_sep', 'bridging_sep.jnspelayanan', 'rsia_status_klaim.status') // Select from both tables
-            ->get()
-            ->groupBy(['jnspelayanan', 'status_klaim.status']); // Group by jnspelayanan and status
+            ->get();
 
-        // Format the result as needed
-        $formattedData = collect($this->jnsPelayanan)->mapWithKeys(function ($jnsPelayanan) use ($data, $year, $month) {
-            $jnsPelayanan = (int) $jnsPelayanan;
+        $d['Rawat Jalan'] = [
+            "total_sep" => $rj->count(),
+            "total_berkas_terkirim" => $this->getJumlahBerkasTerkirim(1, $year, $month),
+            "total_sep_last_month" => $this->getJumlahSep(1, $prevYear, $prevMonth),
+        ];
 
-            // jumlah sep per jnsPelayanan
-            $statusDetails['total_sep'] = $this->getJumlahSep($jnsPelayanan, $year, $month);
-            $statusDetails['total_berkas_terkirim'] = $this->getJumlahBerkasTerkirim($jnsPelayanan, $year, $month);
+        $ri_status = $rj->groupBy('status_klaim.status');
+        foreach ($this->statuses as $status) {
+            $d['Rawat Jalan']['status'][$status] = $ri_status->get($status, collect())->count();
+        }
+        
+        // Rawat Jalan
+        $ri = \App\Models\KamarInap::select('no_rawat', 'tgl_masuk', 'jam_masuk', 'tgl_keluar', 'jam_keluar')
+            ->with('sep.status_klaim')
+            ->whereHas('sep')
+            ->whereYear('tgl_keluar', $year)
+            ->whereMonth('tgl_keluar', $month)
+            ->where('stts_pulang', '!=', 'Pindah Kamar')
+            ->get();
 
-            // Menentukan bulan dan tahun untuk bulan sebelumnya
-            $prevMonth = ($month === 1) ? 12 : $month - 1;
-            $prevYear = ($month === 1) ? $year - 1 : $year;
+        $d['Rawat Inap'] = [
+            "total_sep" => $ri->count(),
+            "total_berkas_terkirim" => $this->getJumlahBerkasTerkirim(2, $year, $month),
+            "total_sep_last_month" => $this->getJumlahSep(2, $prevYear, $prevMonth),
+        ];
 
-            // Total SEP bulan sebelumnya
-            $statusDetails['total_sep_last_month'] = $this->getJumlahSep($jnsPelayanan, $prevYear, $prevMonth);
+        $rj_status = $ri->groupBy('sep.status_klaim.status');
+        foreach ($this->statuses as $status) {
+            $d['Rawat Inap']['status'][$status] = $rj_status->get($status, collect())->count();
+        }
 
-            // Prepare status group translation
-            $statusDetails['status'] = collect($this->statuses)->mapWithKeys(function ($status) use ($data, $jnsPelayanan) {
-                $status = strtolower($status);
-
-                // Get the claims for this status and jnspelayanan
-                $claims = $data->get($jnsPelayanan, collect())->get($status, collect());
-
-                // Return the count of claims for this status
-                return [
-                    $status => $claims->count()
-                ];
-            });
-
-            // Translate jnsPelayanan to readable form
-            $translatedJnsPelayanan = [
-                1 => 'Rawat Inap',
-                2 => 'Rawat Jalan'
-            ];
-
-            return [
-                $translatedJnsPelayanan[$jnsPelayanan] => $statusDetails
-            ];
-        });
-
-        // Return the data in the API response
-        return ApiResponse::successWithData($formattedData, "Data status klaim bulan $year-$month");
+        return ApiResponse::successWithData($d, "Data status klaim bulan $year-$month");
     }
 
     protected function getJumlahSep($jnsPelayanan, $year, $month)
