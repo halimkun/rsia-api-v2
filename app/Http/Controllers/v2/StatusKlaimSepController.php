@@ -35,25 +35,6 @@ class StatusKlaimSepController extends Controller
         $prevYear = ($month === 1) ? $year - 1 : $year;
 
         // Rawat Inap
-        $rj = \App\Models\BridgingSep::select('no_sep', 'jnspelayanan', 'tglsep')
-            ->where('jnspelayanan', 2)
-            ->with('status_klaim')
-            ->whereYear('tglsep', $year)
-            ->whereMonth('tglsep', $month)
-            ->get();
-
-        $d['Rawat Jalan'] = [
-            "total_sep" => $rj->count(),
-            "total_berkas_terkirim" => $this->getJumlahBerkasTerkirim(1, $year, $month),
-            "total_sep_last_month" => $this->getJumlahSep(1, $prevYear, $prevMonth),
-        ];
-
-        $ri_status = $rj->groupBy('status_klaim.status');
-        foreach ($this->statuses as $status) {
-            $d['Rawat Jalan']['status'][$status] = $ri_status->get($status, collect())->count();
-        }
-        
-        // Rawat Jalan
         $ri = \App\Models\KamarInap::select('no_rawat', 'tgl_masuk', 'jam_masuk', 'tgl_keluar', 'jam_keluar')
             ->with('sep.status_klaim')
             ->whereHas('sep')
@@ -71,6 +52,25 @@ class StatusKlaimSepController extends Controller
         $rj_status = $ri->groupBy('sep.status_klaim.status');
         foreach ($this->statuses as $status) {
             $d['Rawat Inap']['status'][$status] = $rj_status->get($status, collect())->count();
+        }
+        
+        // Rawat Jalan
+        $rj = \App\Models\BridgingSep::select('no_sep', 'jnspelayanan', 'tglsep')
+            ->where('jnspelayanan', 2)
+            ->with('status_klaim')
+            ->whereYear('tglsep', $year)
+            ->whereMonth('tglsep', $month)
+            ->get();
+
+        $d['Rawat Jalan'] = [
+            "total_sep" => $rj->count(),
+            "total_berkas_terkirim" => $this->getJumlahBerkasTerkirim(1, $year, $month),
+            "total_sep_last_month" => $this->getJumlahSep(1, $prevYear, $prevMonth),
+        ];
+
+        $ri_status = $rj->groupBy('status_klaim.status');
+        foreach ($this->statuses as $status) {
+            $d['Rawat Jalan']['status'][$status] = $ri_status->get($status, collect())->count();
         }
 
         return ApiResponse::successWithData($d, "Data status klaim bulan $year-$month");
