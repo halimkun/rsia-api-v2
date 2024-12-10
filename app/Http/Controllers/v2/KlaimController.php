@@ -112,7 +112,7 @@ class KlaimController extends Controller
         $this->reEdit($sep);
 
         // [1]. Set claim data
-        usleep(rand(500, 2000) * 1000);
+        usleep(rand(500, 1000) * 1000);
 
         BodyBuilder::setMetadata('set_claim_data', ["nomor_sep" => $sep]);
         BodyBuilder::setData($data);
@@ -133,7 +133,7 @@ class KlaimController extends Controller
         });
 
         // [2]. Grouping stage 1 & 2
-        usleep(rand(500, 2000) * 1000);
+        usleep(rand(500, 1000) * 1000);
 
         $hasilGrouping = $this->groupStages($sep);
         $responseCode  = SafeAccess::object($hasilGrouping, 'response->cbg->code');
@@ -143,10 +143,10 @@ class KlaimController extends Controller
         }
 
         // cekNaikKelas
-        $this->cekNaikKelas($sep, $hasilGrouping);
+        $this->cekNaikKelas($sep, $hasilGrouping, $request);
 
         // [3]. Final Klaim
-        usleep(rand(500, 2000) * 1000);
+        usleep(rand(500, 1000) * 1000);
         $this->finalClaim($sep);
 
         if (SafeAccess::object($hasilGrouping, 'metadata->code') == 200) {
@@ -410,11 +410,16 @@ class KlaimController extends Controller
         return $hasilGrouping;
     }
 
-    private function cekNaikKelas($sep, $groupResponse)
+    private function cekNaikKelas($sep, $groupResponse, \Halim\EKlaim\Http\Requests\SetKlaimDataRequest $request)
     {
         $sep = \App\Models\BridgingSep::where('no_sep', $sep)->first();
 
         if (!$sep || $sep->jnspelayanan == 2) {
+            return;
+        }
+        
+        // in request not has upgrade_class_ind or upgrade_class_ind == 0
+        if (!$request->has('upgrade_class_ind') || $request->upgrade_class_ind == 0) {
             return;
         }
 
@@ -422,11 +427,6 @@ class KlaimController extends Controller
         $regPeriksa = \App\Models\RegPeriksa::with('dokter.spesialis')->where('no_rawat', $sep->no_rawat)->first();
         if (Str::contains(Str::lower($regPeriksa->dokter->spesialis->nm_sps), 'kandungan')) {
             $kamarInap = \App\Models\KamarInap::where('no_rawat', $sep->no_rawat)->latest('tgl_masuk')->latest('jam_masuk')->first();
-            
-            // // Periksa kelas VIP A atau VIP B
-            // if (!Str::contains(Str::lower($kamarInap->kd_kamar), ['kandungan va', 'kandungan vb1', 'kandungan vb2'])) {
-            //    // TODO: ......
-            // }
             
             // Ambil tarif dan tarif alternatif kelas 1
             $cbgTarif      = SafeAccess::object($groupResponse, 'response->cbg->tariff', 0);
