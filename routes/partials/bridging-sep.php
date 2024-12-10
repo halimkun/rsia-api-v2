@@ -3,7 +3,7 @@
 use Orion\Facades\Orion;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['user-aes', 'custom-user', 'claim:role,pegawai'])->group(function ($router) {
+Route::middleware(['user-aes', 'custom-user', 'claim:role,pegawai|dokter'])->group(function ($router) {
     Orion::resource('sep', \App\Http\Controllers\Orion\BridgingSepController::class)->only(['search', 'show'])->parameters(['sep' => 'no_sep']);
     
     Route::get('/sep/download/{bulan}/{jenis}', [\App\Http\Controllers\v2\BerkasKlaimDownload::class, 'get']);
@@ -22,7 +22,7 @@ Route::middleware(['user-aes', 'custom-user', 'claim:role,pegawai'])->group(func
     Route::resource('/sep/{no_sep}/klaim/latest', \App\Http\Controllers\v2\HasilGroupingController::class)->only(['index']);
 });
 
-Route::middleware(['user-aes', 'custom-user', 'claim:role,pegawai'])->group(function ($router) {
+Route::middleware(['user-aes', 'custom-user', 'claim:role,pegawai|dokter'])->group(function ($router) {
     Route::get('klaim/bupel', [\App\Http\Controllers\RsiaKlaimBupelRsController::class, 'index']);
     Route::post('klaim/bupel', [\App\Http\Controllers\RsiaKlaimBupelRsController::class, 'update']);
 });
