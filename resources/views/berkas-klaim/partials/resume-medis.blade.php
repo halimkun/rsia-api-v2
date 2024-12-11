@@ -1,36 +1,4 @@
 <x-print-layout>
-    @push('styles')
-        <style>
-            @page {
-                /* meaning top, right, bottom, left */
-                margin: 175px 50px 50px 50px;
-            }
-
-            @page :first {
-                margin-top: 50px;
-                /* Custom margin for the first page */
-            }
-
-            header {
-                position: fixed;
-                top: -10px;
-                left: 0px;
-                right: 0px;
-                height: 50px;
-                max-height: min-content !important;
-            }
-
-            footer {
-                position: fixed;
-                bottom: -60px;
-                left: 0px;
-                right: 0px;
-                background-color: lightblue;
-                height: 50px;
-            }
-        </style>
-    @endpush
-
     @push('header')
         <header>
             <table class="table mb-2 w-full table-auto">
@@ -100,7 +68,7 @@
         $QRKoor = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . \App\Helpers\SafeAccess::object($ttdResume, 'nama') . '. ID : ' . \App\Helpers\SafeAccess::object($ttdResume, 'sidikjari->sidikjari');
     @endphp
 
-    <main style="margin-top: 125px;">
+    <main>
         <table class="table m-0 mt-2 w-full table-auto">
             <tr>
                 <td colspan="2" class="border p-1" style="border-color: #333;">
