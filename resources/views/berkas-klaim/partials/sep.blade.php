@@ -128,7 +128,7 @@
                     <td style="border-color: #333" class="border p-1 px-2 text-center">{{ $diagnosa->where('prioritas', 1)->first()->kd_penyakit ?? '-' }}</td>
                 </tr>
 
-                @foreach ($diagnosa->where('prioritas', '<>', 1) as $k => $d)
+                @foreach ($diagnosa->sortBy('prioritas')->where('prioritas', '<>', 1) as $k => $d)
                     <tr class="align-middle">
                         @if ($loop->first)
                             <td style="border-color: #333; width:170px; max-width: 200px" class="border p-1 px-2" rowspan="{{ $diagnosa->where('prioritas', '<>', 1)->count() }}">DIAGNOSA SEKUNDER</td>

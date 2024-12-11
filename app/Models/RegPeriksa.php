@@ -272,7 +272,7 @@ class RegPeriksa extends Model
      * */
     public function diagnosaPasien()
     {
-        return $this->hasMany(DiagnosaPasien::class, 'no_rawat', 'no_rawat');
+        return $this->hasMany(DiagnosaPasien::class, 'no_rawat', 'no_rawat')->orderBy('prioritas', 'asc');
     }
 
     /**
