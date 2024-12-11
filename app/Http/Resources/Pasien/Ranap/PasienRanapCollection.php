@@ -52,7 +52,9 @@ class PasienRanapCollection extends ResourceCollection
                     "tgl_registrasi" => $item->regPeriksa->tgl_registrasi,
                     "jam_reg" => $item->regPeriksa->jam_reg,
                     "no_rkm_medis" => $item->regPeriksa->no_rkm_medis,
-                    "status_lanjut" => $item->regPeriksa->status_lanjut
+                    "status_lanjut" => $item->regPeriksa->status_lanjut,
+                    "poliklinik" => $item->regPeriksa->poliklinik->nm_poli,
+                    "dpjp" => $item->regPeriksa->dokter->nm_dokter,
                 ] : null,
 
                 "berkas_perawatan" => $berkasPerawatan,
