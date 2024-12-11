@@ -101,10 +101,10 @@ class KlaimController extends Controller
             "payor_cd"  => $request->payor_cd,
         ];
 
-        Log::info("Set klaim data", [
-            "sep"  => $sep,
-            "data" => \Halim\EKlaim\Helpers\ClaimDataParser::parse($request),
-        ]);
+        // Log::info("Set klaim data", [
+        //     "sep"  => $sep,
+        //     "data" => \Halim\EKlaim\Helpers\ClaimDataParser::parse($request),
+        // ]);
 
         $data = array_merge($required, \Halim\EKlaim\Helpers\ClaimDataParser::parse($request));
 
@@ -422,10 +422,22 @@ class KlaimController extends Controller
         if (!$request->has('upgrade_class_ind') || $request->upgrade_class_ind == 0) {
             return;
         }
+        
+        // Jika realcost < cbg->tariff, return
+        $cdp = \Halim\EKlaim\Helpers\ClaimDataParser::parse($request);
+        $tarif_rs = $cdp['tarif_rs'];
+        $tarif_rs_sum = array_sum($tarif_rs);
+
+        if ($tarif_rs_sum < SafeAccess::object($groupResponse, 'response->cbg->tariff', 0)) {
+            return;
+        }
 
         // Periksa spesialis dokter, lanjutkan hanya jika spesialisnya kandungan
         $regPeriksa = \App\Models\RegPeriksa::with('dokter.spesialis')->where('no_rawat', $sep->no_rawat)->first();
+
+        // Jika spesialis dokter adalah kandungan
         if (Str::contains(Str::lower($regPeriksa->dokter->spesialis->nm_sps), 'kandungan')) {
+
             $kamarInap = \App\Models\KamarInap::where('no_rawat', $sep->no_rawat)->latest('tgl_masuk')->latest('jam_masuk')->first();
             
             // Ambil tarif dan tarif alternatif kelas 1
@@ -439,7 +451,9 @@ class KlaimController extends Controller
             // Tentukan presentase dan hitung tarif tambahan berdasarkan kelas kamar inap
             $presentase    = Str::contains(Str::lower($kamarInap->kd_kamar), 'kandungan va') ? 73 : 43;
             $tambahanBiaya = $altTariKelas1 - $cbgTarif + ($altTariKelas1 * $presentase / 100);
-        } else {
+
+        } else { // Jika spesialis dokter bukan kandungan
+
             // Ambil tarif dan tarif alternatif kelas 1
             $cbgTarif      = SafeAccess::object($groupResponse, 'response->cbg->tariff', 0);
             $altTariKelas1 = SafeAccess::object(collect($groupResponse->tarif_alt)->where('kelas', 'kelas_1')->first(), 'tarif_inacbg', 0);
@@ -451,6 +465,7 @@ class KlaimController extends Controller
             // Tentukan presentase dan hitung tarif tambahan berdasarkan kelas kamar inap
             $presentase    = 75;
             $tambahanBiaya = $altTariKelas1 - $cbgTarif + ($altTariKelas1 * $presentase / 100);
+            
         }
 
         // Simpan data naik kelas
