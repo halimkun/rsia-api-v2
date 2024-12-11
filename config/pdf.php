@@ -25,8 +25,15 @@ return [
     'watermark_image_alpha'    => 0.2,
     'watermark_image_size'     => 'D',
     'watermark_image_position' => 'P',
-    'custom_font_dir'          => '',
-    'custom_font_data'         => [],
+    'custom_font_dir'          => base_path('resources/fonts/'),
+    'custom_font_data'         => [
+        'tnr' => [
+            "R"  => 'times.ttf',
+            "B"  => 'timesbd.ttf',
+            "I"  => 'timesi.ttf',
+            "BI" => 'timesbi.ttf',
+        ]
+    ],
     'auto_language_detection'  => false,
     'temp_dir'                 => storage_path('app'),
     'pdfa'                     => false,
