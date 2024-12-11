@@ -42,7 +42,7 @@ class BridgingSepController extends \Orion\Http\Controllers\Controller
      */
     public function sortableBy(): array
     {
-        return ['no_rawat', 'tglsep', 'tglrujukan', 'nama_pasien'];
+        return ['no_rawat', 'tglsep', 'tglrujukan', 'nama_pasien', 'reg_periksa.tgl_registrasi', 'reg_periksa.jam_reg', 'status_klaim.status'];
     }
 
     /**

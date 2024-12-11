@@ -2530,16 +2530,16 @@
         },
         {
             "name": "halim/laravel-eklaim-api",
-            "version": "v1.0.4",
+            "version": "v1.0.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/halimkun/laravel-eklaim-api.git",
-                "reference": "6374d5917f7eb1255306a6dcc0122bcc0dd49c0c"
+                "reference": "6f251571f2c267e7e58f029323d1c4ab39aff41e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/halimkun/laravel-eklaim-api/zipball/6374d5917f7eb1255306a6dcc0122bcc0dd49c0c",
-                "reference": "6374d5917f7eb1255306a6dcc0122bcc0dd49c0c",
+                "url": "https://api.github.com/repos/halimkun/laravel-eklaim-api/zipball/6f251571f2c267e7e58f029323d1c4ab39aff41e",
+                "reference": "6f251571f2c267e7e58f029323d1c4ab39aff41e",
                 "shasum": ""
             },
             "require": {
@@ -2593,9 +2593,9 @@
             ],
             "support": {
                 "issues": "https://github.com/halimkun/laravel-eklaim-api/issues",
-                "source": "https://github.com/halimkun/laravel-eklaim-api/tree/v1.0.4"
+                "source": "https://github.com/halimkun/laravel-eklaim-api/tree/v1.0.5"
             },
-            "time": "2024-10-23T04:35:16+00:00"
+            "time": "2024-12-11T01:24:32+00:00"
         },
         {
             "name": "kreait/firebase-php",
