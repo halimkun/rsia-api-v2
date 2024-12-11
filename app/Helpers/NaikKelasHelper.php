@@ -25,6 +25,17 @@ class NaikKelasHelper
         return $data[$kelasNaik];
     }
 
+    public static function getPembiayaan($pembiayaan)
+    {
+        $data = [
+            '1' => 'Pribadi Pasien / Keluarga Pasien',
+            '2' => 'Pemberi Kerja',
+            '3' => 'Asuransi Lain',
+        ];
+
+        return $data[$pembiayaan];
+    }
+
     public static function getJumlahNaik($klsRawat, $klsNaik)
     {
         $klsRawat = (int) $klsRawat;  // sesuai dengan kelas rawat pasien

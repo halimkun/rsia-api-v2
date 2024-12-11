@@ -20,18 +20,18 @@
                     <table class="table w-full table-auto">
                         <tbody>
                             @foreach ([
-        'No. SEP' => \App\Helpers\SafeAccess::object($sep, 'no_sep', '-'),
-        'Tgl. SEP' => \App\Helpers\SafeAccess::object($sep, 'tglsep', '-'),
-        'No. Kartu' => \App\Helpers\SafeAccess::object($sep, 'no_kartu', '-'),
-        'Nama Peserta' => \App\Helpers\SafeAccess::object($sep, 'pasien->nm_pasien', '-'),
-        'Tgl. Lahir' => \App\Helpers\SafeAccess::object($sep, 'tanggal_lahir', '-'),
-        'No. Telepon' => \App\Helpers\SafeAccess::object($sep, 'notelep', '-'),
-        'Sub/Spesialis' => \App\Helpers\SafeAccess::object($sep, 'nmpolitujuan', '-'),
-        'Dokter' => \App\Helpers\SafeAccess::object($sep, 'nmdpdjp', '-'),
-        'Faskes Perujuk' => \App\Helpers\SafeAccess::object($sep, 'nmppkrujukan', '-'),
-        'Diagnosa Awal' => \App\Helpers\SafeAccess::object($sep, 'nmdiagnosaawal', '-'),
-        'Catatan' => '-',
-    ] as $col => $val)
+                                'No. SEP' => \App\Helpers\SafeAccess::object($sep, 'no_sep', '-'),
+                                'Tgl. SEP' => \App\Helpers\SafeAccess::object($sep, 'tglsep', '-'),
+                                'No. Kartu' => \App\Helpers\SafeAccess::object($sep, 'no_kartu', '-'),
+                                'Nama Peserta' => \App\Helpers\SafeAccess::object($sep, 'pasien->nm_pasien', '-'),
+                                'Tgl. Lahir' => \App\Helpers\SafeAccess::object($sep, 'tanggal_lahir', '-'),
+                                'No. Telepon' => \App\Helpers\SafeAccess::object($sep, 'notelep', '-'),
+                                'Sub/Spesialis' => \App\Helpers\SafeAccess::object($sep, 'nmpolitujuan', '-'),
+                                'Dokter' => \App\Helpers\SafeAccess::object($sep, 'nmdpdjp', '-'),
+                                'Faskes Perujuk' => \App\Helpers\SafeAccess::object($sep, 'nmppkrujukan', '-'),
+                                'Diagnosa Awal' => \App\Helpers\SafeAccess::object($sep, 'nmdiagnosaawal', '-'),
+                                'Catatan' => '-',
+                            ] as $col => $val)
                                 <tr class="align-top">
                                     <td class="text-base leading-5"><span class="text-nowrap whitespace-nowrap">{{ $col }}</span></td>
                                     <td class="text-base leading-5"><span class="px-1">:</span></td>
@@ -60,8 +60,8 @@
                                 '' => '',
                                 'Poli Perujuk' => '-',
                                 'Kelas Hak' => 'Kelas ' . \App\Helpers\SafeAccess::object($sep, 'klsrawat', '-'),
-                                'Kelas Rawat' => \App\Helpers\SafeAccess::object($sep, 'klsnaik', '-'),
-                                'Penjamin' => '',
+                                'Kelas Rawat' => $sep->klsnaik ? \App\Helpers\NaikKelasHelper::translate($sep->klsnaik) : '-',
+                                'Penjamin' => $sep->pembiayaan ? \App\Helpers\NaikKelasHelper::getPembiayaan($sep->pembiayaan) : '-',
                             ] as $col => $val)
                                 <tr class="align-top">
                                     <td class="text-base leading-5"><span class="text-nowrap whitespace-nowrap">{{ $col }}</span></td>
@@ -71,22 +71,7 @@
                                         @if ($col == '')
                                             <div class="py-1" />
                                         @else
-                                            @if ($col == 'Kelas Rawat')
-                                                @php
-                                                    $klsNaik = [
-                                                        '1' => 'VVIP',
-                                                        '2' => 'VIP',
-                                                        '3' => 'Kelas 1',
-                                                        '4' => 'Kelas 2',
-                                                        '5' => 'Kelas 3',
-                                                        '0' => 'Diatas Kelas 1',
-                                                    ];
-
-                                                    echo $klsNaik[$val] ?? '';
-                                                @endphp
-                                            @else
-                                                {{ $val }}
-                                            @endif
+                                            {{ $val }}
                                         @endif
                                     </td>
                                 </tr>
