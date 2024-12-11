@@ -15,12 +15,16 @@
         .font-dejavu {
             font-family: 'DejaVu Sans', sans-serif;
         }
+
+        body {
+            font-family: 'tnr', 'Times New Roman', Times, serif !important;
+        }
     </style>
 
     @stack('styles')
 </head>
 
-<body class="antialiased" style="font-family: 'Garamond', serif;">
+<body>
     @stack('header')
     
     {{ $slot }}
