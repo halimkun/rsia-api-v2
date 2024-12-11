@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 
 class StatusKlaimSepController extends Controller
 {
+    // 1 = Rawat Inap, 2 = Rawat Jalan
     protected $jnsPelayanan = [1, 2];
 
     protected $statuses = [
@@ -45,8 +46,8 @@ class StatusKlaimSepController extends Controller
 
         $d['Rawat Inap'] = [
             "total_sep" => $ri->count(),
-            "total_berkas_terkirim" => $this->getJumlahBerkasTerkirim(2, $year, $month),
-            "total_sep_last_month" => $this->getJumlahSep(2, $prevYear, $prevMonth),
+            "total_berkas_terkirim" => $this->getJumlahBerkasTerkirim(1, $year, $month),
+            "total_sep_last_month" => $this->getJumlahSep(1, $prevYear, $prevMonth),
         ];
 
         $rj_status = $ri->groupBy('sep.status_klaim.status');
@@ -64,8 +65,8 @@ class StatusKlaimSepController extends Controller
 
         $d['Rawat Jalan'] = [
             "total_sep" => $rj->count(),
-            "total_berkas_terkirim" => $this->getJumlahBerkasTerkirim(1, $year, $month),
-            "total_sep_last_month" => $this->getJumlahSep(1, $prevYear, $prevMonth),
+            "total_berkas_terkirim" => $this->getJumlahBerkasTerkirim(2, $year, $month),
+            "total_sep_last_month" => $this->getJumlahSep(2, $prevYear, $prevMonth),
         ];
 
         $ri_status = $rj->groupBy('status_klaim.status');
