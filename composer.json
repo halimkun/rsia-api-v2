@@ -13,6 +13,7 @@
         "barryvdh/laravel-dompdf": "^2.2",
         "carlos-meneses/laravel-mpdf": "^2.1",
         "corbosman/laravel-passport-claims": "^3.0",
+        "endroid/qr-code": "^4.6",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "halim/laravel-eklaim-api": "^1.0",
