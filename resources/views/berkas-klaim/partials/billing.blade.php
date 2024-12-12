@@ -23,11 +23,11 @@
         <div class="my-3">
             <table class="table w-full">
                 @foreach ([
-                    'No. Nota' => \App\Helpers\SafeAccess::object($nota, 'no_nota', '-'),
-                    'No. RM' => \App\Helpers\SafeAccess::object($regPeriksa, 'no_rkm_medis', '-'),
+                    'No. Nota'    => \App\Helpers\SafeAccess::object($nota, 'no_nota', '-'),
+                    'No. RM'      => \App\Helpers\SafeAccess::object($regPeriksa, 'no_rkm_medis', '-'),
                     'Nama Pasien' => \App\Helpers\SafeAccess::object($regPeriksa, 'pasien->nm_pasien', '-'),
-                    'JK / Umur' => (\Str::lower(\App\Helpers\SafeAccess::object($regPeriksa, 'pasien->jk', '')) == 'p' ? 'Perempuan' : 'Laki-laki') . ' / ' . \App\Helpers\SafeAccess::object($regPeriksa, 'umurdaftar', '-') . ' ' . \App\Helpers\SafeAccess::object($regPeriksa, 'sttsumur', '-'),
-                    'Cara Bayar' => \App\Helpers\SafeAccess::object($regPeriksa, 'caraBayar->png_jawab', '-'),
+                    'JK / Umur'   => (\Str::lower(\App\Helpers\SafeAccess::object($regPeriksa, 'pasien->jk', '')) == 'p' ? 'Perempuan' : 'Laki-laki') . ' / ' . \App\Helpers\SafeAccess::object($regPeriksa, 'umurdaftar', '-') . ' ' . \App\Helpers\SafeAccess::object($regPeriksa, 'sttsumur', '-'),
+                    'Cara Bayar'  => \App\Helpers\SafeAccess::object($regPeriksa, 'caraBayar->png_jawab', '-'),
                 ] as $key => $val)
                     <tr class="align-top">
                         <td class="text-nowrap whitespace-nowrap text-sm leading-4" style="width: 128px;">{{ $key }}</td>
@@ -40,6 +40,7 @@
                 @if (\Str::lower($regPeriksa->status_lanjut) == 'ranap')
                     @php
                         $firstRuang = $ruang->first();
+                        $lastRuang = $ruang->where('stts_pulang', '!=', 'Pindah Kamar')->last();
                     @endphp
                     
                     <tr class="align-top">
@@ -75,7 +76,7 @@
                     <td class="w-full text-sm leading-none">
                         {{ $regPeriksa->tgl_registrasi . ' ' . $regPeriksa->jam_reg }}
                         @if (\Str::lower($regPeriksa->status_lanjut) == 'ranap')
-                            <span class="font-bold"> s/d </span> {{ \App\Helpers\SafeAccess::object($firstRuang, 'tgl_keluar', '-') . ' ' . \App\Helpers\SafeAccess::object($firstRuang, 'jam_keluar', '-') }}
+                            <span class="font-bold"> s/d </span> {{ \App\Helpers\SafeAccess::object($lastRuang, 'tgl_keluar', '-') . ' ' . \App\Helpers\SafeAccess::object($lastRuang, 'jam_keluar', '-') }}
                         @endif
                     </td>
                 </tr>
