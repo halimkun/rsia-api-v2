@@ -109,6 +109,11 @@ class KlaimController extends Controller
 
         $data = array_merge($required, \Halim\EKlaim\Helpers\ClaimDataParser::parse($request));
 
+        // if in data not has nama_dokter key add it
+        if (!array_key_exists('nama_dokter', $data)) {
+            $data['nama_dokter'] = strtoupper($bridging_sep->nmdpdjp);
+        }
+
         // [0]. Re-Edit Klaim
         $this->reEdit($sep);
 
