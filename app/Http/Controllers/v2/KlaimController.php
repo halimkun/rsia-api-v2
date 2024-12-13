@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\v2;
 
 use App\Helpers\ApiResponse;
+use App\Helpers\NaikKelasHelper;
 use App\Helpers\SafeAccess;
 use App\Http\Controllers\Controller;
 use Halim\EKlaim\Builders\BodyBuilder;
@@ -417,15 +418,15 @@ class KlaimController extends Controller
         if (!$sep || $sep->jnspelayanan == 2) {
             return;
         }
-        
+
         // in request not has upgrade_class_ind or upgrade_class_ind == 0
         if (!$request->has('upgrade_class_ind') || $request->upgrade_class_ind == 0) {
             return;
         }
-        
+
         // Jika realcost < cbg->tariff, return
-        $cdp = \Halim\EKlaim\Helpers\ClaimDataParser::parse($request);
-        $tarif_rs = $cdp['tarif_rs'];
+        $cdp          = \Halim\EKlaim\Helpers\ClaimDataParser::parse($request);
+        $tarif_rs     = $cdp['tarif_rs'];
         $tarif_rs_sum = array_sum($tarif_rs);
 
         if ($tarif_rs_sum < SafeAccess::object($groupResponse, 'response->cbg->tariff', 0)) {
@@ -435,36 +436,67 @@ class KlaimController extends Controller
         // Periksa spesialis dokter, lanjutkan hanya jika spesialisnya kandungan
         $regPeriksa = \App\Models\RegPeriksa::with('dokter.spesialis')->where('no_rawat', $sep->no_rawat)->first();
 
+        // Ambil tarif dan tarif alternatif kelas 1
+        $cbgTarif      = SafeAccess::object($groupResponse, 'response->cbg->tariff', 0);
+        $altTariKelas1 = SafeAccess::object(collect($groupResponse->tarif_alt)->where('kelas', 'kelas_1')->first(), 'tarif_inacbg', 0);
+        $altTariKelas2 = SafeAccess::object(collect($groupResponse->tarif_alt)->where('kelas', 'kelas_2')->first(), 'tarif_inacbg', 0);
+
+        $kelasHak  = $sep->klsrawat == 2 ? $altTariKelas2 : ($sep->klsrawat == 3 ? $altTariKelas1 : 0);
+        $kelasNaik = $sep->klsnaik == 3 ? $altTariKelas1 : ($sep->klsnaik == 8 ? $altTariKelas1 : 0);
+
         // Jika spesialis dokter adalah kandungan
         if (Str::contains(Str::lower($regPeriksa->dokter->spesialis->nm_sps), 'kandungan')) {
 
             $kamarInap = \App\Models\KamarInap::where('no_rawat', $sep->no_rawat)->latest('tgl_masuk')->latest('jam_masuk')->first();
-            
-            // Ambil tarif dan tarif alternatif kelas 1
-            $cbgTarif      = SafeAccess::object($groupResponse, 'response->cbg->tariff', 0);
-            $altTariKelas1 = SafeAccess::object(collect($groupResponse->tarif_alt)->where('kelas', 'kelas_1')->first(), 'tarif_inacbg', 0);
-            
+
             if (!$altTariKelas1) {
                 return ApiResponse::error("Pasien Naik Kelas namun, alt tarif kelas tidak ditemukan", 500);
             }
 
-            // Tentukan presentase dan hitung tarif tambahan berdasarkan kelas kamar inap
-            $presentase    = Str::contains(Str::lower($kamarInap->kd_kamar), 'kandungan va') ? 73 : 43;
-            $tambahanBiaya = $altTariKelas1 - $cbgTarif + ($altTariKelas1 * $presentase / 100);
+            if (Str::contains(Str::lower($kamarInap->kd_kamar), 'kandungan va')) {
+                $presentase    = 73;
+                $tambahanBiaya = $kelasNaik - $kelasHak + ($kelasNaik * $presentase / 100);
+            } elseif (Str::contains(Str::lower($kamarInap->kd_kamar), 'kandungan vb')) {
+                $presentase    = 43;
+                $tambahanBiaya = $kelasNaik - $kelasHak + ($kelasNaik * $presentase / 100);
+            } else {
+                $tambahanBiaya = $kelasNaik - $kelasHak;
+            }
 
-        } else { // Jika spesialis dokter bukan kandungan
+        } else { // Jika spesialis dokter bukan kandungan (anak)
 
-            // Ambil tarif dan tarif alternatif kelas 1
-            $cbgTarif      = SafeAccess::object($groupResponse, 'response->cbg->tariff', 0);
-            $altTariKelas1 = SafeAccess::object(collect($groupResponse->tarif_alt)->where('kelas', 'kelas_1')->first(), 'tarif_inacbg', 0);
-            
             if (!$altTariKelas1) {
                 return ApiResponse::error("Pasien Naik Kelas namun, alt tarif kelas tidak ditemukan", 500);
             }
 
-            // Tentukan presentase dan hitung tarif tambahan berdasarkan kelas kamar inap
-            $presentase    = 75;
-            $tambahanBiaya = $altTariKelas1 - $cbgTarif + ($altTariKelas1 * $presentase / 100);
+            $isVip = $sep->klsnaik == 8;
+            if ($isVip) {
+                $selisihDenganHasilGroup = $tarif_rs_sum - $cbgTarif;
+                // Tarif Kelas Naik - Tarif Kelas Hak + (Tarif Kelas Naik * x%) = (Real Cost Rumah Sakit - cbgTariff) atau $selisihDenganHasilGroup
+
+                // 1. Sederhanakan bagian satu
+                $satu = $kelasNaik - $kelasHak;
+                // Jadi, persamaan menjadi : $satu + (Tarif Kelas Naik * x%) = $selisihDenganHasilGroup
+
+                // 2. pindahkan $satu ke sebelah kanan : (Tarif Kelas Naik * x%) = $selisihDenganHasilGroup - $satu
+                $dua = $selisihDenganHasilGroup - $satu;
+                // Jadi, persamaan menjadi : Tarif Kelas Naik * x% = $dua
+
+                // 3. cari x%
+                $x = $dua / $kelasNaik;
+                $xPersen = $x * 100;
+
+                if ($xPersen >= 75) {
+                    $xPersen = 75;
+                }
+
+                // Menghitung tarif tambahan berdasarkan persentase
+                $tambahanBiaya = $kelasNaik - $kelasHak + ($kelasNaik * $xPersen / 100);
+            } else {
+                $tambahanBiaya = $kelasNaik - $kelasHak;
+            }
+
+            $presentase = $xPersen ?? 0;
             
         }
 
@@ -473,8 +505,8 @@ class KlaimController extends Controller
             ['no_sep' => $sep->no_sep], // Kondisi untuk update
             [
                 'jenis_naik'  => "Naik " . \App\Helpers\NaikKelasHelper::getJumlahNaik($sep->klsrawat, $sep->klsnaik) . " Kelas",
-                'tarif_1'     => $altTariKelas1,
-                'tarif_2'     => $cbgTarif,
+                'tarif_1'     => $kelasNaik,
+                'tarif_2'     => $kelasHak,
                 'presentase'  => $presentase,
                 'tarif_akhir' => $tambahanBiaya,
                 'diagnosa'    => $sep->nmdiagnosaawal,
