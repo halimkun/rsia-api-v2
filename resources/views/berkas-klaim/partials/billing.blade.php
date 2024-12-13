@@ -314,49 +314,60 @@
 
                         {{-- Retur Obat --}}
                         @if (\Str::contains(\Str::lower($kategori), ['obat', 'bhp']) && $returObat->count() > 0)
-                            <tr>
-                                <td></td>
-                                <td colspan="5" class="border-b border-t px-1 text-left text-sm leading-none" style="padding:3px 3px; padding-top: 10px; border-bottom-color: lightgray; border-top-color: #333">
-                                    <span class="font-bold">Retur Obat</span>
-                                </td>
-                            </tr>
-
-                            <?php $totalRetur = 0; ?>
-                            @foreach ($returObat as $rok => $rov)
-                                <?php $frrov = $rov->first(); ?>
+                            @if (\Str::contains($returObat->first()->map(function ($item) { return $item->no_retur_jual; })->first(), $noRawat))
                                 <tr>
                                     <td></td>
-                                    <td class="border-b px-1 text-left text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
-                                        {{ \App\Helpers\SafeAccess::object($frrov, 'obat->nama_brng') }}
-
-                                        {{-- float right --}}
-                                        <span class="float-right">:</span>
-                                    </td>
-                                    <td class="border-b px-1 text-right text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
-                                        {{ number_format(\App\Helpers\SafeAccess::object($frrov, 'h_retur', 0), 0, ',', '.') }}
-                                    </td>
-                                    <td class="border-b px-1 text-right text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
-                                        - {{ \App\Helpers\SafeAccess::object($frrov, 'jml_retur', 0) }}
-                                    </td>
-                                    <td class="border-b px-1 text-right text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
-                                        0
-                                    </td>
-                                    <td class="border-b px-1 text-right text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
-                                        - {{ number_format(\App\Helpers\SafeAccess::object($frrov, 'subtotal', 0), 0, ',', '.') }}
+                                    <td colspan="5" class="border-b border-t px-1 text-left text-sm leading-none" style="padding:3px 3px; padding-top: 10px; border-bottom-color: lightgray; border-top-color: #333">
+                                        <span class="font-bold">Retur Obat</span>
                                     </td>
                                 </tr>
 
-                                <?php $totalRetur += \App\Helpers\SafeAccess::object($frrov, 'subtotal', 0); ?>
-                            @endforeach
+                                <?php $totalRetur = 0; ?>
+                                @foreach ($returObat as $rok => $rov)
+                                    <?php $frrov = $rov->first(); ?>
+                                    <tr>
+                                        <td></td>
+                                        <td class="border-b px-1 text-left text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
+                                            {{ \App\Helpers\SafeAccess::object($frrov, 'obat->nama_brng') }}
 
-                            <tr>
-                                <td></td>
-                                <td class="px-1 py-1 text-left text-sm font-bold italic leading-none" style="padding: 3px, 3px; background-color: lightgrey" colspan="4">Total Retur Obat</td>
-                                <td class="px-1 py-1 text-right text-sm font-bold italic leading-none" style="padding: 3px, 3px; background-color: lightgrey">
-                                    - {{ number_format($totalRetur, 0, ',', '.') }}
-                                </td>
-                            </tr>
-                            <?php $totalKategori -= $totalRetur; ?>
+                                            {{-- float right --}}
+                                            <span class="float-right">:</span>
+                                        </td>
+                                        <td class="border-b px-1 text-right text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
+                                            {{ number_format(\App\Helpers\SafeAccess::object($frrov, 'h_retur', 0), 0, ',', '.') }}
+                                        </td>
+                                        <td class="border-b px-1 text-right text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
+                                            - {{ \App\Helpers\SafeAccess::object($frrov, 'jml_retur', 0) }}
+                                        </td>
+                                        <td class="border-b px-1 text-right text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
+                                            0
+                                        </td>
+                                        <td class="border-b px-1 text-right text-sm leading-none" style="padding:3px 3px; border-color: lightgray">
+                                            - {{ number_format(\App\Helpers\SafeAccess::object($frrov, 'subtotal', 0), 0, ',', '.') }}
+                                        </td>
+                                    </tr>
+
+                                    <?php $totalRetur += \App\Helpers\SafeAccess::object($frrov, 'subtotal', 0); ?>
+                                @endforeach
+
+                                <tr>
+                                    <td></td>
+                                    <td class="px-1 py-1 text-left text-sm font-bold italic leading-none" style="padding: 3px, 3px; background-color: lightgrey" colspan="4">Total Retur Obat</td>
+                                    <td class="px-1 py-1 text-right text-sm font-bold italic leading-none" style="padding: 3px, 3px; background-color: lightgrey">
+                                        - {{ number_format($totalRetur, 0, ',', '.') }}
+                                    </td>
+                                </tr>
+
+                                <?php $totalKategori -= $totalRetur; ?>
+
+                                <tr>
+                                    <td></td>
+                                    <td class="px-1 py-1 text-left text-sm font-bold italic leading-none" style="padding: 3px, 3px; background-color: lightgrey" colspan="4">Total Obat Bersih</td>
+                                    <td class="px-1 py-1 text-right text-sm font-bold italic leading-none" style="padding: 3px, 3px; background-color: lightgrey">
+                                        Rp {{ number_format($totalKategori, 0, ',', '.') }}
+                                    </td>
+                                </tr>
+                            @endif
                         @endif
 
                         {{-- gap --}}
