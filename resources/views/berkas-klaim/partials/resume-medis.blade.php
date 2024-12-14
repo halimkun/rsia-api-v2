@@ -201,12 +201,19 @@
                             <td>1. {{ $resume->prosedur_utama ?? null }}</td>
                             <td>{{ $resume->kd_prosedur_utama ?? null }}</td>
                         </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td>1. {{ $resume->prosedur_sekunder ?? null }}</td>
+                            <td>{{ $resume->kd_prosedur_sekunder ?? null }}</td>
+                        </tr>
 
-                        @for ($i = 2; $i <= 4; $i++)
+                        @for ($i = 2; $i <= 3; $i++)
                             @php
-                                $prosedur = 'prosedur_sekunder' . ($i - 1);
-                                $kd_prosedur = 'kd_prosedur_sekunder' . ($i - 1);
+                                $prosedur = 'prosedur_sekunder' . ($i);
+                                $kd_prosedur = 'kd_prosedur_sekunder' . ($i);
                             @endphp
+
                             <tr>
                                 <td></td>
                                 <td></td>
