@@ -210,8 +210,8 @@
 
                         @for ($i = 2; $i <= 3; $i++)
                             @php
-                                $prosedur = 'prosedur_sekunder' . ($i);
-                                $kd_prosedur = 'kd_prosedur_sekunder' . ($i);
+                                $prosedur = 'prosedur_sekunder' . $i;
+                                $kd_prosedur = 'kd_prosedur_sekunder' . $i;
                             @endphp
 
                             <tr>
