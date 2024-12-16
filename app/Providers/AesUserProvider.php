@@ -23,7 +23,7 @@ class AesUserProvider extends EloquentUserProvider
         return $this->newModelQuery($model)
             ->select(
                 DB::raw($aesHasher->decrypt($model->getAuthIdentifierName(), ['key' => env('MYSQL_AES_KEY_IDUSER')]) . ' as ' . $model->getAuthIdentifierName()),
-                DB::raw($aesHasher->decrypt("password", ['key' => env('MYSQL_AES_KEY_PASSWORD')]) . ' as ' . "password")
+                // DB::raw($aesHasher->decrypt("password", ['key' => env('MYSQL_AES_KEY_PASSWORD')]) . ' as ' . "password")
             )
             ->where($model->getAuthIdentifierName(), DB::raw($this->hasher->make($identifier, ['key' => env('MYSQL_AES_KEY_IDUSER')])))
             ->first();
