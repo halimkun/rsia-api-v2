@@ -66,6 +66,7 @@ class PasienRanapCollection extends ResourceCollection
                     'klsrawat' => $item->sep->klsrawat,
                     'klsnaik' => $item->sep->klsnaik,
                     'status_klaim' => $item->sep->status_klaim,
+                    'terkirim_online' => $item->sep->terkirim_online ? true : false,                  
                 ] : null,
             ];
         });

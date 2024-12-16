@@ -274,8 +274,23 @@ class BridgingSep extends Model
         return $this->hasOne(InacbgGropingStage12::class, 'no_sep', 'no_sep');
     }
 
+    /**
+     * Get the inacbg_klaim_baru2 that owns the BridgingSep
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * */
     public function berkasPerawatan(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(BerkasDigitalPerawatan::class, 'no_rawat', 'no_rawat');
+    }
+
+    /**
+     * Get the rsia_klaim_terkirim that owns the BridgingSep
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * */
+    public function terkirim_online()
+    {
+        return $this->hasOne(InacbgDataTerkirim::class, 'no_sep', 'no_sep');
     }
 }

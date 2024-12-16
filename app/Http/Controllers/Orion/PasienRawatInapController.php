@@ -97,7 +97,7 @@ class PasienRawatInapController extends Controller
      */
     public function includes(): array
     {
-        return ['regPeriksa', 'regPeriksa.poliklinik', 'pasien', 'lamaInap', 'sep', 'sep.status_klaim', 'sepSimple', 'regPeriksaSimple'];
+        return ['regPeriksa', 'regPeriksa.poliklinik', 'pasien', 'lamaInap', 'sep', 'sep.status_klaim', 'sep.terkirim_online', 'sepSimple', 'regPeriksaSimple'];
     }
 
     /**
