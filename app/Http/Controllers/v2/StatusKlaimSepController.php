@@ -37,7 +37,9 @@ class StatusKlaimSepController extends Controller
 
         // Rawat Inap
         $ri = \App\Models\KamarInap::select('no_rawat', 'tgl_masuk', 'jam_masuk', 'tgl_keluar', 'jam_keluar')
-            ->with('sep.status_klaim')
+            ->with(['sep.status_klaim', 'sep.berkasPerawatan' => function ($query) {
+                $query->where('kode', '009');
+            }])
             ->whereHas('sep')
             ->whereYear('tgl_keluar', $year)
             ->whereMonth('tgl_keluar', $month)
@@ -46,7 +48,9 @@ class StatusKlaimSepController extends Controller
 
         $d['Rawat Inap'] = [
             "total_sep" => $ri->count(),
-            "total_berkas_terkirim" => $this->getJumlahBerkasTerkirim(1, $year, $month),
+            "total_berkas_terkirim" => $ri->filter(function ($item) {
+                return $item->sep->berkasPerawatan->count() > 0;
+            })->count(),
             "total_sep_last_month" => $this->getJumlahSep(1, $prevYear, $prevMonth),
         ];
 
@@ -54,7 +58,7 @@ class StatusKlaimSepController extends Controller
         foreach ($this->statuses as $status) {
             $d['Rawat Inap']['status'][$status] = $rj_status->get($status, collect())->count();
         }
-        
+
         // Rawat Jalan
         $rj = \App\Models\BridgingSep::select('no_sep', 'jnspelayanan', 'tglsep')
             ->where('jnspelayanan', 2)
