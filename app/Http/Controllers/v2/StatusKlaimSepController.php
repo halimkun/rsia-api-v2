@@ -49,7 +49,7 @@ class StatusKlaimSepController extends Controller
         $d['Rawat Inap'] = [
             "total_sep" => $ri->count(),
             "total_berkas_terkirim" => $ri->filter(function ($item) {
-                return $item->sep->berkasPerawatan->count() > 0;
+                return $item->sep->berkasPerawatan != null;
             })->count(),
             "total_sep_last_month" => $this->getJumlahSep(1, $prevYear, $prevMonth),
         ];
