@@ -5,21 +5,22 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class InacbgKlaimBaru2 extends Model
+class InacbgDataTerkirim extends Model
 {
+
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'inacbg_klaim_baru2';
+    protected $table = 'inacbg_data_terkirim';
 
     /**
      * The primary key associated with the table.
      *
      * @var string
      */
-    protected $primaryKey = 'no_rawat';
+    protected $primaryKey = 'no_sep';
 
     /**
      * The attributes that aren't mass assignable.
@@ -55,12 +56,13 @@ class InacbgKlaimBaru2 extends Model
      * @var array
      */
     protected $casts = [
+        'no_sep' => 'string',
         'no_rawat' => 'string',
     ];
 
     /**
-     * Get the bridging sep that owns the InacbgKlaimBaru2
-     *
+     * Get the bridging sep that owns the inacbg data terkirim.
+     * 
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function bridgingSep()
@@ -69,8 +71,8 @@ class InacbgKlaimBaru2 extends Model
     }
 
     /**
-     * Get the reg periksa that owns the InacbgKlaimBaru2
-     *
+     * Get the reg periksa that owns the inacbg data terkirim.
+     * 
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function regPeriksa()

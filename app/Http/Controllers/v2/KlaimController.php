@@ -68,6 +68,38 @@ class KlaimController extends Controller
     }
 
     /**
+     * delete klaim method
+     *
+     * @param string $sep
+     *
+     * @return \Illuminate\Http\JsonResponse
+     * */
+    public function send($sep)
+    {
+        // get user from middleware custom-user
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $nik = \App\Models\RsiaCoderNik::where('nik', $user->id_user)->first();
+
+        BodyBuilder::setMetadata('send_claim_individual');
+        BodyBuilder::setData([
+            "nomor_sep" => $sep
+        ]);
+
+        return EklaimService::send(BodyBuilder::prepared())->then(function ($response) use ($sep, $nik) {
+            Log::channel(config('eklaim.log_channel'))->info("KIRIM ONLINE INDIVIDUAL", [
+                "sep"      => $sep,
+                "nik"      => $nik ? $nik->nik : null,
+                "response" => $response,
+            ]);
+
+            \App\Models\InacbgDataTerkirim::create([
+                'no_sep' => $sep,
+                'nik'    => $nik ? $nik->nik : null,
+            ]);
+        });
+    }
+
+    /**
      * set klaim data method
      *
      * @param string $sep

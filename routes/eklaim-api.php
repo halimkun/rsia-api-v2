@@ -10,17 +10,17 @@ use Halim\EKlaim\Controllers\GroupKlaimController;
 use Halim\EKlaim\Controllers\ProceduresController;
 use App\Http\Controllers\v2\KlaimController as CustomKlaimController;
 
-Route::as("e-klaim.")->middleware('api')->prefix('eklaim')->group(function () {
+Route::as("e-klaim.")->middleware(['api', 'user-aes'])->prefix('eklaim')->group(function () {
     Route::post('/new', [CustomKlaimController::class, 'new'])->name('new.claim');                          // =====> method : new_claim
     Route::post('/send', [KlaimController::class, 'sendBulk'])->name('send.claim');                         // =====> method : send_claim
     Route::post('/final', [KlaimController::class, 'final'])->name('final.claim');                          // =====> method : claim_final
-    // Route::post('/pull', [PullKlaimController::class, 'handle'])->name('pull.claim');                       // =====> method : pull_claim -- [ method sudah ditutup (Manual Web Service 5.8.3b) ]
+    // Route::post('/pull', [PullKlaimController::class, 'handle'])->name('pull.claim');                    // =====> method : pull_claim -- [ method sudah ditutup (Manual Web Service 5.8.3b) ]
     Route::post('/{sep}', [CustomKlaimController::class, 'set'])->name('set.claim.data');                   // =====> method : set_claim_data
     Route::get('/get/number', [KlaimController::class, 'generateNumber'])->name('get.claim.number');        // =====> method : generate_claim_number
     Route::get('/{sep}', [KlaimController::class, 'get'])->name('get.claim.data');                          // =====> method : get_claim_data
     Route::get('/{sep}/status', [KlaimController::class, 'getStatus'])->name('get.claim.status');           // =====> method : get_claim_status
     Route::get('/{sep}/re-edit', [KlaimController::class, 'reEdit'])->name('reedit.claim');                 // =====> method : reedit_claim
-    Route::get('/{sep}/send', [KlaimController::class, 'send'])->name('send.claim.individual');             // =====> method : send_claim_individual
+    Route::get('/{sep}/send', [CustomKlaimController::class, 'send'])->name('send.claim.individual');             // =====> method : send_claim_individual
     Route::get('/{sep}/print', [KlaimController::class, 'print'])->name('print.claim');                     // =====> method : claim_print
     Route::delete('/{sep}', [KlaimController::class, 'delete'])->name('delete.claim');                      // =====> method : delete_claim
 
