@@ -92,10 +92,10 @@ class KlaimController extends Controller
                 "response" => $response,
             ]);
 
-            \App\Models\InacbgDataTerkirim::create([
-                'no_sep' => $sep,
-                'nik'    => $nik ? $nik->nik : null,
-            ]);
+            \App\Models\InacbgDataTerkirim::updateOrCreate(
+                ['no_sep' => $sep],
+                ['nik' => $nik ? $nik->nik : null]
+            );
         });
     }
 
@@ -499,7 +499,6 @@ class KlaimController extends Controller
             } else {
                 $tambahanBiaya = $kelasNaik - $kelasHak;
             }
-
         } else { // Jika spesialis dokter bukan kandungan (anak)
 
             if (!$altTariKelas1) {
@@ -534,7 +533,6 @@ class KlaimController extends Controller
             }
 
             $presentase = $xPersen ?? 0;
-            
         }
 
         // Simpan data naik kelas
