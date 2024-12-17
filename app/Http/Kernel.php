@@ -77,6 +77,6 @@ class Kernel extends HttpKernel
         'user-aes'          => \App\Http\Middleware\UserMiddleware::class,
 
         // Custom User Middleware
-        'custom-user'       => \App\Http\Middleware\CustomUserMiddleware::class,
+        'detail-user'       => \App\Http\Middleware\UserDetailMiddleware::class,
     ];
 }

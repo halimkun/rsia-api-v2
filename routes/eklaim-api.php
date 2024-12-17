@@ -10,7 +10,7 @@ use Halim\EKlaim\Controllers\GroupKlaimController;
 use Halim\EKlaim\Controllers\ProceduresController;
 use App\Http\Controllers\v2\KlaimController as CustomKlaimController;
 
-Route::as("e-klaim.")->middleware(['api', 'user-aes'])->prefix('eklaim')->group(function () {
+Route::as("e-klaim.")->middleware(['api', 'detail-user'])->prefix('eklaim')->group(function () {
     Route::post('/new', [CustomKlaimController::class, 'new'])->name('new.claim');                          // =====> method : new_claim
     Route::post('/send', [KlaimController::class, 'sendBulk'])->name('send.claim');                         // =====> method : send_claim
     Route::post('/final', [KlaimController::class, 'final'])->name('final.claim');                          // =====> method : claim_final
