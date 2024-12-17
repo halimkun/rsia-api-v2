@@ -76,7 +76,7 @@ class KlaimController extends Controller
      * */
     public function send($sep)
     {
-        // get user from middleware custom-user
+        // get user from middleware detail-user
         $user = \Illuminate\Support\Facades\Auth::user();
         $nik = \App\Models\RsiaCoderNik::where('nik', $user->id_user)->first();
 
@@ -453,11 +453,13 @@ class KlaimController extends Controller
         $sep = \App\Models\BridgingSep::where('no_sep', $sep)->first();
 
         if (!$sep || $sep->jnspelayanan == 2) {
+            \Log::channel(config('eklaim.log_channel'))->info("SKIP CEK NAIK KELAS", ["jenis_pelayanan" => $sep->jnspelayanan]);
             return;
         }
 
         // in request not has upgrade_class_ind or upgrade_class_ind == 0
         if (!$request->has('upgrade_class_ind') || $request->upgrade_class_ind == 0) {
+            \Log::channel(config('eklaim.log_channel'))->info("SKIP CEK NAIK KELAS", ["upgrade_class_ind" => $request->upgrade_class_ind]);
             return;
         }
 
@@ -466,8 +468,11 @@ class KlaimController extends Controller
         $tarif_rs     = $cdp['tarif_rs'];
         $tarif_rs_sum = array_sum($tarif_rs);
 
-        if ($tarif_rs_sum < SafeAccess::object($groupResponse, 'response->cbg->tariff', 0)) {
-            return;
+        if (\App\Helpers\NaikKelasHelper::getJumlahNaik($sep->klsrawat, $sep->klsnaik) == 2) {
+            if ($tarif_rs_sum < SafeAccess::object($groupResponse, 'response->cbg->tariff', 0)) {
+                \Log::channel(config('eklaim.log_channel'))->info("SKIP CEK NAIK KELAS", ["tarif_rs_sum" => $tarif_rs_sum, "cbg_tariff" => SafeAccess::object($groupResponse, 'response->cbg->tariff', 0)]);
+                return;
+            }
         }
 
         // Periksa spesialis dokter, lanjutkan hanya jika spesialisnya kandungan

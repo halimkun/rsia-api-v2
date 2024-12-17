@@ -41,16 +41,16 @@ class NaikKelasHelper
         $klsRawat = (int) $klsRawat;  // sesuai dengan kelas rawat pasien
         $klsNaik  = (int) $klsNaik;   // Reference to $this->translate() function
 
-        if ($klsRawat == 2 && $klsNaik == 3) {
+        if ($klsRawat == 2 && $klsNaik == 3) { // kelas 2 naik ke kelas 1
             return 1;
         } 
         
-        if ($klsRawat == 2 && ($klsNaik == 1 || $klsNaik == 2)) {
+        if ($klsRawat == 2 && ($klsNaik == 1 || $klsNaik == 2)) { // kelas 2 naik ke vvip atau vip
             return 2;
         }
 
-        if ($klsRawat == 3 && ($klsNaik == 1 || $klsNaik == 2)) {
-            return 1;
+        if ($klsRawat == 2 && $klsNaik == 8) { // kelas 2 naik ke diatas kelas 1 (vip, vvip)
+            return 2;
         }
 
         return 0;
