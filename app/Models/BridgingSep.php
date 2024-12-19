@@ -281,7 +281,7 @@ class BridgingSep extends Model
      * */
     public function berkasPerawatan(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(BerkasDigitalPerawatan::class, 'no_rawat', 'no_rawat');
+        return $this->belongsTo(BerkasDigitalPerawatan::class, 'no_rawat', 'no_rawat')->where('kode', '009');
     }
 
     /**
