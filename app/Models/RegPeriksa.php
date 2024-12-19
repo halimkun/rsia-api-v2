@@ -185,7 +185,7 @@ class RegPeriksa extends Model
     }
 
     /**
-     * Get the poliklinik that owns the registrasi.
+     * Get the caraBayar that owns the registrasi.
      * 
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */

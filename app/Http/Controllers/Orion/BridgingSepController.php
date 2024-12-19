@@ -32,7 +32,7 @@ class BridgingSepController extends \Orion\Http\Controllers\Controller
 
     public function exposedScopes(): array
     {
-        return ['hasBerkasPerawatan'];
+        return ['hasBerkasPerawatan', 'notHasBerkasPerawatan', 'notHasStatusKlaim'];
     }
 
     /**
@@ -52,7 +52,7 @@ class BridgingSepController extends \Orion\Http\Controllers\Controller
      */
     public function filterableBy(): array
     {
-        return ['no_sep', 'no_rawat', 'klsrawat', 'nama_pasien', 'no_kartu', 'nomr', 'jnspelayanan', 'reg_periksa.tgl_registrasi', 'status_klaim.status'];
+        return ['no_sep', 'no_rawat', 'klsrawat', 'nama_pasien', 'no_kartu', 'nomr', 'jnspelayanan', 'reg_periksa.tgl_registrasi', 'status_klaim.status', 'reg_periksa.kd_poli'];
     }
 
     /**
@@ -62,7 +62,7 @@ class BridgingSepController extends \Orion\Http\Controllers\Controller
      */
     public function searchableBy(): array
     {
-        return ['no_sep', 'no_rawat', 'klsrawat', 'nama_pasien', 'no_kartu', 'nomr', 'dokter.nm_dokter'];
+        return ['no_sep', 'no_rawat', 'klsrawat', 'nama_pasien', 'no_kartu', 'nomr', 'dokter.nm_dokter', 'poliklinik.nm_poli'];
     }
 
     /**
