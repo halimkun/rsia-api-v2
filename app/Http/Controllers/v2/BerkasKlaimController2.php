@@ -1,0 +1,233 @@
+<?php
+
+namespace App\Http\Controllers\v2;
+
+
+use App\Helpers\PDFHelper;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
+
+class BerkasKlaimController2 extends Controller
+{
+    /**
+     * Ukuran kertas F4
+     *
+     * @var array
+     */
+    protected $f4 = [0, 0, 609.448, 935.432];
+
+    /**
+     * Orientasi kertas
+     *
+     * @var string
+     */
+    protected $orientation = 'portrait';
+
+
+    private function toBarcode($data)
+    {
+        $qrCode = \Endroid\QrCode\Builder\Builder::create()
+            ->writer(new \Endroid\QrCode\Writer\PngWriter())
+            ->writerOptions([])
+            ->data($data)
+            ->encoding(new \Endroid\QrCode\Encoding\Encoding('ISO-8859-1'))
+            ->errorCorrectionLevel(new \Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh())
+            ->build();
+
+        return $qrCode;
+    }
+
+    private function barcodeText($dpjp, $id_or_nik)
+    {
+        $hash = \App\Models\SidikJari::where('id', $id_or_nik)->select('id', DB::raw('SHA1(sidikjari) as sidikjari'))->first();
+
+        if ($hash) {
+            $hash = $hash->sidikjari;
+        } else {
+            $hash = Hash::make($id_or_nik);
+        }
+
+        $text     = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $dpjp . '. ID : ' . $hash;
+        $logoPath = asset('assets/images/logo.png');
+
+        $qrCode = \Endroid\QrCode\Builder\Builder::create()
+            ->writer(new \Endroid\QrCode\Writer\PngWriter())
+            ->writerOptions([])
+            ->data($text)
+            ->logoPath($logoPath)
+            ->logoResizeToWidth(100)
+            ->encoding(new \Endroid\QrCode\Encoding\Encoding('ISO-8859-1'))
+            ->errorCorrectionLevel(new \Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh())
+            ->build();
+
+
+        return $qrCode;
+    }
+
+
+
+
+    public function print($sep, Request $request)
+    {
+        $bSep              = \App\Models\BridgingSep::where('no_sep', $sep)->first();
+        $regPeriksa        = \App\Models\RegPeriksa::with(['pasien'])->where('no_rawat', $bSep->no_rawat)->first();
+        $dpjp              = \App\Models\Dokter::with('pegawai')->where('kd_dokter', $regPeriksa->kd_dokter)->first();
+
+        $pasien            = $regPeriksa->pasien;
+
+        $pdfs = [
+            $this->genSep($dpjp, $bSep, $regPeriksa, $pasien),
+            // triase Ugd
+            // asmed Ugd
+            // Resume
+            // Cppt
+            // Operasi
+            // SPRI
+            $this->genSuratRencanaKontrol($dpjp, $bSep, $regPeriksa, $pasien),
+            // pendukung [skl]
+            // catatan perawatan
+            // pendukung [surat rujukan]
+            // pendukung [usg]
+            // ...$this->genHasilLab($bSep, $regPeriksa),
+            // hasil radiologi
+            // pendukung [laborat]
+            // pendukung selain [skl, surat rujukan, usg, lab]
+            // billing
+            // inacbg klaim 
+            // naik kelas
+        ];
+
+        // +==========+==========+==========+
+
+        $pdf = PDFHelper::merge($pdfs);
+        $pdf->setFileName('berkas-klaim-' . $sep . '.pdf');
+
+        // +==========+==========+==========+
+
+        return response($pdf->stream('berkas-klaim-' . $sep . '.pdf'), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
+    }
+
+
+
+
+    /**
+     * Generate SEP PDF
+     *
+     * @param \App\Models\BridgingSep $sep
+     * @param \App\Models\RegPeriksa $regPeriksa
+     *
+     * @return \Barryvdh\DomPDF\PDF
+     */
+    public function genSep($dpjp, $sep, $regPeriksa, $pasien)
+    {
+        $diagnosa = \App\Models\DiagnosaPasien::with('penyakit')->orderBy('prioritas', 'asc')->where('no_rawat', $regPeriksa->no_rawat)->get();
+        $prosedur = \App\Models\ProsedurPasien::with('penyakit')->orderBy('prioritas', 'asc')->where('no_rawat', $regPeriksa->no_rawat)->get();
+
+        $barcodeDPJP   = $this->barcodeText($dpjp->pegawai->nama, $dpjp->pegawai->id);
+        $barcodePasien = $this->toBarcode($sep->no_kartu);
+
+        $berkasSep = PDFHelper::generate('berkas-klaim.sep', [
+            'sep'           => $sep,
+            'pasien'        => $pasien,
+            'regPeriksa'    => $regPeriksa,
+            'diagnosa'      => $diagnosa,
+            'prosedur'      => $prosedur,
+            'barcodeDPJP'   => $barcodeDPJP->getDataUri(),
+            'barcodePasien' => $barcodePasien->getDataUri(),
+        ]);
+
+        return $berkasSep;
+    }
+
+    public function genSuratRencanaKontrol($dpjp, $sep, $regPeriksa, $pasien)
+    {
+        $srk = \App\Models\BridgingSuratKontrolBpjs::where('no_surat', $sep->noskdp)->first();
+        if ($srk) {
+            $barcodeDPJP   = $this->barcodeText($dpjp->pegawai->nama, $dpjp->pegawai->id);
+
+            $kontrol = PDFHelper::generate('berkas-klaim.kontrol', [
+                'sep'         => $sep,
+                'pasien'      => $pasien,
+                'regPeriksa'  => $regPeriksa,
+                'srk'         => $srk,
+                'barcodeDPJP' => $barcodeDPJP->getDataUri()
+            ]);
+
+            return $kontrol;
+        }
+    }
+
+    public function genHasilLab($sep, $regPeriksa)
+    {
+        $labWih  = ['perujuk', 'jenisPerawatan', 'detailPeriksaLab.template'];
+        $labData = \App\Models\PeriksaLab::with($labWih)->whereIn('no_rawat', $this->getRegisterLabDouble($regPeriksa->kd_poli, $sep->no_rawat, $sep->nomr))->orderBy('tgl_periksa', 'DESC')->orderBy('jam', 'DESC')->get();
+        $lab     = $this->groupPeriksaLabData($labData);
+
+        $hasilLab = [];
+
+        foreach ($lab as $key => $value) {
+            if ($value->isEmpty()) {
+                continue;
+            }
+
+            $hasilLab[$key] = PDFHelper::generate('berkas-klaim.hasil-lab', [
+                'sep'        => $sep,
+                'regPeriksa' => $regPeriksa,
+                'lab'        => $value,
+            ]);
+        }
+
+        return $hasilLab;
+    }
+
+    /**
+     * Get the register lab double
+     *
+     * @param string $kd_poli
+     * @param string $no_rawat
+     * @param string $no_rkm_medis
+     * @return array
+     */
+    private function getRegisterLabDouble($kd_poli, $no_rawat, $no_rkm_medis)
+    {
+        // Filter kd_poli
+        $filterPoli = ['U0016', 'OPE'];
+
+        // Check if the kd_poli is in the filter
+        if (in_array($kd_poli, $filterPoli)) {
+            $registrasiData = \App\Models\RegPeriksa::where('no_rkm_medis', $no_rkm_medis)
+                ->where('no_rawat', '<=', $no_rawat)
+                ->orderBy('no_rawat', 'desc')->limit(2)
+                ->pluck('no_rawat');
+
+            return $registrasiData->toArray();
+        }
+
+        // Return the no_rawat if not in the filter
+        return [$no_rawat];
+    }
+
+    /**
+     * Group periksa lab data
+     *
+     * Group the periksa lab data by tgl_periksa and jam
+     *
+     * @param \Illuminate\Support\Collection $data
+     * @return \Illuminate\Support\Collection
+     */
+    private function groupPeriksaLabData(Collection $data): Collection
+    {
+        return $data->groupBy(function ($item) {
+            return $item->tgl_periksa . ' ' . $item->jam;
+        });
+    }
+}
