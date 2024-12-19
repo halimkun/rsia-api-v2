@@ -174,6 +174,18 @@ class BridgingSep extends Model
         });
     }
 
+    public function scopeNotHasBerkasPerawatan($query, $kode = '009')
+    {
+        return $query->whereDoesntHave('berkasPerawatan', function ($query) use ($kode) {
+            $query->where('kode', $kode);
+        });
+    }
+
+    public function scopeNotHasStatusKlaim($query)
+    {
+        return $query->whereDoesntHave('status_klaim');
+    }
+
     /**
      * Get the status_klaim that owns the BridgingSep
      * 
@@ -192,6 +204,11 @@ class BridgingSep extends Model
     public function reg_periksa()
     {
         return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'tgl_registrasi', 'kd_dokter', 'jam_reg', 'no_reg', 'umurdaftar', 'sttsumur', 'status_poli', 'kd_poli');
+    }
+
+    public function poliklinik()
+    {
+        return $this->hasOneThrough(Poliklinik::class, RegPeriksa::class, 'no_rawat', 'kd_poli', 'no_rawat', 'kd_poli');
     }
 
     /**
