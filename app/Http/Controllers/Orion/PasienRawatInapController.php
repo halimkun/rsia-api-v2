@@ -47,7 +47,7 @@ class PasienRawatInapController extends Controller
 
     public function exposedScopes(): array
     {
-        return ['hasBerkasPerawatan'];
+        return ['hasBerkasPerawatan', 'notHasBerkasPerawatan', 'notHasStatusKlaim'];
     }
 
     /**
@@ -57,7 +57,20 @@ class PasienRawatInapController extends Controller
      */
     public function filterableBy(): array
     {
-        return ['no_rawat', 'kd_kamar', 'tgl_masuk', 'tgl_keluar', 'jam_masuk', 'jam_keluar', 'stts_pulang', 'regPeriksa.tgl_registrasi', 'regPeriksa.kd_pj', 'sep.status_klaim.status'];
+        return [
+            'no_rawat', 
+            'kd_kamar', 
+            'tgl_masuk', 
+            'tgl_keluar', 
+            'jam_masuk', 
+            'jam_keluar', 
+            'stts_pulang', 
+
+            'regPeriksa.tgl_registrasi', 
+            'regPeriksa.kd_pj', 
+            
+            'sep.status_klaim.status'
+        ];
     }
 
     /**
@@ -77,7 +90,8 @@ class PasienRawatInapController extends Controller
      */
     public function aggregates(): array
     {
-        return ['pasien.nm_pasien', 'lama', 'lamaInap', 'lamaInap.lama', 'pasien.no_rkm_medis', 'pasien.jk', 'pasien.tmp_lahir', 'pasien.tgl_lahir'];
+        return [];
+        // return ['pasien.nm_pasien', 'lama', 'lamaInap', 'lamaInap.lama', 'pasien.no_rkm_medis', 'pasien.jk', 'pasien.tmp_lahir', 'pasien.tgl_lahir'];
     }
 
     /**
@@ -97,7 +111,24 @@ class PasienRawatInapController extends Controller
      */
     public function includes(): array
     {
-        return ['regPeriksa', 'regPeriksa.poliklinik', 'pasien', 'lamaInap', 'sep', 'sep.status_klaim', 'sep.terkirim_online', 'sepSimple', 'regPeriksaSimple'];
+        return [
+            'regPeriksa', 
+            
+            'pasien', 
+            
+            'lamaInap', 
+            
+            'sep',
+            
+            'sepSimple', 
+            'sepSimple.status_klaim', 
+            'sepSimple.terkirim_online', 
+            'sepSimple.berkasPerawatan', 
+            
+            'regPeriksaSimple',
+            'regPeriksaSimple.dokter', 
+            'regPeriksaSimple.poliklinik', 
+        ];
     }
 
     /**

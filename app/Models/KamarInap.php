@@ -63,13 +63,48 @@ class KamarInap extends Model
 
     public $timestamps = false;
 
-
+    /**
+     * Scope a query to only include records that have berkas perawatan.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $kode
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
     public function scopeHasBerkasPerawatan($query, $kode = '009')
     {
-        return $query->whereHas('berkas_perawatan', function ($query) use ($kode) {
+        return $query->whereHas('sepSimple.berkasPerawatan', function ($query) use ($kode) {
             $query->where('kode', $kode);
         });
     }
+
+    /**
+     * Scope a query to only include records that do not have berkas perawatan.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  string  $kode
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeNotHasBerkasPerawatan($query, $kode = '009')
+    {
+        return $query->whereDoesntHave('sepSimple.berkasPerawatan', function ($query) use ($kode) {
+            $query->where('kode', $kode);
+        });
+    }
+
+    /**
+     * Scope a query to only include records that have status klaim.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function scopeNotHasStatusKlaim($query)
+    {
+        return $query->whereDoesntHave('sepSimple.status_klaim');
+    }
+
+
+
+
 
     public function regPeriksa()
     {
@@ -83,7 +118,7 @@ class KamarInap extends Model
 
     public function regPeriksaSimple()
     {
-        return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'no_rkm_medis', 'tgl_registrasi', 'jam_reg', 'kd_poli');
+        return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'no_rkm_medis', 'kd_dokter', 'tgl_registrasi', 'jam_reg', 'kd_poli', 'status_lanjut');
     }
 
     public function pasien()
@@ -99,16 +134,11 @@ class KamarInap extends Model
 
     public function sepSimple()
     {
-        return $this->hasOne(BridgingSep::class, 'no_rawat', 'no_rawat')->select('no_sep', 'no_rawat', 'diagawal', 'klsrawat');
+        return $this->hasOne(BridgingSep::class, 'no_rawat', 'no_rawat')->select('no_sep', 'no_rawat', 'diagawal', 'klsrawat', 'klsnaik', 'nomr', 'no_kartu', 'nmdpdjp');
     }
 
     public function kamar()
     {
         return $this->belongsTo(\App\Models\Kamar::class, 'kd_kamar', 'kd_kamar')->select("kd_kamar", 'kd_bangsal', 'status');
-    }
-
-    public function berkas_perawatan()
-    {
-        return $this->hasMany(\App\Models\BerkasDigitalPerawatan::class, 'no_rawat', 'no_rawat');
     }
 }
