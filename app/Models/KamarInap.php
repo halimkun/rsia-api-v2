@@ -103,42 +103,94 @@ class KamarInap extends Model
     }
 
 
-
-
-
+    /**
+     * relation to reg periksa
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function regPeriksa()
     {
         return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat');
     }
 
+    /**
+     * relation to lama inap
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function lamaInap()
     {
         return $this->hasMany(KamarInap::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'lama');
     }
 
+    /**
+     * relation to reg periksa but only select some columns
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function regPeriksaSimple()
     {
         return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'kd_pj', 'no_rkm_medis', 'kd_dokter', 'tgl_registrasi', 'jam_reg', 'kd_poli', 'status_lanjut');
     }
 
+    /**
+     * relation to pasien
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
     public function pasien()
     {
         return $this->hasOneThrough(Pasien::class, RegPeriksa::class, 'no_rawat', 'no_rkm_medis', 'no_rawat', 'no_rkm_medis')
             ->select('pasien.no_rkm_medis', 'pasien.nm_pasien', 'pasien.jk', 'pasien.tmp_lahir', 'pasien.tgl_lahir');
     }
 
+    /**
+     * relation to bridging sep
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
     public function sep()
     {
         return $this->hasOne(BridgingSep::class, 'no_rawat', 'no_rawat');
     }
 
+    /**
+     * relation to bridging sep but only select some columns
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
     public function sepSimple()
     {
         return $this->hasOne(BridgingSep::class, 'no_rawat', 'no_rawat')->select('no_sep', 'no_rawat', 'diagawal', 'klsrawat', 'klsnaik', 'nomr', 'no_kartu', 'nmdpdjp');
     }
 
+    /**
+     * relation to kamar
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function kamar()
     {
         return $this->belongsTo(\App\Models\Kamar::class, 'kd_kamar', 'kd_kamar')->select("kd_kamar", 'kd_bangsal', 'status');
+    }
+
+    /**
+     * relation to poliklinik
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOneThrough
+     */
+    public function poliklinik()
+    {
+        return $this->hasOneThrough(Poliklinik::class, RegPeriksa::class, 'no_rawat', 'kd_poli', 'no_rawat', 'kd_poli');
+    }
+
+    /**
+     * relation to dokter
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOneThrough
+     */
+    public function dokter()
+    {
+        return $this->hasOneThrough(Dokter::class, RegPeriksa::class, 'no_rawat', 'kd_dokter', 'no_rawat', 'kd_dokter');
     }
 }

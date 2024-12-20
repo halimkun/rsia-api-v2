@@ -138,6 +138,21 @@ class PasienRawatInapController extends Controller
      */
     public function searchableBy(): array
     {
-        return ['no_rawat', 'pasien.nm_pasien', 'pasien.no_rkm_medis', 'sep.no_sep', 'regPeriksaSimple.kd_pj', 'regPeriksaSimple.no_rkm_medis', 'regPeriksaSimple.no_rawat', 'regPeriksaSimple.kd_poli'];
+        return [
+            'no_rawat', 
+            
+            'pasien.nm_pasien', 
+            'pasien.no_rkm_medis', 
+            
+            'sep.no_sep', 
+
+            'regPeriksaSimple.kd_pj', 
+            'regPeriksaSimple.no_rkm_medis', 
+            'regPeriksaSimple.no_rawat', 
+            'regPeriksaSimple.kd_poli',
+            
+            'dokter.nm_dokter',
+            'poliklinik.nm_poli',
+        ];
     }
 }
