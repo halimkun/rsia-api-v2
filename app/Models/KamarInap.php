@@ -118,7 +118,7 @@ class KamarInap extends Model
 
     public function regPeriksaSimple()
     {
-        return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'no_rkm_medis', 'kd_dokter', 'tgl_registrasi', 'jam_reg', 'kd_poli', 'status_lanjut');
+        return $this->belongsTo(RegPeriksa::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'kd_pj', 'no_rkm_medis', 'kd_dokter', 'tgl_registrasi', 'jam_reg', 'kd_poli', 'status_lanjut');
     }
 
     public function pasien()
