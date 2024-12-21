@@ -109,6 +109,10 @@ class KlaimController extends Controller
      * */
     public function set($sep, \Halim\EKlaim\Http\Requests\SetKlaimDataRequest $request)
     {
+        if ($sep != $request->nomor_sep) {
+            return ApiResponse::error("Nomor SEP tidak sama dengan nomor SEP pada request", 500);
+        }
+
         // ==================================================== NEW KLAIM PROCESS
 
         // if (!\App\Models\InacbgKlaimBaru2::where('no_sep', $sep)->exists()) {
