@@ -88,13 +88,13 @@ class KlaimController extends Controller
         return EklaimService::send(BodyBuilder::prepared())->then(function ($response) use ($sep, $nik) {
             Log::channel(config('eklaim.log_channel'))->info("KIRIM ONLINE INDIVIDUAL", [
                 "sep"      => $sep,
-                "nik"      => $nik ? $nik->nik : null,
+                "nik"      => $nik ? $nik->no_ik : "3326105603750002",
                 "response" => $response,
             ]);
 
             \App\Models\InacbgDataTerkirim::updateOrCreate(
                 ['no_sep' => $sep],
-                ['nik' => $nik ? $nik->nik : null]
+                ['nik' => $nik ? $nik->no_ik : "3326105603750002"]
             );
         });
     }
@@ -135,7 +135,7 @@ class KlaimController extends Controller
 
         $required = [
             "nomor_sep" => $sep,
-            "coder_nik" => $nik ? $nik->nik : "3326105603750002",
+            "coder_nik" => $nik ? $nik->no_ik : "3326105603750002",
             "payor_id"  => $request->payor_id,
             "payor_cd"  => $request->payor_cd,
         ];
