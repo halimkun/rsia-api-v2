@@ -19,22 +19,25 @@ class ShowKamarInapCollection extends ResourceCollection
 
         $regPeriksa = \App\Models\RegPeriksa::where('no_rawat', $this->collection->first()->no_rawat)->first();
 
-        $masuk  = Carbon::parse($regPeriksa->tgl_registrasi . " " . $regPeriksa->jam_reg);
+        $masuk  = Carbon::parse($regPeriksa->tgl_registrasi); //  . " " . $regPeriksa->jam_reg
         if ($this->collection->first()->tgl_keluar == "0000-00-00" || $this->collection->first()->tgl_keluar == '00:00:00') {
             $keluar = Carbon::now();
         } else {
-            $keluar = Carbon::parse($this->collection->first()->tgl_keluar . " " . $this->collection->first()->jam_keluar);
+            $keluar = Carbon::parse($this->collection->first()->tgl_keluar); // . " " . $this->collection->first()->jam_keluar
         }
+
+        // ========== HITUNG JUMALAH HARI
+        $days = $masuk->diffInDays($keluar) + 1;
+        
+        // ========== HITUNG SELISIH WAKTU DALAM MENIT
+        // tambahkan jam_reg ke massuk dan jam keluar ke keluar
+        $masuk->setTimeFromTimeString($regPeriksa->jam_reg);
+        $keluar->setTimeFromTimeString($this->collection->first()->jam_keluar);
 
         // Hitung selisih waktu dalam menit
         $diffMinutes = $masuk->diffInMinutes($keluar);
-    
-        $days = $masuk->diff($keluar)->days;
-        if ($keluar->format('H:i') > $masuk->format('H:i')) {
-            $days += 1;
-        }
 
-        // $days   = ceil($diffMinutes / (60 * 24)) + 1;
+        // ========== FORMAT DURASI
         $durasi = sprintf("%02d:%02d", floor($diffMinutes / 60), $diffMinutes % 60);
 
         // map the collection to get the data

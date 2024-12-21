@@ -9,6 +9,11 @@ class KamarInapController extends \Orion\Http\Controllers\Controller
 {
     use \Orion\Concerns\DisableAuthorization;
 
+    /**
+     * The model class name used in the controller.
+     *
+     * @var string
+     */
     protected $model = \App\Models\KamarInap::class;
 
     /**
