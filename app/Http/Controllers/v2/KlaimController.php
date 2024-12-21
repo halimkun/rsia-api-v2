@@ -116,7 +116,7 @@ class KlaimController extends Controller
         // ==================================================== NEW KLAIM PROCESS
 
         // if (!\App\Models\InacbgKlaimBaru2::where('no_sep', $sep)->exists()) {
-        $bridging_sep = \App\Models\BridgingSep::with('pasien')->where('no_sep', $sep)->first();
+        $bridging_sep = \App\Models\BridgingSep::with(['dokter', 'pasien'])->where('no_sep', $sep)->first();
         $this->new(new \Halim\EKlaim\Http\Requests\NewKlaimRequest([
             'nomor_sep'   => $sep,
             'nomor_kartu' => $bridging_sep->no_kartu,
@@ -130,10 +130,12 @@ class KlaimController extends Controller
 
         // ==================================================== PARSE DATA
 
+        $user = \Illuminate\Support\Facades\Auth::user();
+        $nik = \App\Models\RsiaCoderNik::where('nik', $user->id_user)->first();
+
         $required = [
             "nomor_sep" => $sep,
-            // "coder_nik"     => $request->coder_nik ?? \App\Models\RsiaCoderNik::all()->random()->no_ik,
-            "coder_nik" => "3326105603750002",
+            "coder_nik" => $nik ? $nik->nik : "3326105603750002",
             "payor_id"  => $request->payor_id,
             "payor_cd"  => $request->payor_cd,
         ];
@@ -147,7 +149,7 @@ class KlaimController extends Controller
 
         // if in data not has nama_dokter key add it
         if (!array_key_exists('nama_dokter', $data)) {
-            $data['nama_dokter'] = strtoupper($bridging_sep->nmdpdjp);
+            $data['nama_dokter'] = strtoupper($bridging_sep->dokter->nm_dokter);
         }
 
         // [0]. Re-Edit Klaim
@@ -335,6 +337,7 @@ class KlaimController extends Controller
                 'diastole'        => $klaim_data['diastole'] ?? null,
                 'usia_kehamilan'  => $klaim_data['persalinan']['usia_kehamilan'] ?? null,
                 'onset_kontraksi' => $klaim_data['persalinan']['onset_kontraksi'] ?? null,
+                'noreg_sitb'      => $klaim_data['jkn_sitb_noreg'] ?? null,
             ]);
         }, 5);
     }
