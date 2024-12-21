@@ -487,7 +487,7 @@ class KlaimController extends Controller
         $altTariKelas1 = SafeAccess::object(collect($groupResponse->tarif_alt)->where('kelas', 'kelas_1')->first(), 'tarif_inacbg', 0);
         $altTariKelas2 = SafeAccess::object(collect($groupResponse->tarif_alt)->where('kelas', 'kelas_2')->first(), 'tarif_inacbg', 0);
 
-        $kelasHak  = $sep->klsrawat == 2 ? $altTariKelas2 : ($sep->klsrawat == 3 ? $altTariKelas1 : 0);
+        $kelasHak  = $sep->klsrawat == 2 ? $altTariKelas2 : ($sep->klsrawat == 1 ? $altTariKelas1 : 0);
         $kelasNaik = $sep->klsnaik == 3 ? $altTariKelas1 : ($sep->klsnaik == 8 ? $altTariKelas1 : 0);
 
         // Jika spesialis dokter adalah kandungan
