@@ -554,7 +554,7 @@ class KlaimController extends Controller
                 'jenis_naik'  => "Naik " . \App\Helpers\NaikKelasHelper::getJumlahNaik($sep->klsrawat, $sep->klsnaik) . " Kelas",
                 'tarif_1'     => $kelasNaik,
                 'tarif_2'     => $kelasHak,
-                'presentase'  => $presentase,
+                'presentase'  => $presentase ?? null,
                 'tarif_akhir' => $tambahanBiaya,
                 'diagnosa'    => $sep->nmdiagnosaawal,
             ]
