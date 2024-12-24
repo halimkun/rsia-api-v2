@@ -19,11 +19,14 @@ class ShowKamarInapCollection extends ResourceCollection
 
         $regPeriksa = \App\Models\RegPeriksa::where('no_rawat', $this->collection->first()->no_rawat)->first();
 
+        // Ambil data kamar inap
+        $dataPulang = $this->collection->where('stts_pulang', '<>', 'Pindah Kamar')->first();
+        
         $masuk  = Carbon::parse($regPeriksa->tgl_registrasi); //  . " " . $regPeriksa->jam_reg
-        if ($this->collection->first()->tgl_keluar == "0000-00-00" || $this->collection->first()->tgl_keluar == '00:00:00') {
+        if ($dataPulang->tgl_keluar == "0000-00-00" || $dataPulang->tgl_keluar == '00:00:00') {
             $keluar = Carbon::now();
         } else {
-            $keluar = Carbon::parse($this->collection->first()->tgl_keluar); // . " " . $this->collection->first()->jam_keluar
+            $keluar = Carbon::parse($dataPulang->tgl_keluar); // . " " . $dataPulang->jam_keluar
         }
 
         // ========== HITUNG JUMALAH HARI
