@@ -40,20 +40,53 @@ class RawatInapPr extends Model
 {
     use HasFactory, HasCompositeKey;
 
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'rawat_inap_pr';
 
+    /**
+     * The primary key associated with the table.
+     *
+     * @var string
+     */
     protected $primaryKey = ["no_rawat", "kd_jenis_prw", "nip", "tgl_perawatan", "jam_rawat"];
 
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
     protected $guarded = [];
 
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
     protected $casts = [
         'no_rawat' => 'string',
     ];
 
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
     public $incrementing = false;
 
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
     public $timestamps = false;
 
+    /**
+     * Get the rawat inap that owns the rawat inap pr.
+     */
     public function jenisPerawatan()
     {
         return $this->belongsTo(JenisPerawatanInap::class, 'kd_jenis_prw', 'kd_jenis_prw');
