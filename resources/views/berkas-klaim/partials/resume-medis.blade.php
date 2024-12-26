@@ -56,8 +56,11 @@
             $tglKeluar = $kamarInap[0]->tgl_keluar;
             $jamKeluar = $kamarInap[0]->jam_keluar;
 
-            $diff = \Carbon\Carbon::parse($regPeriksa->tgl_registrasi . ' ' . $regPeriksa->jam_reg)->diffInMinutes(\Carbon\Carbon::parse($tglKeluar . ' ' . $jamKeluar));
-            $los = ceil($diff / (60 * 24)) + 1;
+            $masuk = \Carbon\Carbon::parse($regPeriksa->tgl_registrasi);
+            $keluar = \Carbon\Carbon::parse($tglKeluar);
+
+            $los = $keluar->diffInDays($masuk) + 1;
+
         } else {
             $tglKeluar = null;
             $jamKeluar = null;
