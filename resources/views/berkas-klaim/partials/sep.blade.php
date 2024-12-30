@@ -138,7 +138,7 @@
                     </tr>
                 @endforeach
                 
-                @foreach ($prosedur as $k => $p)
+                @foreach ($prosedur->sortBy('prioritas') as $k => $p)
                     <tr class="align-middle">
                         @if ($loop->first)
                             <td style="border-color: #333; width:170px; max-width: 200px" class="border p-1 px-2" rowspan="{{ $prosedur->count() }}">TINDAKAN</td>
