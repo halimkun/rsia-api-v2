@@ -68,7 +68,8 @@ class KlaimController extends Controller
     }
 
     /**
-     * delete klaim method
+     * Send klaim method
+     * Kirim online individual klaim
      *
      * @param string $sep
      *
@@ -76,27 +77,36 @@ class KlaimController extends Controller
      * */
     public function send($sep)
     {
-        // get user from middleware detail-user
-        $user = \Illuminate\Support\Facades\Auth::user();
-        $nik = \App\Models\RsiaCoderNik::where('nik', $user->id_user)->first();
+        try {
+            // get user from middleware detail-user
+            $user = \Illuminate\Support\Facades\Auth::user();
+            $nik = \App\Models\RsiaCoderNik::where('nik', $user->id_user)->first();
 
-        BodyBuilder::setMetadata('send_claim_individual');
-        BodyBuilder::setData([
-            "nomor_sep" => $sep
-        ]);
-
-        return EklaimService::send(BodyBuilder::prepared())->then(function ($response) use ($sep, $nik) {
-            Log::channel(config('eklaim.log_channel'))->info("KIRIM ONLINE INDIVIDUAL", [
-                "sep"      => $sep,
-                "nik"      => $nik ? $nik->no_ik : "3326105603750002",
-                "response" => $response,
+            BodyBuilder::setMetadata('send_claim_individual');
+            BodyBuilder::setData([
+                "nomor_sep" => $sep
             ]);
 
-            \App\Models\InacbgDataTerkirim::updateOrCreate(
-                ['no_sep' => $sep],
-                ['nik' => $nik ? $nik->no_ik : "3326105603750002"]
-            );
-        });
+            return EklaimService::send(BodyBuilder::prepared())->then(function ($response) use ($sep, $nik) {
+                Log::channel(config('eklaim.log_channel'))->info("KIRIM ONLINE INDIVIDUAL", [
+                    "sep"      => $sep,
+                    "nik"      => $nik ? $nik->no_ik : "3326105603750002",
+                    "response" => $response,
+                ]);
+
+                \App\Models\InacbgDataTerkirim::updateOrCreate(
+                    ['no_sep' => $sep],
+                    ['nik' => $nik ? $nik->no_ik : "3326105603750002"]
+                );
+            });
+        } catch (\Throwable $th) {
+            Log::channel(config('eklaim.log_channel'))->error("SEND CLAIM ERROR", [
+                "sep"   => $sep,
+                "error" => $th->getMessage(),
+            ]);
+
+            return ApiResponse::error($th->getMessage(), 500);
+        }
     }
 
     /**
@@ -109,101 +119,104 @@ class KlaimController extends Controller
      * */
     public function set($sep, \Halim\EKlaim\Http\Requests\SetKlaimDataRequest $request)
     {
-        if ($sep != $request->nomor_sep) {
-            return ApiResponse::error("Nomor SEP tidak sama dengan nomor SEP pada request", 500);
-        }
-
-        // ==================================================== NEW KLAIM PROCESS
-
-        // if (!\App\Models\InacbgKlaimBaru2::where('no_sep', $sep)->exists()) {
-        $bridging_sep = \App\Models\BridgingSep::with(['dokter', 'pasien'])->where('no_sep', $sep)->first();
-        $this->new(new \Halim\EKlaim\Http\Requests\NewKlaimRequest([
-            'nomor_sep'   => $sep,
-            'nomor_kartu' => $bridging_sep->no_kartu,
-            'nomor_rm'    => $bridging_sep->pasien->no_rkm_medis,
-            'no_rawat'    => $bridging_sep->no_rawat,
-            'nama_pasien' => $bridging_sep->pasien->nm_pasien,
-            'tgl_lahir'   => $bridging_sep->pasien->tgl_lahir,
-            'gender'      => $bridging_sep->pasien->jk,
-        ]));
-        // }
-
-        // ==================================================== PARSE DATA
-
         $user = \Illuminate\Support\Facades\Auth::user();
         $nik = \App\Models\RsiaCoderNik::where('nik', $user->id_user)->first();
 
-        $required = [
-            "nomor_sep" => $sep,
-            "coder_nik" => $nik ? $nik->no_ik : "3326105603750002",
-            "payor_id"  => $request->payor_id,
-            "payor_cd"  => $request->payor_cd,
-        ];
+        try {
+            if ($sep != $request->nomor_sep) {
+                throw new \Exception("Nomor SEP tidak sama dengan nomor SEP pada request");
+            }
 
-        // Log::info("Set klaim data", [
-        //     "sep"  => $sep,
-        //     "data" => \Halim\EKlaim\Helpers\ClaimDataParser::parse($request),
-        // ]);
+            // ==================================================== NEW KLAIM PROCESS
 
-        $data = array_merge($required, \Halim\EKlaim\Helpers\ClaimDataParser::parse($request));
+            // if (!\App\Models\InacbgKlaimBaru2::where('no_sep', $sep)->exists()) {
+            $bridging_sep = \App\Models\BridgingSep::with(['dokter', 'pasien'])->where('no_sep', $sep)->first();
+            $this->new(new \Halim\EKlaim\Http\Requests\NewKlaimRequest([
+                'nomor_sep'   => $sep,
+                'nomor_kartu' => $bridging_sep->no_kartu,
+                'nomor_rm'    => $bridging_sep->pasien->no_rkm_medis,
+                'no_rawat'    => $bridging_sep->no_rawat,
+                'nama_pasien' => $bridging_sep->pasien->nm_pasien,
+                'tgl_lahir'   => $bridging_sep->pasien->tgl_lahir,
+                'gender'      => $bridging_sep->pasien->jk,
+            ]));
+            // }
 
-        // if in data not has nama_dokter key add it
-        if (!array_key_exists('nama_dokter', $data)) {
-            $data['nama_dokter'] = strtoupper($bridging_sep->dokter->nm_dokter);
-        }
+            // ==================================================== PARSE DATA
 
-        // [0]. Re-Edit Klaim
-        $this->reEdit($sep);
+            $required = [
+                "nomor_sep" => $sep,
+                "coder_nik" => $nik ? $nik->no_ik : "3326105603750002",
+                "payor_id"  => $request->payor_id,
+                "payor_cd"  => $request->payor_cd,
+            ];
 
-        // [1]. Set claim data
-        usleep(rand(500, 1000) * 1000);
+            $data = array_merge($required, \Halim\EKlaim\Helpers\ClaimDataParser::parse($request));
 
-        BodyBuilder::setMetadata('set_claim_data', ["nomor_sep" => $sep]);
-        BodyBuilder::setData($data);
+            // if in data not has nama_dokter key add it
+            if (!array_key_exists('nama_dokter', $data)) {
+                $data['nama_dokter'] = strtoupper($bridging_sep->dokter->nm_dokter);
+            }
 
-        EklaimService::send(BodyBuilder::prepared())->then(function ($response) use ($sep, $data) {
-            Log::channel(config('eklaim.log_channel'))->info("SET KLAIM DATA", [
-                "sep"      => $sep,
-                "data"     => json_decode(json_encode(BodyBuilder::prepared()), true),
-                "response" => $response,
+            // [0]. Re-Edit Klaim
+            $this->reEdit($sep);
+
+            // [1]. Set claim data
+            usleep(rand(500, 1000) * 1000);
+
+            BodyBuilder::setMetadata('set_claim_data', ["nomor_sep" => $sep]);
+            BodyBuilder::setData($data);
+
+            EklaimService::send(BodyBuilder::prepared())->then(function ($response) use ($sep, $data) {
+                Log::channel(config('eklaim.log_channel'))->info("SET KLAIM DATA", [
+                    "sep"      => $sep,
+                    "data"     => json_decode(json_encode(BodyBuilder::prepared()), true),
+                    "response" => $response,
+                ]);
+
+                // ==================================================== SAVE DATAS
+
+                $this->saveDiagnosaAndProcedures($data);
+                $this->saveChunksData($data);
+
+                // ==================================================== END OF SAVE DATAS
+            });
+
+            // [2]. Grouping stage 1 & 2
+            usleep(rand(500, 1000) * 1000);
+
+            $hasilGrouping = $this->groupStages($sep);
+            $responseCode  = SafeAccess::object($hasilGrouping, 'response->cbg->code');
+
+            if (SafeAccess::object($hasilGrouping, "metadata->error_no")) {
+                throw new \Exception(SafeAccess::object($hasilGrouping, "metadata->error_no") . " : " . SafeAccess::object($hasilGrouping, "metadata->message"), SafeAccess::object($hasilGrouping, "metadata->code"));
+            }
+
+            // cekNaikKelas
+            $this->cekNaikKelas($sep, $hasilGrouping, $request);
+
+            // [3]. Final Klaim
+            usleep(rand(500, 1000) * 1000);
+            $this->finalClaim($sep);
+
+            if (SafeAccess::object($hasilGrouping, 'metadata->code') == 200) {
+                Log::channel(config('eklaim.log_channel'))->info("HASIL", ["grouping" => $hasilGrouping, "response" => $responseCode]);
+            } else {
+                Log::channel(config('eklaim.log_channel'))->error("HASIL", ["grouping" => $hasilGrouping, "response" => $responseCode]);
+            }
+
+            if ($responseCode && (\Illuminate\Support\Str::startsWith($responseCode, 'X') || \Illuminate\Support\Str::startsWith($responseCode, 'x'))) {
+                throw new \Exception($hasilGrouping->response->cbg->code . " : " . $hasilGrouping->response->cbg->description);
+            }
+
+            return ApiResponse::successWithData($hasilGrouping->response, "Grouping Berhasil dilakukan");
+        } catch (\Throwable $th) {
+            Log::channel(config('eklaim.log_channel'))->error("SET KLAIM DATA", [
+                "error" => $th->getMessage(),
             ]);
 
-            // ==================================================== SAVE DATAS
-
-            $this->saveDiagnosaAndProcedures($data);
-            $this->saveChunksData($data);
-
-            // ==================================================== END OF SAVE DATAS
-        });
-
-        // [2]. Grouping stage 1 & 2
-        usleep(rand(500, 1000) * 1000);
-
-        $hasilGrouping = $this->groupStages($sep);
-        $responseCode  = SafeAccess::object($hasilGrouping, 'response->cbg->code');
-
-        if (SafeAccess::object($hasilGrouping, "metadata->error_no")) {
-            return ApiResponse::error(SafeAccess::object($hasilGrouping, "metadata->error_no") . " : " . SafeAccess::object($hasilGrouping, "metadata->message"), SafeAccess::object($hasilGrouping, "metadata->code"));
+            return ApiResponse::error($th->getMessage(), 500);
         }
-
-        // cekNaikKelas
-        $this->cekNaikKelas($sep, $hasilGrouping, $request);
-
-        // [3]. Final Klaim
-        usleep(rand(500, 1000) * 1000);
-        $this->finalClaim($sep);
-
-        if (SafeAccess::object($hasilGrouping, 'metadata->code') == 200) {
-            Log::channel(config('eklaim.log_channel'))->info("HASIL", ["grouping" => $hasilGrouping, "response" => $responseCode]);
-        } else {
-            Log::channel(config('eklaim.log_channel'))->error("HASIL", ["grouping" => $hasilGrouping, "response" => $responseCode]);
-        }
-
-        if ($responseCode && (\Illuminate\Support\Str::startsWith($responseCode, 'X') || \Illuminate\Support\Str::startsWith($responseCode, 'x'))) {
-            return ApiResponse::error($hasilGrouping->response->cbg->code . " : " . $hasilGrouping->response->cbg->description, 500);
-        }
-
-        return ApiResponse::successWithData($hasilGrouping->response, "Grouping Berhasil dilakukan");
     }
 
     public function reEdit(String $sep)
@@ -221,19 +234,30 @@ class KlaimController extends Controller
 
     public function finalClaim(String $sep)
     {
-        BodyBuilder::setMetadata('claim_final');
-        BodyBuilder::setData([
-            "nomor_sep" => $sep,
-            "coder_nik" => '3326105603750002',
-        ]);
+        try {
+            BodyBuilder::setMetadata('claim_final');
+            BodyBuilder::setData([
+                "nomor_sep" => $sep,
+                "coder_nik" => '3326105603750002',
+            ]);
 
-        EklaimService::send(BodyBuilder::prepared())->then(function ($response) use ($sep) {
-            if (SafeAccess::object($response, 'metadata->code') == 200) {
-                Log::channel(config('eklaim.log_channel'))->info("FINAL", ["sep" => $sep, "response" => $response]);
-            } else {
-                Log::channel(config('eklaim.log_channel'))->error("FINAL", ["sep" => $sep, "response" => $response]);
-            }
-        });
+            EklaimService::send(BodyBuilder::prepared())->then(function ($response) use ($sep) {
+                if (SafeAccess::object($response, 'metadata->code') == 200) {
+                    Log::channel(config('eklaim.log_channel'))->info("FINAL", ["sep" => $sep, "response" => $response]);
+                } else {
+                    Log::channel(config('eklaim.log_channel'))->error("FINAL", ["sep" => $sep, "response" => $response]);
+                    throw new \Exception("Error in final claim: " . SafeAccess::object($response, 'metadata->message'));
+                }
+            });
+        } catch (\Exception $e) {
+            Log::error("Error in finalClaim", [
+                'sep'   => $sep,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw $e;
+        }
     }
 
     /**
@@ -330,70 +354,90 @@ class KlaimController extends Controller
 
     private function saveChunksData($klaim_data)
     {
-        \Illuminate\Support\Facades\DB::transaction(function () use ($klaim_data) {
-            \App\Models\RsiaGroupingChunks::updateOrCreate(['no_sep' => $klaim_data['nomor_sep']], [
-                'cara_masuk'      => $klaim_data['cara_masuk'] ?? null,
-                'sistole'         => $klaim_data['sistole'] ?? null,
-                'diastole'        => $klaim_data['diastole'] ?? null,
-                'usia_kehamilan'  => $klaim_data['persalinan']['usia_kehamilan'] ?? null,
-                'onset_kontraksi' => $klaim_data['persalinan']['onset_kontraksi'] ?? null,
-                'noreg_sitb'      => $klaim_data['jkn_sitb_noreg'] ?? null,
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($klaim_data) {
+                \App\Models\RsiaGroupingChunks::updateOrCreate(['no_sep' => $klaim_data['nomor_sep']], [
+                    'cara_masuk'      => $klaim_data['cara_masuk'] ?? null,
+                    'sistole'         => $klaim_data['sistole'] ?? null,
+                    'diastole'        => $klaim_data['diastole'] ?? null,
+                    'usia_kehamilan'  => $klaim_data['persalinan']['usia_kehamilan'] ?? null,
+                    'onset_kontraksi' => $klaim_data['persalinan']['onset_kontraksi'] ?? null,
+                    'noreg_sitb'      => $klaim_data['jkn_sitb_noreg'] ?? null,
+                ]);
+            }, 5);
+        } catch (\Exception $e) {
+            Log::error("Error in saveChunksData", [
+                'klaim_data' => $klaim_data,
+                'error'      => $e->getMessage(),
+                'trace'      => $e->getTraceAsString(),
             ]);
-        }, 5);
+
+            throw $e;
+        }
     }
 
     private function saveDiagnosaAndProcedures($klaim_data)
     {
-        $explodedDiagnosa   = explode("#", $klaim_data['diagnosa']);
-        $explodedProcedures = explode("#", $klaim_data['procedure']);
+        try {
+            $explodedDiagnosa   = explode("#", $klaim_data['diagnosa']);
+            $explodedProcedures = explode("#", $klaim_data['procedure']);
 
-        $no_rawat = \App\Models\BridgingSep::where('no_sep', $klaim_data['nomor_sep'])->first()->no_rawat;
+            $no_rawat = \App\Models\BridgingSep::where('no_sep', $klaim_data['nomor_sep'])->first()->no_rawat;
 
-        if (!$no_rawat) {
-            Log::channel(config('eklaim.log_channel'))->error("SAVE DIAGNOSA", [
-                "no_sep"     => $klaim_data['nomor_sep'],
-                "diag"       => $explodedDiagnosa,
-                "procedures" => $explodedProcedures,
+            if (!$no_rawat) {
+                Log::channel(config('eklaim.log_channel'))->error("SAVE DIAGNOSA", [
+                    "no_sep"     => $klaim_data['nomor_sep'],
+                    "diag"       => $explodedDiagnosa,
+                    "procedures" => $explodedProcedures,
+                ]);
+
+                return;
+            }
+
+            \Illuminate\Support\Facades\DB::transaction(function () use ($explodedDiagnosa, $no_rawat, $klaim_data) {
+                \App\Models\DiagnosaPasien::where('no_rawat', $no_rawat)->delete();
+
+                foreach ($explodedDiagnosa as $key => $diagnosa) {
+                    if (empty($diagnosa)) {
+                        continue;
+                    }
+
+                    \App\Models\DiagnosaPasien::create([
+                        "no_rawat"    => $no_rawat,
+                        "kd_penyakit" => $diagnosa,
+                        "status"      => $klaim_data['jenis_rawat'] == 1 ? "Ranap" : "Ralan",
+                        "prioritas"   => $key + 1,
+                    ]);
+                }
+            }, 5);
+
+            \Illuminate\Support\Facades\DB::transaction(function () use ($explodedProcedures, $no_rawat, $klaim_data) {
+                \App\Models\ProsedurPasien::where('no_rawat', $no_rawat)->delete();
+
+                foreach ($explodedProcedures as $key => $procedure) {
+                    if (empty($procedure)) {
+                        continue;
+                    }
+
+                    \App\Models\ProsedurPasien::create([
+                        "no_rawat"  => $no_rawat,
+                        "kode"      => $procedure,
+                        "status"    => $klaim_data['jenis_rawat'] == 1 ? "Ranap" : "Ralan",
+                        "prioritas" => $key + 1,
+                    ]);
+                }
+            }, 5);
+        } catch (\Exception $e) {
+            Log::error("Error in saveDiagnosaAndProcedures", [
+                'klaim_data' => $klaim_data,
+                'error'      => $e->getMessage(),
+                'trace'      => $e->getTraceAsString(),
             ]);
-            return;
+
+            throw $e;
         }
-
-        // save diagnosa on transaction, first delete all diagnosa, then insert new diagnosa with priority. priority is the index + 1 of the array
-        \Illuminate\Support\Facades\DB::transaction(function () use ($explodedDiagnosa, $no_rawat, $klaim_data) {
-            \App\Models\DiagnosaPasien::where('no_rawat', $no_rawat)->delete();
-
-            foreach ($explodedDiagnosa as $key => $diagnosa) {
-                if (empty($diagnosa)) {
-                    continue;
-                }
-
-                \App\Models\DiagnosaPasien::create([
-                    "no_rawat"    => $no_rawat,
-                    "kd_penyakit" => $diagnosa,
-                    "status"      => $klaim_data['jenis_rawat'] == 1 ? "Ranap" : "Ralan",
-                    "prioritas"   => $key + 1,
-                ]);
-            }
-        }, 5);
-
-        // save procedures on transaction, first delete all procedures, then insert new procedures with priority. priority is the index + 1 of the array
-        \Illuminate\Support\Facades\DB::transaction(function () use ($explodedProcedures, $no_rawat, $klaim_data) {
-            \App\Models\ProsedurPasien::where('no_rawat', $no_rawat)->delete();
-
-            foreach ($explodedProcedures as $key => $procedure) {
-                if (empty($procedure)) {
-                    continue;
-                }
-
-                \App\Models\ProsedurPasien::create([
-                    "no_rawat"  => $no_rawat,
-                    "kode"      => $procedure,
-                    "status"    => $klaim_data['jenis_rawat'] == 1 ? "Ranap" : "Ralan",
-                    "prioritas" => $key + 1,
-                ]);
-            }
-        }, 5);
     }
+
 
     private function groupStages($sep)
     {
@@ -450,6 +494,8 @@ class KlaimController extends Controller
             Log::channel(config('eklaim.log_channel'))->error("INSERT - inacbg_grouping_stage12", [
                 "error" => $th->getMessage(),
             ]);
+
+            throw $th;
         }
 
         return $hasilGrouping;
@@ -482,82 +528,84 @@ class KlaimController extends Controller
             }
         }
 
-        // Periksa spesialis dokter, lanjutkan hanya jika spesialisnya kandungan
-        $regPeriksa = \App\Models\RegPeriksa::with('dokter.spesialis')->where('no_rawat', $sep->no_rawat)->first();
+        try {
+            // Periksa spesialis dokter, lanjutkan hanya jika spesialisnya kandungan
+            $regPeriksa = \App\Models\RegPeriksa::with('dokter.spesialis')->where('no_rawat', $sep->no_rawat)->first();
 
-        // Ambil tarif dan tarif alternatif kelas 1
-        $cbgTarif      = SafeAccess::object($groupResponse, 'response->cbg->tariff', 0);
-        $altTariKelas1 = SafeAccess::object(collect($groupResponse->tarif_alt)->where('kelas', 'kelas_1')->first(), 'tarif_inacbg', 0);
-        $altTariKelas2 = SafeAccess::object(collect($groupResponse->tarif_alt)->where('kelas', 'kelas_2')->first(), 'tarif_inacbg', 0);
+            // Ambil tarif dan tarif alternatif kelas 1
+            $cbgTarif      = SafeAccess::object($groupResponse, 'response->cbg->tariff', 0);
+            $altTariKelas1 = SafeAccess::object(collect($groupResponse->tarif_alt)->where('kelas', 'kelas_1')->first(), 'tarif_inacbg', 0);
+            $altTariKelas2 = SafeAccess::object(collect($groupResponse->tarif_alt)->where('kelas', 'kelas_2')->first(), 'tarif_inacbg', 0);
 
-        $kelasHak  = $sep->klsrawat == 2 ? $altTariKelas2 : ($sep->klsrawat == 1 ? $altTariKelas1 : 0);
-        $kelasNaik = $sep->klsnaik == 3 ? $altTariKelas1 : ($sep->klsnaik == 8 ? $altTariKelas1 : 0);
+            $kelasHak      = $sep->klsrawat == 2 ? $altTariKelas2 : ($sep->klsrawat == 1 ? $altTariKelas1 : 0);
+            $kelasNaik     = $sep->klsnaik  == 3 ? $altTariKelas1 : ($sep->klsnaik == 8 ? $altTariKelas1 : 0);
 
-        // Jika spesialis dokter adalah kandungan
-        if (Str::contains(Str::lower($regPeriksa->dokter->spesialis->nm_sps), 'kandungan')) {
+            // Jika spesialis dokter adalah kandungan
+            if (Str::contains(Str::lower($regPeriksa->dokter->spesialis->nm_sps), 'kandungan')) {
+                $kamarInap = \App\Models\KamarInap::where('no_rawat', $sep->no_rawat)->latest('tgl_masuk')->latest('jam_masuk')->first();
 
-            $kamarInap = \App\Models\KamarInap::where('no_rawat', $sep->no_rawat)->latest('tgl_masuk')->latest('jam_masuk')->first();
-
-            if (!$altTariKelas1) {
-                return ApiResponse::error("Pasien Naik Kelas namun, alt tarif kelas tidak ditemukan", 500);
-            }
-
-            if (Str::contains(Str::lower($kamarInap->kd_kamar), 'kandungan va')) {
-                $presentase    = 73;
-                $tambahanBiaya = $kelasNaik - $kelasHak + ($kelasNaik * $presentase / 100);
-            } elseif (Str::contains(Str::lower($kamarInap->kd_kamar), 'kandungan vb')) {
-                $presentase    = 43;
-                $tambahanBiaya = $kelasNaik - $kelasHak + ($kelasNaik * $presentase / 100);
-            } else {
-                $tambahanBiaya = $kelasNaik - $kelasHak;
-            }
-        } else { // Jika spesialis dokter bukan kandungan (anak)
-
-            if (!$altTariKelas1) {
-                return ApiResponse::error("Pasien Naik Kelas namun, alt tarif kelas tidak ditemukan", 500);
-            }
-
-            $isVip = $sep->klsnaik == 8;
-            if ($isVip) {
-                $selisihDenganHasilGroup = $tarif_rs_sum - $cbgTarif;
-                // Tarif Kelas Naik - Tarif Kelas Hak + (Tarif Kelas Naik * x%) = (Real Cost Rumah Sakit - cbgTariff) atau $selisihDenganHasilGroup
-
-                // 1. Sederhanakan bagian satu
-                $satu = $kelasNaik - $kelasHak;
-                // Jadi, persamaan menjadi : $satu + (Tarif Kelas Naik * x%) = $selisihDenganHasilGroup
-
-                // 2. pindahkan $satu ke sebelah kanan : (Tarif Kelas Naik * x%) = $selisihDenganHasilGroup - $satu
-                $dua = $selisihDenganHasilGroup - $satu;
-                // Jadi, persamaan menjadi : Tarif Kelas Naik * x% = $dua
-
-                // 3. cari x%
-                $x = $dua / $kelasNaik;
-                $xPersen = $x * 100;
-
-                if ($xPersen >= 75) {
-                    $xPersen = 75;
+                if (!$altTariKelas1) {
+                    throw new \Exception("Pasien Naik Kelas namun, alt tarif kelas tidak ditemukan");
                 }
 
-                // Menghitung tarif tambahan berdasarkan persentase
-                $tambahanBiaya = $kelasNaik - $kelasHak + ($kelasNaik * $xPersen / 100);
-            } else {
-                $tambahanBiaya = $kelasNaik - $kelasHak;
+                if (Str::contains(Str::lower($kamarInap->kd_kamar), 'kandungan va')) {
+                    $presentase    = 73;
+                    $tambahanBiaya = $kelasNaik - $kelasHak + ($kelasNaik * $presentase / 100);
+                } elseif (Str::contains(Str::lower($kamarInap->kd_kamar), 'kandungan vb')) {
+                    $presentase    = 43;
+                    $tambahanBiaya = $kelasNaik - $kelasHak + ($kelasNaik * $presentase / 100);
+                } else {
+                    $tambahanBiaya = $kelasNaik - $kelasHak;
+                }
+            } else { // Jika spesialis dokter bukan kandungan (anak)
+                if (!$altTariKelas1) {
+                    throw new \Exception("Pasien Naik Kelas namun, alt tarif kelas tidak ditemukan");
+                }
+
+                $isVip = $sep->klsnaik == 8;
+                if ($isVip) {
+                    $selisihDenganHasilGroup = $tarif_rs_sum - $cbgTarif;
+                    // Tarif Kelas Naik - Tarif Kelas Hak + (Tarif Kelas Naik * x%) = (Real Cost Rumah Sakit - cbgTariff) atau $selisihDenganHasilGroup
+
+                    // 1. Sederhanakan bagian satu
+                    $satu = $kelasNaik - $kelasHak;
+                    // Jadi, persamaan menjadi : $satu + (Tarif Kelas Naik * x%) = $selisihDenganHasilGroup
+
+                    // 2. pindahkan $satu ke sebelah kanan : (Tarif Kelas Naik * x%) = $selisihDenganHasilGroup - $satu
+                    $dua = $selisihDenganHasilGroup - $satu;
+                    // Jadi, persamaan menjadi : Tarif Kelas Naik * x% = $dua
+
+                    // 3. cari x%
+                    $x = $dua / $kelasNaik;
+                    $xPersen = $x * 100;
+
+                    if ($xPersen >= 75) {
+                        $xPersen = 75;
+                    }
+
+                    // Menghitung tarif tambahan berdasarkan persentase
+                    $tambahanBiaya = $kelasNaik - $kelasHak + ($kelasNaik * $xPersen / 100);
+                } else {
+                    $tambahanBiaya = $kelasNaik - $kelasHak;
+                }
+
+                $presentase = $xPersen ?? 0;
             }
 
-            $presentase = $xPersen ?? 0;
+            // Simpan data naik kelas
+            \App\Models\RsiaNaikKelas::updateOrCreate(
+                ['no_sep' => $sep->no_sep], // Kondisi untuk update
+                [
+                    'jenis_naik'  => "Naik " . \App\Helpers\NaikKelasHelper::getJumlahNaik($sep->klsrawat, $sep->klsnaik) . " Kelas",
+                    'tarif_1'     => $kelasNaik,
+                    'tarif_2'     => $kelasHak,
+                    'presentase'  => $presentase ?? null,
+                    'tarif_akhir' => $tambahanBiaya,
+                    'diagnosa'    => $sep->nmdiagnosaawal,
+                ]
+            );
+        } catch (\Throwable $th) {
+            return ApiResponse::error($th->getMessage(), 500);
         }
-
-        // Simpan data naik kelas
-        \App\Models\RsiaNaikKelas::updateOrCreate(
-            ['no_sep' => $sep->no_sep], // Kondisi untuk update
-            [
-                'jenis_naik'  => "Naik " . \App\Helpers\NaikKelasHelper::getJumlahNaik($sep->klsrawat, $sep->klsnaik) . " Kelas",
-                'tarif_1'     => $kelasNaik,
-                'tarif_2'     => $kelasHak,
-                'presentase'  => $presentase ?? null,
-                'tarif_akhir' => $tambahanBiaya,
-                'diagnosa'    => $sep->nmdiagnosaawal,
-            ]
-        );
     }
 }
