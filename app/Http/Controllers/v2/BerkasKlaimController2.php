@@ -81,36 +81,16 @@ class BerkasKlaimController2 extends Controller
 
         $pasien            = $regPeriksa->pasien;
 
-        $pdfs = [
-            $this->genSep($dpjp, $bSep, $regPeriksa, $pasien),
-            // triase Ugd
-            // asmed Ugd
-            // Resume
-            // Cppt
-            // Operasi
-            // SPRI
-            $this->genSuratRencanaKontrol($dpjp, $bSep, $regPeriksa, $pasien),
-            // pendukung [skl]
-            // catatan perawatan
-            // pendukung [surat rujukan]
-            // pendukung [usg]
-            // ...$this->genHasilLab($bSep, $regPeriksa),
-            // hasil radiologi
-            // pendukung [laborat]
-            // pendukung selain [skl, surat rujukan, usg, lab]
-            // billing
-            // inacbg klaim 
-            // naik kelas
-        ];
 
-        // +==========+==========+==========+
 
-        $pdf = PDFHelper::merge($pdfs);
-        $pdf->setFileName('berkas-klaim-' . $sep . '.pdf');
+        $html = PDFHelper::generate('berkas-klaim.layout', [
+            "pages" => [
+                $this->genSep($dpjp, $bSep, $regPeriksa, $pasien),
+                $this->genSuratPerintahRawatInap($bSep, $pasien, $dpjp),
+            ]
+        ], false);
 
-        // +==========+==========+==========+
-
-        return response($pdf->stream('berkas-klaim-' . $sep . '.pdf'), 200)
+        return response($html->stream('berkas-klaim-' . $sep . '.pdf'), 200)
             ->header('Content-Type', 'application/pdf')
             ->header('Pragma', 'no-cache')
             ->header('Expires', '0');
@@ -135,7 +115,7 @@ class BerkasKlaimController2 extends Controller
         $barcodeDPJP   = $this->barcodeText($dpjp->pegawai->nama, $dpjp->pegawai->id);
         $barcodePasien = $this->toBarcode($sep->no_kartu);
 
-        $berkasSep = PDFHelper::generate('berkas-klaim.sep', [
+        $berkasSep = view('berkas-klaim.sep', [
             'sep'           => $sep,
             'pasien'        => $pasien,
             'regPeriksa'    => $regPeriksa,
@@ -145,7 +125,24 @@ class BerkasKlaimController2 extends Controller
             'barcodePasien' => $barcodePasien->getDataUri(),
         ]);
 
-        return $berkasSep;
+        return $berkasSep->render();
+    }
+
+    public function genSuratPerintahRawatInap($sep, $pasien, $dpjp)
+    {
+        $spri = \App\Models\BridgingSuratPriBpjs::where('no_surat', $sep->noskdp)->first();
+        if ($spri) {
+            $barcodeDPJP   = $this->barcodeText($dpjp->pegawai->nama, $dpjp->pegawai->id);
+            
+            $spri = view('berkas-klaim.spri', [
+                'sep'           => (object) $sep->only(['tglsep', 'no_sep', 'no_kartu']),
+                'pasien'        => $pasien,
+                'spri'          => $spri,
+                'barcodeDPJP'   => $barcodeDPJP->getDataUri(),
+            ]);
+
+            return $spri->render();
+        }
     }
 
     public function genSuratRencanaKontrol($dpjp, $sep, $regPeriksa, $pasien)

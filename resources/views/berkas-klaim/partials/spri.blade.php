@@ -38,11 +38,11 @@
                 <td></td>
             </tr>
             @foreach ([
-                'No. Kartu' => $sep->no_kartu,
-                'Nama Pasien' => $pasien->nm_pasien,
-                'Tgl. Lahir' => $pasien->tgl_lahir,
+                'No. Kartu'     => $sep->no_kartu,
+                'Nama Pasien'   => $pasien->nm_pasien,
+                'Tgl. Lahir'    => $pasien->tgl_lahir,
                 'Diagnosa Awal' => $spri->diagnosa,
-                'Tgl. Entry' => $spri->tgl_surat,
+                'Tgl. Entry'    => $spri->tgl_surat,
             ] as $key => $value)
                 <tr class="align-top">
                     <td class="text-nowrap whitespace-nowrap leading-5">{{ $key }}</td>
