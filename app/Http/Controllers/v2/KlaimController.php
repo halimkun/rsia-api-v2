@@ -521,11 +521,15 @@ class KlaimController extends Controller
         $tarif_rs     = $cdp['tarif_rs'];
         $tarif_rs_sum = array_sum($tarif_rs);
 
-        if (\App\Helpers\NaikKelasHelper::getJumlahNaik($sep->klsrawat, $sep->klsnaik) == 2) {
-            if ($tarif_rs_sum < SafeAccess::object($groupResponse, 'response->cbg->tariff', 0)) {
-                \Log::channel(config('eklaim.log_channel'))->info("SKIP CEK NAIK KELAS", ["tarif_rs_sum" => $tarif_rs_sum, "cbg_tariff" => SafeAccess::object($groupResponse, 'response->cbg->tariff', 0)]);
-                return;
-            }
+        $klsrawatNaik = in_array($sep->klsrawat, [1, 2]) && \Str::contains(\App\Helpers\NaikKelasHelper::translate($sep->klsnaik), ['VIP', 'Diatas']);
+
+        if ($klsrawatNaik && $tarif_rs_sum < SafeAccess::object($groupResponse, 'response->cbg->tariff', 0)) {
+            \Log::channel(config('eklaim.log_channel'))->info("SKIP CEK NAIK KELAS", [
+                "tarif_rs_sum" => $tarif_rs_sum,
+                "cbg_tariff" => SafeAccess::object($groupResponse, 'response->cbg->tariff', 0),
+            ]);
+
+            return;
         }
 
         try {
