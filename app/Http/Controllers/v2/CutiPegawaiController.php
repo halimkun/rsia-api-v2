@@ -59,7 +59,7 @@ class CutiPegawaiController extends Controller
         }
 
         $data = [
-            'id_pegawai'        => $pegawai->id_pegawai,
+            'id_pegawai'        => $pegawai->id,
             'nik'               => $nik,
             'nama'              => $pegawai->nama,
             'dep_id'            => $pegawai->departemen,
