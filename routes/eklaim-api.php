@@ -10,7 +10,7 @@ use Halim\EKlaim\Controllers\GroupKlaimController;
 use Halim\EKlaim\Controllers\ProceduresController;
 use App\Http\Controllers\v2\KlaimController as CustomKlaimController;
 
-Route::as("e-klaim.")->middleware(['api', 'detail-user'])->prefix('eklaim')->group(function () {
+Route::as("e-klaim.")->middleware(['api', 'user-aes'])->prefix('eklaim')->group(function () {
     Route::post('/new', [CustomKlaimController::class, 'new'])->name('new.claim');                          // =====> method : new_claim
     Route::post('/send', [KlaimController::class, 'sendBulk'])->name('send.claim');                         // =====> method : send_claim
     Route::post('/final', [KlaimController::class, 'final'])->name('final.claim');                          // =====> method : claim_final
@@ -40,9 +40,17 @@ Route::as("e-klaim.")->middleware(['api', 'detail-user'])->prefix('eklaim')->gro
     });
 
     // Route::as('covid19.')->prefix('covid19')->group(function () {
-    //     Route::post('/status', [Covid19Controller::class, 'handle'])->name('status');                       // =====> method : search_diagnosis
+    //     Route::post('/status', [Covid19Controller::class, 'handle'])->name('status');                       // =====> method : 
     // });
 
+    // Route::as('file.')->prefix('file')->group(function () {
+    //     Route::post('/{sep}', [NewKlaimController::class, 'get'])->name('get');                             // =====> method : file_get
+    //     Route::post('/upload', [NewKlaimController::class, 'upload'])->name('upload');                      // =====> method : file_upload
+    //     Route::post('/delete', [NewKlaimController::class, 'delete'])->name('delete');                      // =====> method : file_delete
+    // });
+});
+
+Route::as("e-klaim.")->middleware(['api'])->prefix('eklaim')->group(function () {
     Route::as('diagnosis.')->prefix('diagnosis')->group(function () {
         Route::post('/search', [DiagnosisController::class, 'search'])->name('search');                     // =====> method : search_diagnosis
         Route::post('/search/ina', [DiagnosisController::class, 'searchIna'])->name('search.ina');          // =====> method : search_diagnosis_inagrouper
@@ -52,10 +60,4 @@ Route::as("e-klaim.")->middleware(['api', 'detail-user'])->prefix('eklaim')->gro
         Route::post('/search', [ProceduresController::class, 'search'])->name('search');                    // =====> method : search_procedures
         Route::post('/search/ina', [ProceduresController::class, 'searchIna'])->name('search.ina');         // =====> method : search_procedures_inagrouper
     });
-
-    // Route::as('file.')->prefix('file')->group(function () {
-    //     Route::post('/{sep}', [NewKlaimController::class, 'get'])->name('get');                             // =====> method : file_get
-    //     Route::post('/upload', [NewKlaimController::class, 'upload'])->name('upload');                      // =====> method : file_upload
-    //     Route::post('/delete', [NewKlaimController::class, 'delete'])->name('delete');                      // =====> method : file_delete
-    // });
 });
