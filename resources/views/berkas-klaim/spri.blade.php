@@ -15,7 +15,7 @@
         <tr class="align-top">
             <td class="leading-8" colspan="3">
                 <p class="leading-none">Kepada Yth :</p>
-                <p class="leading-none">{{ $spri->nm_dokter_bpjs }}</p>
+                <p class="leading-none ml-3 mt-2">{{ $spri->nm_dokter_bpjs }}</p>
             </td>
             <td style="width:320px;">
                 <div class="mb-2">
@@ -53,7 +53,7 @@
         </tr>
         <tr class="align-top">
             <td class="leading-none" colspan="3">
-                <div class="span mt-3">Demikian Atas Bantuannya diucapkan banyak terimakasih.</div>
+                <div class="span mt-5">Demikian Atas Bantuannya diucapkan banyak terimakasih.</div>
             </td>
             <td></td>
         </tr>

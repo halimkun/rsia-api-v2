@@ -81,13 +81,39 @@ class BerkasKlaimController2 extends Controller
 
         $pasien            = $regPeriksa->pasien;
 
+        // ✔ ----- SEP
+        // Triase UGD
+        // Asmed UGD
+        // Resume
+        // Cppt
+        // Operasi
+        // ✔ ----- SPRI
+        // rencana kontrol
+        // pendukung [skl]
+        // catatan perawatan
+        // pendukung [surat rujukan]
+        // pendukung [usg]
+        // ...$this->genHasilLab($bSep, $regPeriksa),
+        // hasil radiologi
+        // pendukung [laborat]
+        // pendukung selain [skl, surat rujukan, usg, lab]
+        // billing
+        // inacbg klaim 
+        // naik kelas
 
+        $pages = collect([
+            $this->genSep($dpjp, $bSep, $regPeriksa, $pasien),
+            $this->genSuratRencanaKontrol($dpjp, $bSep, $regPeriksa, $pasien),
+            $this->genSuratPerintahRawatInap($bSep, $pasien, $dpjp),
+        ]);
+
+        // map pages where not null
+        $pages = $pages->filter(function ($page) {
+            return $page !== null;
+        });
 
         $html = PDFHelper::generate('berkas-klaim.layout', [
-            "pages" => [
-                $this->genSep($dpjp, $bSep, $regPeriksa, $pasien),
-                $this->genSuratPerintahRawatInap($bSep, $pasien, $dpjp),
-            ]
+            'pages' => $pages
         ], false);
 
         return response($html->stream('berkas-klaim-' . $sep . '.pdf'), 200)
@@ -151,13 +177,13 @@ class BerkasKlaimController2 extends Controller
         if ($srk) {
             $barcodeDPJP   = $this->barcodeText($dpjp->pegawai->nama, $dpjp->pegawai->id);
 
-            $kontrol = PDFHelper::generate('berkas-klaim.kontrol', [
+            $kontrol = view('berkas-klaim.kontrol', [
                 'sep'         => $sep,
                 'pasien'      => $pasien,
                 'regPeriksa'  => $regPeriksa,
                 'srk'         => $srk,
                 'barcodeDPJP' => $barcodeDPJP->getDataUri()
-            ]);
+            ])->render();
 
             return $kontrol;
         }
