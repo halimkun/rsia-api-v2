@@ -3,12 +3,13 @@
 namespace App\Http\Controllers\v2;
 
 use App\Helpers\PDFHelper;
-use App\Http\Controllers\Controller;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
+use App\Http\Controllers\Controller;
 
 class BerkasKlaimController extends Controller
 {
@@ -745,11 +746,9 @@ class BerkasKlaimController extends Controller
     {
         // +==========+==========+==========+
 
-        $selectRawatData = ['no_rawat', 'kd_jenis_prw', 'biaya_rawat'];
-        // $rawat_inap_pr = $rawat_inap_dr = $rawat_inap_drpr = $rawat_jl_pr = $rawat_jl_dr = $rawat_jl_drpr = null;
-
+        $selectRawatData = ['no_rawat', DB::raw("TRIM(kd_jenis_prw) AS kd_jenis_prw"), 'biaya_rawat'];
         $rawat_inap_pr = \App\Models\RawatInapPr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
-            $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
+            $q->select(DB::raw("TRIM(kd_jenis_prw) AS kd_jenis_prw"), 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
                 $qq->select('kd_kategori', 'nm_kategori');
             }]);
         }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
@@ -761,7 +760,7 @@ class BerkasKlaimController extends Controller
         });
 
         $rawat_inap_dr = \App\Models\RawatInapDr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
-            $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
+            $q->select(DB::raw("TRIM(kd_jenis_prw) AS kd_jenis_prw"), 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
                 $qq->select('kd_kategori', 'nm_kategori');
             }]);
         }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
@@ -773,7 +772,7 @@ class BerkasKlaimController extends Controller
         });
 
         $rawat_inap_drpr = \App\Models\RawatInapDrPr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
-            $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
+            $q->select(DB::raw("TRIM(kd_jenis_prw) AS kd_jenis_prw"), 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
                 $qq->select('kd_kategori', 'nm_kategori');
             }]);
         }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
@@ -785,7 +784,7 @@ class BerkasKlaimController extends Controller
         });
 
         $rawat_jl_pr = \App\Models\RawatJalanPr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
-            $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
+            $q->select(DB::raw("TRIM(kd_jenis_prw) AS kd_jenis_prw"), 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
                 $qq->select('kd_kategori', 'nm_kategori');
             }]);
         }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
@@ -797,7 +796,7 @@ class BerkasKlaimController extends Controller
         });
 
         $rawat_jl_dr = \App\Models\RawatJalanDr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
-            $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
+            $q->select(DB::raw("TRIM(kd_jenis_prw) AS kd_jenis_prw"), 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
                 $qq->select('kd_kategori', 'nm_kategori');
             }]);
         }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
@@ -809,7 +808,7 @@ class BerkasKlaimController extends Controller
         });
 
         $rawat_jl_drpr = \App\Models\RawatJalanDrPr::select($selectRawatData)->with(["jenisPerawatan" => function ($q) {
-            $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
+            $q->select(DB::raw("TRIM(kd_jenis_prw) AS kd_jenis_prw"), 'nm_perawatan', 'kd_kategori')->with(['kategori' => function ($qq) {
                 $qq->select('kd_kategori', 'nm_kategori');
             }]);
         }])->where('no_rawat', $no_rawat)->get()->groupBy(function ($item) {
