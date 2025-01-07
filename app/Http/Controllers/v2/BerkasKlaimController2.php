@@ -75,20 +75,22 @@ class BerkasKlaimController2 extends Controller
 
     public function print($sep, Request $request)
     {
-        $bSep              = \App\Models\BridgingSep::where('no_sep', $sep)->first();
-        $regPeriksa        = \App\Models\RegPeriksa::with(['pasien'])->where('no_rawat', $bSep->no_rawat)->first();
-        $dpjp              = \App\Models\Dokter::with('pegawai')->where('kd_dokter', $regPeriksa->kd_dokter)->first();
+        $bSep        = \App\Models\BridgingSep::where('no_sep', $sep)->first();
+        $regPeriksa  = \App\Models\RegPeriksa::with(['pasien'])->where('no_rawat', $bSep->no_rawat)->first();
+        $dpjp        = \App\Models\Dokter::with('pegawai')->where('kd_dokter', $regPeriksa->kd_dokter)->first();
+        
+        $barcodeDPJP = $this->barcodeText($dpjp->pegawai->nama, $dpjp->pegawai->id);
 
-        $pasien            = $regPeriksa->pasien;
+        $pasien      = $regPeriksa->pasien;
 
         // ✔ ----- SEP
         // Triase UGD
         // Asmed UGD
         // Resume
-        // Cppt
-        // Operasi
+        // CPPT
+        // ✔ ----- Operasi
         // ✔ ----- SPRI
-        // rencana kontrol
+        // ✔ ----- Surat Rencana Kontrol
         // pendukung [skl]
         // catatan perawatan
         // pendukung [surat rujukan]
@@ -102,9 +104,10 @@ class BerkasKlaimController2 extends Controller
         // naik kelas
 
         $pages = collect([
-            $this->genSep($dpjp, $bSep, $regPeriksa, $pasien),
-            $this->genSuratRencanaKontrol($dpjp, $bSep, $regPeriksa, $pasien),
-            $this->genSuratPerintahRawatInap($bSep, $pasien, $dpjp),
+            $this->genSepPage($bSep, $regPeriksa, $pasien, $barcodeDPJP),
+            $this->genOperasiPage($bSep->no_rawat, $regPeriksa, $barcodeDPJP),
+            $this->genSpriPage($bSep, $pasien, $barcodeDPJP),
+            $this->genRencanaKontrolPage($bSep, $regPeriksa, $pasien, $barcodeDPJP),
         ]);
 
         // map pages where not null
@@ -126,19 +129,20 @@ class BerkasKlaimController2 extends Controller
 
 
     /**
-     * Generate SEP PDF
+     * Generate SEP (Surat Eligibilitas Peserta) document.
      *
-     * @param \App\Models\BridgingSep $sep
-     * @param \App\Models\RegPeriksa $regPeriksa
-     *
-     * @return \Barryvdh\DomPDF\PDF
+     * @param \App\Models\Dokter $dpjp The DPJP (Dokter Penanggung Jawab Pelayanan) model instance.
+     * @param \App\Models\BridgingSep $sep The SEP (Surat Eligibilitas Peserta) model instance.
+     * @param \App\Models\RegPeriksa $regPeriksa The registration check model instance.
+     * @param \App\Models\Pasien $pasien The patient model instance.
+     * 
+     * @return string Rendered SEP document view.
      */
-    public function genSep($dpjp, $sep, $regPeriksa, $pasien)
+    public function genSepPage($sep, $regPeriksa, $pasien, $barcodeDPJP)
     {
         $diagnosa = \App\Models\DiagnosaPasien::with('penyakit')->orderBy('prioritas', 'asc')->where('no_rawat', $regPeriksa->no_rawat)->get();
         $prosedur = \App\Models\ProsedurPasien::with('penyakit')->orderBy('prioritas', 'asc')->where('no_rawat', $regPeriksa->no_rawat)->get();
-
-        $barcodeDPJP   = $this->barcodeText($dpjp->pegawai->nama, $dpjp->pegawai->id);
+        
         $barcodePasien = $this->toBarcode($sep->no_kartu);
 
         $berkasSep = view('berkas-klaim.sep', [
@@ -154,12 +158,19 @@ class BerkasKlaimController2 extends Controller
         return $berkasSep->render();
     }
 
-    public function genSuratPerintahRawatInap($sep, $pasien, $dpjp)
+    /**
+     * Generate Surat Perintah Rawat Inap document.
+     *
+     * @param \App\Models\BridgingSep $sep The SEP (Surat Eligibilitas Peserta) model instance.
+     * @param \App\Models\Pasien $pasien The patient model instance.
+     * @param \App\Models\Dokter $dpjp The DPJP (Dokter Penanggung Jawab Pelayanan) model instance.
+     * 
+     * @return string|null The rendered control plan letter view, or null if no corresponding Surat Kontrol is found
+     */
+    public function genSpriPage($sep, $pasien, $barcodeDPJP)
     {
         $spri = \App\Models\BridgingSuratPriBpjs::where('no_surat', $sep->noskdp)->first();
         if ($spri) {
-            $barcodeDPJP   = $this->barcodeText($dpjp->pegawai->nama, $dpjp->pegawai->id);
-            
             $spri = view('berkas-klaim.spri', [
                 'sep'           => (object) $sep->only(['tglsep', 'no_sep', 'no_kartu']),
                 'pasien'        => $pasien,
@@ -171,12 +182,20 @@ class BerkasKlaimController2 extends Controller
         }
     }
 
-    public function genSuratRencanaKontrol($dpjp, $sep, $regPeriksa, $pasien)
+    /**
+     * Generates a control plan letter (Surat Rencana Kontrol) for a patient.
+     *
+     * @param \App\Models\Dokter $dpjp The DPJP (Doctor in Charge of Services) information.
+     * @param \App\Models\BridgingSep $sep The SEP (Health Insurance Participant Eligibility Letter) information.
+     * @param \App\Models\RegPeriksa $regPeriksa The registration check information.
+     * @param \App\Models\Pasien $pasien The patient information.
+     * 
+     * @return string|null The rendered control plan letter view, or null if no corresponding Surat Kontrol is found.
+     */
+    public function genRencanaKontrolPage($sep, $regPeriksa, $pasien, $barcodeDPJP)
     {
         $srk = \App\Models\BridgingSuratKontrolBpjs::where('no_surat', $sep->noskdp)->first();
         if ($srk) {
-            $barcodeDPJP   = $this->barcodeText($dpjp->pegawai->nama, $dpjp->pegawai->id);
-
             $kontrol = view('berkas-klaim.kontrol', [
                 'sep'         => $sep,
                 'pasien'      => $pasien,
@@ -186,6 +205,20 @@ class BerkasKlaimController2 extends Controller
             ])->render();
 
             return $kontrol;
+        }
+    }
+
+    public function genOperasiPage(string $no_rawat, $regPeriksa, $barcodeDPJP)
+    {
+        $operasiData = \App\Models\RsiaOperasiSafe::withAllRelations()->where('no_rawat', $no_rawat)->get();
+        if ($operasiData) {
+            $operasi = view('berkas-klaim.operasi', [
+                'data'        => $operasiData,
+                'regPeriksa'  => $regPeriksa,
+                'barcodeDPJP' => $barcodeDPJP->getDataUri()
+            ])->render();
+
+            return $operasi;
         }
     }
 

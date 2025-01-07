@@ -53,10 +53,9 @@
             'Tgl. Entry'    => $srk->tgl_surat,
         ] as $key => $value)
             <tr>
-                <td class="text-nowrap whitespace-nowrap leading-5">{{ $key }}</td>
-                <td class="leading-5">:</td>
-                <td class="text-nowrap whitespace-nowrap leading-5">{{ $value }}</td>
-                <td class="leading-5"></td>
+                <td class="text-nowrap whitespace-nowrap leading-5" style="width: 115px;">{{ $key }}</td>
+                <td class="leading-5" style="width: 15px;">:</td>
+                <td class="leading-5" colspan="2">{{ $value }}</td>
             </tr>
         @endforeach
         <tr class="align-top">
