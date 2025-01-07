@@ -131,10 +131,10 @@ class BerkasKlaimController2 extends Controller
     /**
      * Generate SEP (Surat Eligibilitas Peserta) document.
      *
-     * @param \App\Models\Dokter $dpjp The DPJP (Dokter Penanggung Jawab Pelayanan) model instance.
      * @param \App\Models\BridgingSep $sep The SEP (Surat Eligibilitas Peserta) model instance.
      * @param \App\Models\RegPeriksa $regPeriksa The registration check model instance.
      * @param \App\Models\Pasien $pasien The patient model instance.
+     * @param \Endroid\QrCode\Writer\Result\PngResult $barcodeDPJP The DPJP barcode.
      * 
      * @return string Rendered SEP document view.
      */
@@ -163,7 +163,7 @@ class BerkasKlaimController2 extends Controller
      *
      * @param \App\Models\BridgingSep $sep The SEP (Surat Eligibilitas Peserta) model instance.
      * @param \App\Models\Pasien $pasien The patient model instance.
-     * @param \App\Models\Dokter $dpjp The DPJP (Dokter Penanggung Jawab Pelayanan) model instance.
+     * @param \Endroid\QrCode\Writer\Result\PngResult $barcodeDPJP The DPJP barcode.
      * 
      * @return string|null The rendered control plan letter view, or null if no corresponding Surat Kontrol is found
      */
@@ -185,10 +185,10 @@ class BerkasKlaimController2 extends Controller
     /**
      * Generates a control plan letter (Surat Rencana Kontrol) for a patient.
      *
-     * @param \App\Models\Dokter $dpjp The DPJP (Doctor in Charge of Services) information.
      * @param \App\Models\BridgingSep $sep The SEP (Health Insurance Participant Eligibility Letter) information.
      * @param \App\Models\RegPeriksa $regPeriksa The registration check information.
      * @param \App\Models\Pasien $pasien The patient information.
+     * @param \Endroid\QrCode\Writer\Result\PngResult $barcodeDPJP The DPJP barcode.
      * 
      * @return string|null The rendered control plan letter view, or null if no corresponding Surat Kontrol is found.
      */
@@ -208,6 +208,15 @@ class BerkasKlaimController2 extends Controller
         }
     }
 
+    /**
+     * Generate Operasi document.
+     *
+     * @param string $no_rawat The registration number.
+     * @param \App\Models\RegPeriksa $regPeriksa The registration check model instance.
+     * @param \Endroid\QrCode\Writer\Result\PngResult $barcodeDPJP The DPJP barcode.
+     * 
+     * @return string|null The rendered operation document view, or null if no corresponding operation data is found.
+     */
     public function genOperasiPage(string $no_rawat, $regPeriksa, $barcodeDPJP)
     {
         $operasiData = \App\Models\RsiaOperasiSafe::withAllRelations()->where('no_rawat', $no_rawat)->get();
