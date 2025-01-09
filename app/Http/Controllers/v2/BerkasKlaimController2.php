@@ -38,20 +38,6 @@ class BerkasKlaimController2 extends Controller
         'VK'        => 'VK',
     ];
 
-
-    private function toBarcode($data)
-    {
-        $qrCode = \Endroid\QrCode\Builder\Builder::create()
-            ->writer(new \Endroid\QrCode\Writer\PngWriter())
-            ->writerOptions([])
-            ->data($data)
-            ->encoding(new \Endroid\QrCode\Encoding\Encoding('ISO-8859-1'))
-            ->errorCorrectionLevel(new \Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh())
-            ->build();
-
-        return $qrCode;
-    }
-
     /**
      * Get the departemen
      *
@@ -73,14 +59,16 @@ class BerkasKlaimController2 extends Controller
         return $values[0] ?? null; // Return the first value or null if empty
     }
 
-
-
-
     public function print($sep, Request $request)
     {
         $bSep        = \App\Models\BridgingSep::where('no_sep', $sep)->first();
         $regPeriksa  = \App\Models\RegPeriksa::with(['pasien'])->where('no_rawat', $bSep->no_rawat)->first();
         $dpjp        = \App\Models\Dokter::with('pegawai')->where('kd_dokter', $regPeriksa->kd_dokter)->first();
+
+        $pendukung   = \App\Models\RsiaUpload::where('no_rawat', $bSep->no_rawat)->get()->map(function ($item) {
+            $item->kategori = strtolower($item->kategori);
+            return $item;
+        });
 
         $barcodeDPJP = SignHelper::rsia($dpjp->pegawai->nama, $dpjp->pegawai->id);
 
@@ -94,14 +82,14 @@ class BerkasKlaimController2 extends Controller
         // ✔ ----- Operasi
         // ✔ ----- SPRI
         // ✔ ----- Surat Rencana Kontrol
-        // pendukung [skl]
+        // ✔ ----- pendukung [skl]
         // ✔ ----- catatan perawatan
-        // pendukung [surat rujukan]
-        // pendukung [usg]
+        // ✔ ----- pendukung [surat rujukan]
+        // ✔ ----- pendukung [usg]
         // ...$this->genHasilLab($bSep, $regPeriksa),
-        // hasil radiologi
-        // pendukung [laborat]
-        // pendukung selain [skl, surat rujukan, usg, lab]
+        // ✔ ----- hasil radiologi
+        // ✔ ----- pendukung [laborat]
+        // ✔ ----- pendukung selain [skl, surat rujukan, usg, lab]
         // billing
         // inacbg klaim 
         // naik kelas
@@ -115,8 +103,13 @@ class BerkasKlaimController2 extends Controller
             $this->genOperasiPage($bSep->no_rawat, $regPeriksa, $barcodeDPJP),
             $this->genSpriPage($bSep, $pasien, $barcodeDPJP),
             $this->genRencanaKontrolPage($bSep, $regPeriksa, $pasien, $barcodeDPJP),
+            $this->pendukung($pendukung, ['skl']),
             $this->genHasilPemeriksaanUsg($bSep, $regPeriksa, $pasien, $dpjp, $barcodeDPJP),
+            $this->pendukung($pendukung, ['surat rujukan']),
+            $this->pendukung($pendukung, ['usg']),
             $this->genHasilRadiologiPage($regPeriksa, $pasien, $barcodeDPJP),
+            $this->pendukung($pendukung, ['laborat']),
+            $this->pendukung($pendukung, ['skl', 'surat rujukan', 'usg', 'laborat'], true),
         ]);
 
         // map pages where not null
@@ -152,7 +145,7 @@ class BerkasKlaimController2 extends Controller
         $diagnosa = \App\Models\DiagnosaPasien::with('penyakit')->orderBy('prioritas', 'asc')->where('no_rawat', $regPeriksa->no_rawat)->get();
         $prosedur = \App\Models\ProsedurPasien::with('penyakit')->orderBy('prioritas', 'asc')->where('no_rawat', $regPeriksa->no_rawat)->get();
 
-        $barcodePasien = $this->toBarcode($sep->no_kartu);
+        $barcodePasien = SignHelper::toQr($sep->no_kartu);
 
         $berkasSep = view('berkas-klaim.sep', [
             'sep'           => $sep,
@@ -424,6 +417,37 @@ class BerkasKlaimController2 extends Controller
 
             return $hasilRadiologi;
         }
+    }
+
+    /**
+     * Retrieve and render supporting files based on the given category.
+     *
+     * @param \Illuminate\Database\Eloquent\Collection|null $data The data collection to search within.
+     * @param string $ambil The category to filter the data by.
+     * @return string|null The rendered view of supporting files or null if no data or files are found.
+     */
+    public function pendukung($data, array $ambil, bool $notIn = false)
+    {
+        if (!$data) {
+            return null;
+        }
+
+        if ($notIn) {
+            $pendukung = $data->whereNotIn('kategori', $ambil)->first();
+        } else {
+            $pendukung = $data->whereIn('kategori', $ambil)->first();
+        }
+
+        if (empty($pendukung)) {
+            return null;
+        }
+
+        $files = explode(',', $pendukung->file);
+        $pendukung = view('berkas-klaim.image', [
+            'files' => $files,
+        ])->render();
+
+        return $pendukung;
     }
 
 
