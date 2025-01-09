@@ -15,7 +15,7 @@
 @endphp
 
 <main>
-    <table class="table m-0 mt-2 w-full table-auto">
+    <table class="table w-full table-auto">
         <tr>
             <td colspan="2" class="border p-1" style="border-color: #333;">
                 <table class="table table-auto">
@@ -188,8 +188,8 @@
                 <p class="mb-1 font-bold leading-none">KONDISI PULANG</p>
                 <table class="table w-full">
                     <tr>
-                        <td class="m-0 p-0 leading-none"><span class="font-dejavu text-xl leading-none">{!! $resume->cara_keluar == "Atas Izin Dokter" && $resume->keadaan == "Membaik" ? '&#9726;' : '&#9725;' !!}</span> Membaik</td>
                         <td class="m-0 p-0 leading-none"><span class="font-dejavu text-xl leading-none">{!! $resume->cara_keluar == "Atas Izin Dokter" && $resume->keadaan == "Sembuh" ? '&#9726;' : '&#9725;' !!}</span> Sembuh</td>
+                        <td class="m-0 p-0 leading-none"><span class="font-dejavu text-xl leading-none">{!! $resume->cara_keluar == "Atas Izin Dokter" && $resume->keadaan == "Membaik" ? '&#9726;' : '&#9725;' !!}</span> Membaik</td>
                         <td class="m-0 p-0 leading-none"><span class="font-dejavu text-xl leading-none">{!! $resume->cara_keluar == "Pulang Atas Permintaan Sendiri" ? '&#9726;' : '&#9725;' !!}</span> Pulang Atas Permintaan Sendiri</td>
                         <td class="m-0 p-0 leading-none"><span class="font-dejavu text-xl leading-none">{!! $resume->keadaan == "Meninggal" ? '&#9726;' : '&#9725;' !!}</span> Meninggal</td>
                         <td class="m-0 p-0 leading-none"><span class="font-dejavu text-xl leading-none">{!! $resume->cara_keluar == "Pindah RS" ? '&#9726;' : '&#9725;' !!}</span> Rujuk</td>

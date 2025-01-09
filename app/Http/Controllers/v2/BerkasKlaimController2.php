@@ -41,7 +41,7 @@ class BerkasKlaimController2 extends Controller
         'VK'        => 'VK',
     ];
 
-    
+
     private function toBarcode($data)
     {
         $qrCode = \Endroid\QrCode\Builder\Builder::create()
@@ -117,9 +117,9 @@ class BerkasKlaimController2 extends Controller
         $pasien      = $regPeriksa->pasien;
 
         // ✔ ----- SEP
-        // Triase UGD
-        // Asmed UGD
-        // Resume
+        // ✔ ----- Triase UGD
+        // ✔ ----- Asmed UGD
+        // ✔ ----- Resume
         // ✔ ----- CPPT
         // ✔ ----- Operasi
         // ✔ ----- SPRI
@@ -138,11 +138,14 @@ class BerkasKlaimController2 extends Controller
 
         $pages = collect([
             $this->genSepPage($bSep, $regPeriksa, $pasien, $barcodeDPJP),
+            $this->genTriaseUgd($bSep->jnspelayanan, $regPeriksa, $barcodeDPJP),
+            $this->genAsmedUgdPage($bSep->jnspelayanan, $regPeriksa, $barcodeDPJP),
             $this->genResumeMedisPage($bSep, $pasien, $regPeriksa, $barcodeDPJP),
             $this->genCpptPage($bSep->jnspelayanan, $regPeriksa, $pasien),
             $this->genOperasiPage($bSep->no_rawat, $regPeriksa, $barcodeDPJP),
             $this->genSpriPage($bSep, $pasien, $barcodeDPJP),
             $this->genRencanaKontrolPage($bSep, $regPeriksa, $pasien, $barcodeDPJP),
+            $this->genHasilPemeriksaanUsg($bSep, $regPeriksa, $pasien, $dpjp, $barcodeDPJP),
         ]);
 
         // map pages where not null
@@ -193,6 +196,70 @@ class BerkasKlaimController2 extends Controller
         return $berkasSep->render();
     }
 
+    /**
+     * Generate triage UGD view for claim documents.
+     *
+     * @param int $jenisPelayanan The type of service.
+     * @param \App\Models\RegPeriksa $regPeriksa The registration check model.
+     * @param \App\Models\BarcodeDPJP $barcodeDPJP The barcode DPJP model.
+     * @return string|null The rendered triage UGD view or null if conditions are not met.
+     */
+    public function genTriaseUgd($jenisPelayanan, $regPeriksa, $barcodeDPJP)
+    {
+        if ($jenisPelayanan != 1) {
+            return null;
+        }
+
+        $triase = \App\Models\RsiaTriaseUgd::where('no_rawat', $regPeriksa->no_rawat)->first();
+
+        if ($triase) {
+            $triase = view('berkas-klaim.triase', [
+                'regPeriksa'  => $regPeriksa,
+                'triase'      => $triase,
+                'barcodeDPJP' => $barcodeDPJP->getDataUri(),
+            ])->render();
+    
+            return $triase;
+        }
+
+    }
+
+    /**
+     * Generates the Asmed UGD page for the given service type, registration check, and DPJP barcode.
+     *
+     * @param int $jenisPelayanan The type of service.
+     * @param \App\Models\RegPeriksa $regPeriksa The registration check model.
+     * @param \App\Models\BarcodeDPJP $barcodeDPJP The DPJP barcode model.
+     * @return string|null The rendered Asmed UGD page or null if the service type is 2.
+     */
+    public function genAsmedUgdPage($jenisPelayanan, $regPeriksa, $barcodeDPJP)
+    {
+        if ($jenisPelayanan == 2) {
+            return null;
+        }
+
+        $asmed = \App\Models\PenilaianMedisIgd::with('dokter.sidikjari')->where('no_rawat', $regPeriksa->no_rawat)->first();
+
+        if ($asmed) {
+            $asmed = view('berkas-klaim.asmed-ugd', [
+                'regPeriksa'  => $regPeriksa,
+                'asmed'       => $asmed,
+                'barcodeDPJP' => $barcodeDPJP->getDataUri(),
+            ])->render();
+    
+            return $asmed;
+        }
+    }
+
+    /**
+     * Generate resume medis page for claim documents.
+     *
+     * @param \App\Models\BridgingSep $sep The SEP (Surat Eligibilitas Peserta) model instance.
+     * @param \App\Models\Pasien $pasien The patient model instance.
+     * @param \App\Models\RegPeriksa $regPeriksa The registration check model instance.
+     * @param \App\Models\BarcodeDPJP $barcodeDPJP The DPJP barcode model instance.
+     * @return string|null The rendered resume medis page view or null if no resume data is found.
+     */
     public function genResumeMedisPage($sep, $pasien, $regPeriksa, $barcodeDPJP)
     {
         $resume    = \App\Models\ResumePasienRanap::where('no_rawat', $sep->no_rawat)->first();
@@ -203,7 +270,7 @@ class BerkasKlaimController2 extends Controller
             })->where('status_koor', '1')->first();
             $barcodeResume = $this->barcodeText($koor->nama, $koor->id);
             $ttdPasien     = \App\Models\RsiaVerifSep::where('no_sep', $sep->no_sep)->first();
-    
+
             $resumeMedis = view('berkas-klaim.resume', [
                 'sep'         => $sep,
                 'pasien'      => $pasien,
@@ -214,11 +281,10 @@ class BerkasKlaimController2 extends Controller
                 'barcodeKoor' => $barcodeResume->getDataUri(),
                 'barcodeDPJP' => $barcodeDPJP->getDataUri(),
                 'ttdPasien'   => $ttdPasien,
-            ]);
-    
+            ])->render();
+
             return $resumeMedis;
         }
-
     }
 
     /**
@@ -334,6 +400,22 @@ class BerkasKlaimController2 extends Controller
         }
     }
 
+    public function genHasilPemeriksaanUsg($bSep, $regPeriksa, $pasien, $dpjp, $barcodeDPJP)
+    {
+        $catatanPerawatan = \App\Models\CatatanPerawatan::where('no_rawat', $regPeriksa->no_rawat)->first();
+        if ($catatanPerawatan) {
+            $catatan = view('berkas-klaim.hasil-usg', [
+                'sep'        => $bSep,
+                'pasien'     => $pasien,
+                'regPeriksa' => $regPeriksa,
+                'usg'        => $catatanPerawatan,
+                'dpjp'       => $dpjp,
+                'barcodeDPJP' => $barcodeDPJP->getDataUri(),
+            ]);
+    
+            return $catatan;
+        }
+    }
 
 
 
