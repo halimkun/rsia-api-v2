@@ -4,14 +4,11 @@ namespace App\Http\Controllers\v2;
 
 
 use App\Helpers\PDFHelper;
-use Illuminate\Support\Str;
 use Illuminate\Http\Request;
+use App\Helpers\SignHelper;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use Illuminate\Support\Facades\Hash;
 
 class BerkasKlaimController2 extends Controller
 {
@@ -55,33 +52,6 @@ class BerkasKlaimController2 extends Controller
         return $qrCode;
     }
 
-    private function barcodeText($name, $id_or_nik)
-    {
-        $hash = \App\Models\SidikJari::where('id', $id_or_nik)->select('id', DB::raw('SHA1(sidikjari) as sidikjari'))->first();
-
-        if ($hash) {
-            $hash = $hash->sidikjari;
-        } else {
-            $hash = Hash::make($id_or_nik);
-        }
-
-        $text     = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $name . '. ID : ' . $hash;
-        $logoPath = asset('assets/images/logo.png');
-
-        $qrCode = \Endroid\QrCode\Builder\Builder::create()
-            ->writer(new \Endroid\QrCode\Writer\PngWriter())
-            ->writerOptions([])
-            ->data($text)
-            ->logoPath($logoPath)
-            ->logoResizeToWidth(100)
-            ->encoding(new \Endroid\QrCode\Encoding\Encoding('ISO-8859-1'))
-            ->errorCorrectionLevel(new \Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh())
-            ->build();
-
-
-        return $qrCode;
-    }
-
     /**
      * Get the departemen
      *
@@ -112,7 +82,7 @@ class BerkasKlaimController2 extends Controller
         $regPeriksa  = \App\Models\RegPeriksa::with(['pasien'])->where('no_rawat', $bSep->no_rawat)->first();
         $dpjp        = \App\Models\Dokter::with('pegawai')->where('kd_dokter', $regPeriksa->kd_dokter)->first();
 
-        $barcodeDPJP = $this->barcodeText($dpjp->pegawai->nama, $dpjp->pegawai->id);
+        $barcodeDPJP = SignHelper::rsia($dpjp->pegawai->nama, $dpjp->pegawai->id);
 
         $pasien      = $regPeriksa->pasien;
 
@@ -125,7 +95,7 @@ class BerkasKlaimController2 extends Controller
         // ✔ ----- SPRI
         // ✔ ----- Surat Rencana Kontrol
         // pendukung [skl]
-        // catatan perawatan
+        // ✔ ----- catatan perawatan
         // pendukung [surat rujukan]
         // pendukung [usg]
         // ...$this->genHasilLab($bSep, $regPeriksa),
@@ -146,6 +116,7 @@ class BerkasKlaimController2 extends Controller
             $this->genSpriPage($bSep, $pasien, $barcodeDPJP),
             $this->genRencanaKontrolPage($bSep, $regPeriksa, $pasien, $barcodeDPJP),
             $this->genHasilPemeriksaanUsg($bSep, $regPeriksa, $pasien, $dpjp, $barcodeDPJP),
+            $this->genHasilRadiologiPage($regPeriksa, $pasien, $barcodeDPJP),
         ]);
 
         // map pages where not null
@@ -268,7 +239,7 @@ class BerkasKlaimController2 extends Controller
             $koor      = \App\Models\Pegawai::select('id', 'nik', 'nama', 'departemen')->whereHas('dep', function ($q) use ($kamarInap) {
                 return $q->where('nama', \Illuminate\Support\Str::upper($this->getDepartemen($kamarInap)));
             })->where('status_koor', '1')->first();
-            $barcodeResume = $this->barcodeText($koor->nama, $koor->id);
+            $barcodeResume = SignHelper::rsia($koor->nama, $koor->id);
             $ttdPasien     = \App\Models\RsiaVerifSep::where('no_sep', $sep->no_sep)->first();
 
             $resumeMedis = view('berkas-klaim.resume', [
@@ -400,6 +371,17 @@ class BerkasKlaimController2 extends Controller
         }
     }
 
+    /**
+     * Generate the USG examination result for the claim document.
+     *
+     * @param \App\Models\BridgingSep $bSep The SEP (Surat Eligibilitas Peserta) model instance.
+     * @param \App\Models\RegPeriksa $regPeriksa The registration check model instance.
+     * @param \App\Models\Pasien $pasien The patient model instance.
+     * @param \App\Models\Dokter $dpjp The DPJP model instance.
+     * @param \Endroid\QrCode\Writer\Result\PngResult $barcodeDPJP The DPJP barcode model instance.
+     * 
+     * @return string|null The rendered USG examination result view, or null if no USG examination result is found.
+     */
     public function genHasilPemeriksaanUsg($bSep, $regPeriksa, $pasien, $dpjp, $barcodeDPJP)
     {
         $catatanPerawatan = \App\Models\CatatanPerawatan::where('no_rawat', $regPeriksa->no_rawat)->first();
@@ -417,7 +399,32 @@ class BerkasKlaimController2 extends Controller
         }
     }
 
+    /**
+     * Generate the radiology examination result for the claim document.
+     *
+     * @param \App\Models\BridgingSep $bSep The SEP (Surat Eligibilitas Peserta) model instance.
+     * @param \App\Models\RegPeriksa $regPeriksa The registration check model instance.
+     * @param \App\Models\Pasien $pasien The patient model instance.
+     * @param \App\Models\Dokter $dpjp The DPJP model instance.
+     * @param \Endroid\QrCode\Writer\Result\PngResult $barcodeDPJP The DPJP barcode model instance.
+     * 
+     * @return string|null The rendered radiology examination result view, or null if no radiology examination result is found.
+     */
+    public function genHasilRadiologiPage($regPeriksa, $pasien)
+    {
+        $radiologi = \App\Models\PeriksaRadiologi::with(['dokter', 'petugas', 'dokterPerujuk', 'hasilRadiologi', 'jenisPerawatan'])
+            ->where('no_rawat', $regPeriksa->no_rawat)->get();
+        
+        if ($radiologi) {
+            $hasilRadiologi = view('berkas-klaim.radiologi', [
+                'regPeriksa'  => $regPeriksa,
+                'pasien'      => $pasien,
+                'radiologi'   => $radiologi,
+            ])->render();
 
+            return $hasilRadiologi;
+        }
+    }
 
 
 
