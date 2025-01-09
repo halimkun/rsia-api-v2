@@ -27,6 +27,18 @@ class SignHelper
             ->errorCorrectionLevel(new \Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh())
             ->build();
 
+        return $qrCode;
+    }
+
+    public static function toQr($data)
+    {
+        $qrCode = \Endroid\QrCode\Builder\Builder::create()
+            ->writer(new \Endroid\QrCode\Writer\PngWriter())
+            ->writerOptions([])
+            ->data($data)
+            ->encoding(new \Endroid\QrCode\Encoding\Encoding('ISO-8859-1'))
+            ->errorCorrectionLevel(new \Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh())
+            ->build();
 
         return $qrCode;
     }
