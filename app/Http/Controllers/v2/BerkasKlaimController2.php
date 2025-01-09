@@ -29,7 +29,19 @@ class BerkasKlaimController2 extends Controller
      */
     protected $orientation = 'portrait';
 
+    /**
+     * Koordinat berdasarkan departemen
+     *
+     * @var array
+     */
+    protected $koorByDepartemen = [
+        'Anak'      => 'Anak',
+        'Kandungan' => 'Nifas',
+        'BY'        => 'PERINATOLOGI',
+        'VK'        => 'VK',
+    ];
 
+    
     private function toBarcode($data)
     {
         $qrCode = \Endroid\QrCode\Builder\Builder::create()
@@ -43,7 +55,7 @@ class BerkasKlaimController2 extends Controller
         return $qrCode;
     }
 
-    private function barcodeText($dpjp, $id_or_nik)
+    private function barcodeText($name, $id_or_nik)
     {
         $hash = \App\Models\SidikJari::where('id', $id_or_nik)->select('id', DB::raw('SHA1(sidikjari) as sidikjari'))->first();
 
@@ -53,7 +65,7 @@ class BerkasKlaimController2 extends Controller
             $hash = Hash::make($id_or_nik);
         }
 
-        $text     = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $dpjp . '. ID : ' . $hash;
+        $text     = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik oleh ' . $name . '. ID : ' . $hash;
         $logoPath = asset('assets/images/logo.png');
 
         $qrCode = \Endroid\QrCode\Builder\Builder::create()
@@ -68,6 +80,27 @@ class BerkasKlaimController2 extends Controller
 
 
         return $qrCode;
+    }
+
+    /**
+     * Get the departemen
+     *
+     * @param \Illuminate\Support\Collection $kamarInap
+     * @return string|null
+     */
+    private function getDepartemen($kamarInap)
+    {
+        if ($kamarInap->isEmpty()) {
+            return null;
+        }
+
+        $filteredKeys = array_filter(array_keys($this->koorByDepartemen), function ($key) use ($kamarInap) {
+            return strpos($kamarInap[0]->kd_kamar, $key) !== false;
+        });
+
+        $values = array_values(array_intersect_key($this->koorByDepartemen, array_flip($filteredKeys)));
+
+        return $values[0] ?? null; // Return the first value or null if empty
     }
 
 
@@ -105,6 +138,7 @@ class BerkasKlaimController2 extends Controller
 
         $pages = collect([
             $this->genSepPage($bSep, $regPeriksa, $pasien, $barcodeDPJP),
+            $this->genResumeMedisPage($bSep, $pasien, $regPeriksa, $barcodeDPJP),
             $this->genCpptPage($bSep->jnspelayanan, $regPeriksa, $pasien),
             $this->genOperasiPage($bSep->no_rawat, $regPeriksa, $barcodeDPJP),
             $this->genSpriPage($bSep, $pasien, $barcodeDPJP),
@@ -159,6 +193,97 @@ class BerkasKlaimController2 extends Controller
         return $berkasSep->render();
     }
 
+    public function genResumeMedisPage($sep, $pasien, $regPeriksa, $barcodeDPJP)
+    {
+        $resume    = \App\Models\ResumePasienRanap::where('no_rawat', $sep->no_rawat)->first();
+        if ($resume) {
+            $kamarInap = \App\Models\KamarInap::with('kamar.bangsal')->where('no_rawat', $sep->no_rawat)->where('stts_pulang', '<>', 'Pindah Kamar')->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
+            $koor      = \App\Models\Pegawai::select('id', 'nik', 'nama', 'departemen')->whereHas('dep', function ($q) use ($kamarInap) {
+                return $q->where('nama', \Illuminate\Support\Str::upper($this->getDepartemen($kamarInap)));
+            })->where('status_koor', '1')->first();
+            $barcodeResume = $this->barcodeText($koor->nama, $koor->id);
+            $ttdPasien     = \App\Models\RsiaVerifSep::where('no_sep', $sep->no_sep)->first();
+    
+            $resumeMedis = view('berkas-klaim.resume', [
+                'sep'         => $sep,
+                'pasien'      => $pasien,
+                'regPeriksa'  => $regPeriksa,
+                'kamarInap'   => $kamarInap,
+                'resume'      => $resume,
+                'koor'        => $koor,
+                'barcodeKoor' => $barcodeResume->getDataUri(),
+                'barcodeDPJP' => $barcodeDPJP->getDataUri(),
+                'ttdPasien'   => $ttdPasien,
+            ]);
+    
+            return $resumeMedis;
+        }
+
+    }
+
+    /**
+     * Generate CPPT (Catatan Perkembangan Pasien Terintegrasi) document.
+     *
+     * @param string $jenisPelayanan The type of service.
+     * @param \App\Models\RegPeriksa $regPeriksa The registration check model instance.
+     * @param \App\Models\Pasien $pasien The patient model instance.
+     * 
+     * @return string|null The rendered CPPT document view, or null if no corresponding CPPT is found.
+     */
+    public function genCpptPage(string $jenisPelayanan, $regPeriksa, $pasien)
+    {
+        $no_rawat = \App\Models\RegPeriksa::select('no_rawat')
+            ->where('no_rkm_medis', $regPeriksa->no_rkm_medis)
+            ->whereBetween('tgl_registrasi', [\Carbon\Carbon::parse($regPeriksa->tgl_registrasi)->subDays(30), \Carbon\Carbon::parse($regPeriksa->tgl_registrasi)->addDays(30)])
+            ->orderBy('tgl_registrasi', 'desc')
+            ->get();
+
+        $no_rawat = $no_rawat->pluck('no_rawat')->toArray();
+
+        if ($jenisPelayanan == "2") {
+            $cppt = \App\Models\PemeriksaanRalanKlaim::with('petugas')->whereIn('no_rawat', $no_rawat)->orderBy('tgl_perawatan', 'DESC')->get();
+        } else if ($jenisPelayanan == "1") {
+            $cppt = \App\Models\PemeriksaanRanapKlaim::with('petugas')->whereIn('no_rawat', $no_rawat)->orderBy('tgl_perawatan', 'DESC')->get();
+        } else {
+            return null;
+        }
+
+        if (!$cppt || $cppt->isEmpty()) {
+            return null;
+        }
+
+        $cppt = view('berkas-klaim.cppt', [
+            'regPeriksa' => $regPeriksa->withoutRelations(),
+            'pasien'     => $pasien,
+            'cppt'       => $cppt,
+        ])->render();
+
+        return $cppt;
+    }
+
+    /**
+     * Generate Operasi document.
+     *
+     * @param string $no_rawat The registration number.
+     * @param \App\Models\RegPeriksa $regPeriksa The registration check model instance.
+     * @param \Endroid\QrCode\Writer\Result\PngResult $barcodeDPJP The DPJP barcode.
+     * 
+     * @return string|null The rendered operation document view, or null if no corresponding operation data is found.
+     */
+    public function genOperasiPage(string $no_rawat, $regPeriksa, $barcodeDPJP)
+    {
+        $operasiData = \App\Models\RsiaOperasiSafe::withAllRelations()->where('no_rawat', $no_rawat)->get();
+        if ($operasiData) {
+            $operasi = view('berkas-klaim.operasi', [
+                'data'        => $operasiData,
+                'regPeriksa'  => $regPeriksa,
+                'barcodeDPJP' => $barcodeDPJP->getDataUri()
+            ])->render();
+
+            return $operasi;
+        }
+    }
+
     /**
      * Generate Surat Perintah Rawat Inap document.
      *
@@ -209,59 +334,11 @@ class BerkasKlaimController2 extends Controller
         }
     }
 
-    public function genCpptPage(string $jenisPelayanan, $regPeriksa, $pasien)
-    {
-        $no_rawat = \App\Models\RegPeriksa::select('no_rawat')
-            ->where('no_rkm_medis', $regPeriksa->no_rkm_medis)
-            ->whereBetween('tgl_registrasi', [\Carbon\Carbon::parse($regPeriksa->tgl_registrasi)->subDays(30), \Carbon\Carbon::parse($regPeriksa->tgl_registrasi)->addDays(30)])
-            ->orderBy('tgl_registrasi', 'desc')
-            ->get();
 
-        $no_rawat = $no_rawat->pluck('no_rawat')->toArray();
-        
-        if ($jenisPelayanan == "2") {
-            $cppt = \App\Models\PemeriksaanRalanKlaim::with('petugas')->whereIn('no_rawat', $no_rawat)->orderBy('tgl_perawatan', 'DESC')->get();
-        } else if ($jenisPelayanan == "1") {
-            $cppt = \App\Models\PemeriksaanRanapKlaim::with('petugas')->whereIn('no_rawat', $no_rawat)->orderBy('tgl_perawatan', 'DESC')->get();
-        } else {
-            return null;
-        }
 
-        if (!$cppt || $cppt->isEmpty()) {
-            return null;
-        }
 
-        $cppt = view('berkas-klaim.cppt', [
-            'regPeriksa' => $regPeriksa->withoutRelations(),
-            'pasien'     => $pasien,
-            'cppt'       => $cppt,
-        ])->render();
 
-        return $cppt;
-    }
 
-    /**
-     * Generate Operasi document.
-     *
-     * @param string $no_rawat The registration number.
-     * @param \App\Models\RegPeriksa $regPeriksa The registration check model instance.
-     * @param \Endroid\QrCode\Writer\Result\PngResult $barcodeDPJP The DPJP barcode.
-     * 
-     * @return string|null The rendered operation document view, or null if no corresponding operation data is found.
-     */
-    public function genOperasiPage(string $no_rawat, $regPeriksa, $barcodeDPJP)
-    {
-        $operasiData = \App\Models\RsiaOperasiSafe::withAllRelations()->where('no_rawat', $no_rawat)->get();
-        if ($operasiData) {
-            $operasi = view('berkas-klaim.operasi', [
-                'data'        => $operasiData,
-                'regPeriksa'  => $regPeriksa,
-                'barcodeDPJP' => $barcodeDPJP->getDataUri()
-            ])->render();
-
-            return $operasi;
-        }
-    }
 
     public function genHasilLab($sep, $regPeriksa)
     {
