@@ -78,7 +78,7 @@ class BerkasKlaimController2 extends Controller
         $bSep        = \App\Models\BridgingSep::where('no_sep', $sep)->first();
         $regPeriksa  = \App\Models\RegPeriksa::with(['pasien'])->where('no_rawat', $bSep->no_rawat)->first();
         $dpjp        = \App\Models\Dokter::with('pegawai')->where('kd_dokter', $regPeriksa->kd_dokter)->first();
-        
+
         $barcodeDPJP = $this->barcodeText($dpjp->pegawai->nama, $dpjp->pegawai->id);
 
         $pasien      = $regPeriksa->pasien;
@@ -87,7 +87,7 @@ class BerkasKlaimController2 extends Controller
         // Triase UGD
         // Asmed UGD
         // Resume
-        // CPPT
+        // ✔ ----- CPPT
         // ✔ ----- Operasi
         // ✔ ----- SPRI
         // ✔ ----- Surat Rencana Kontrol
@@ -105,6 +105,7 @@ class BerkasKlaimController2 extends Controller
 
         $pages = collect([
             $this->genSepPage($bSep, $regPeriksa, $pasien, $barcodeDPJP),
+            $this->genCpptPage($bSep->jnspelayanan, $regPeriksa, $pasien),
             $this->genOperasiPage($bSep->no_rawat, $regPeriksa, $barcodeDPJP),
             $this->genSpriPage($bSep, $pasien, $barcodeDPJP),
             $this->genRencanaKontrolPage($bSep, $regPeriksa, $pasien, $barcodeDPJP),
@@ -112,7 +113,7 @@ class BerkasKlaimController2 extends Controller
 
         // map pages where not null
         $pages = $pages->filter(function ($page) {
-            return $page !== null;
+            return !empty($page);
         });
 
         $html = PDFHelper::generate('berkas-klaim.layout', [
@@ -142,7 +143,7 @@ class BerkasKlaimController2 extends Controller
     {
         $diagnosa = \App\Models\DiagnosaPasien::with('penyakit')->orderBy('prioritas', 'asc')->where('no_rawat', $regPeriksa->no_rawat)->get();
         $prosedur = \App\Models\ProsedurPasien::with('penyakit')->orderBy('prioritas', 'asc')->where('no_rawat', $regPeriksa->no_rawat)->get();
-        
+
         $barcodePasien = $this->toBarcode($sep->no_kartu);
 
         $berkasSep = view('berkas-klaim.sep', [
@@ -170,7 +171,7 @@ class BerkasKlaimController2 extends Controller
     public function genSpriPage($sep, $pasien, $barcodeDPJP)
     {
         $spri = \App\Models\BridgingSuratPriBpjs::where('no_surat', $sep->noskdp)->first();
-        if ($spri) {
+        if ($spri && $spri->no_surat) {
             $spri = view('berkas-klaim.spri', [
                 'sep'           => (object) $sep->only(['tglsep', 'no_sep', 'no_kartu']),
                 'pasien'        => $pasien,
@@ -206,6 +207,37 @@ class BerkasKlaimController2 extends Controller
 
             return $kontrol;
         }
+    }
+
+    public function genCpptPage(string $jenisPelayanan, $regPeriksa, $pasien)
+    {
+        $no_rawat = \App\Models\RegPeriksa::select('no_rawat')
+            ->where('no_rkm_medis', $regPeriksa->no_rkm_medis)
+            ->whereBetween('tgl_registrasi', [\Carbon\Carbon::parse($regPeriksa->tgl_registrasi)->subDays(30), \Carbon\Carbon::parse($regPeriksa->tgl_registrasi)->addDays(30)])
+            ->orderBy('tgl_registrasi', 'desc')
+            ->get();
+
+        $no_rawat = $no_rawat->pluck('no_rawat')->toArray();
+        
+        if ($jenisPelayanan == "2") {
+            $cppt = \App\Models\PemeriksaanRalanKlaim::with('petugas')->whereIn('no_rawat', $no_rawat)->orderBy('tgl_perawatan', 'DESC')->get();
+        } else if ($jenisPelayanan == "1") {
+            $cppt = \App\Models\PemeriksaanRanapKlaim::with('petugas')->whereIn('no_rawat', $no_rawat)->orderBy('tgl_perawatan', 'DESC')->get();
+        } else {
+            return null;
+        }
+
+        if (!$cppt || $cppt->isEmpty()) {
+            return null;
+        }
+
+        $cppt = view('berkas-klaim.cppt', [
+            'regPeriksa' => $regPeriksa->withoutRelations(),
+            'pasien'     => $pasien,
+            'cppt'       => $cppt,
+        ])->render();
+
+        return $cppt;
     }
 
     /**
