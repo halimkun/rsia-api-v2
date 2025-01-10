@@ -74,26 +74,6 @@ class BerkasKlaimController2 extends Controller
 
         $pasien      = $regPeriksa->pasien;
 
-        // ✔ ----- SEP
-        // ✔ ----- Triase UGD
-        // ✔ ----- Asmed UGD
-        // ✔ ----- Resume
-        // ✔ ----- CPPT
-        // ✔ ----- Operasi
-        // ✔ ----- SPRI
-        // ✔ ----- Surat Rencana Kontrol
-        // ✔ ----- Pendukung [skl]
-        // ✔ ----- Catatan perawatan
-        // ✔ ----- Pendukung [surat rujukan]
-        // ✔ ----- Pendukung [usg]
-        // ✔ ----- Hasil Lab
-        // ✔ ----- Hasil radiologi
-        // ✔ ----- Pendukung [laborat]
-        // ✔ ----- Pendukung selain [skl, surat rujukan, usg, lab]
-        // ✔ ----- Billing
-        // ✔ ----- Naik kelas
-        // ✔ ----- InaCBGs klaim
-
         $pages = collect([
             $this->genSepPage($bSep, $regPeriksa, $pasien, $barcodeDPJP),
             $this->genTriaseUgd($bSep->jnspelayanan, $regPeriksa, $barcodeDPJP),
