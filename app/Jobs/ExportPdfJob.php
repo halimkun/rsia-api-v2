@@ -9,7 +9,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
-use App\Http\Controllers\v2\BerkasKlaimController;
+use App\Http\Controllers\v2\BerkasKlaimController2;
 
 class ExportPdfJob implements ShouldQueue
 {
@@ -69,7 +69,7 @@ class ExportPdfJob implements ShouldQueue
                 'action' => 'export',
             ]);
 
-            $berkasKlaim = new BerkasKlaimController();
+            $berkasKlaim = new BerkasKlaimController2();
             $output = $berkasKlaim->print($brigdingSep->no_sep, $request);
 
             \App\Models\BerkasDigitalPerawatan::updateOrCreate(

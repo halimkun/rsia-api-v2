@@ -39,26 +39,24 @@ class BerkasKlaimController2 extends Controller
         'VK'        => 'VK',
     ];
 
-    /**
-     * Get the departemen
-     *
-     * @param \Illuminate\Support\Collection $kamarInap
-     * @return string|null
-     */
-    private function getDepartemen($kamarInap)
+
+    // ====================================================================================================
+
+
+    public function export($sep)
     {
-        if ($kamarInap->isEmpty()) {
-            return null;
-        }
+        \App\Jobs\ExportPdfJob::dispatch($sep)->delay(now()->addSeconds(5));
 
-        $filteredKeys = array_filter(array_keys($this->koorByDepartemen), function ($key) use ($kamarInap) {
-            return strpos($kamarInap[0]->kd_kamar, $key) !== false;
-        });
+        sleep(2);
 
-        $values = array_values(array_intersect_key($this->koorByDepartemen, array_flip($filteredKeys)));
-
-        return $values[0] ?? null; // Return the first value or null if empty
+        return response()->json([
+            'message' => 'berkas klaim akan segera di export.',
+        ]);
     }
+
+
+    // ====================================================================================================
+
 
     public function print($sep, Request $request)
     {
@@ -92,29 +90,29 @@ class BerkasKlaimController2 extends Controller
         // ✔ ----- Hasil radiologi
         // ✔ ----- Pendukung [laborat]
         // ✔ ----- Pendukung selain [skl, surat rujukan, usg, lab]
-        // Billing
+        // ✔ ----- Billing
         // ✔ ----- Naik kelas
         // ✔ ----- InaCBGs klaim
 
         $pages = collect([
-            // $this->genSepPage($bSep, $regPeriksa, $pasien, $barcodeDPJP),
-            // $this->genTriaseUgd($bSep->jnspelayanan, $regPeriksa, $barcodeDPJP),
-            // $this->genAsmedUgdPage($bSep->jnspelayanan, $regPeriksa, $barcodeDPJP),
-            // $this->genResumeMedisPage($bSep, $pasien, $regPeriksa, $barcodeDPJP, $ttdPasien),
-            // $this->genCpptPage($bSep->jnspelayanan, $regPeriksa, $pasien),
-            // $this->genOperasiPage($bSep->no_rawat, $regPeriksa, $barcodeDPJP),
-            // $this->genSpriPage($bSep, $pasien, $barcodeDPJP),
-            // $this->genRencanaKontrolPage($bSep, $regPeriksa, $pasien, $barcodeDPJP),
-            // $this->pendukung($pendukung, ['skl']),
-            // $this->genHasilPemeriksaanUsg($bSep, $regPeriksa, $pasien, $dpjp, $barcodeDPJP),
-            // $this->pendukung($pendukung, ['surat rujukan']),
-            // $this->pendukung($pendukung, ['usg']),
-            // $this->genHasilLabPage($bSep, $regPeriksa, $pasien),
-            // $this->genHasilRadiologiPage($regPeriksa, $pasien, $barcodeDPJP),
-            // $this->pendukung($pendukung, ['laborat']),
-            // $this->pendukung($pendukung, ['skl', 'surat rujukan', 'usg', 'laborat'], true),
+            $this->genSepPage($bSep, $regPeriksa, $pasien, $barcodeDPJP),
+            $this->genTriaseUgd($bSep->jnspelayanan, $regPeriksa, $barcodeDPJP),
+            $this->genAsmedUgdPage($bSep->jnspelayanan, $regPeriksa, $barcodeDPJP),
+            $this->genResumeMedisPage($bSep, $pasien, $regPeriksa, $barcodeDPJP, $ttdPasien),
+            $this->genCpptPage($bSep->jnspelayanan, $regPeriksa, $pasien),
+            $this->genOperasiPage($bSep->no_rawat, $regPeriksa, $barcodeDPJP),
+            $this->genSpriPage($bSep, $pasien, $barcodeDPJP),
+            $this->genRencanaKontrolPage($bSep, $regPeriksa, $pasien, $barcodeDPJP),
+            $this->pendukung($pendukung, ['skl']),
+            $this->genHasilPemeriksaanUsg($bSep, $regPeriksa, $pasien, $dpjp, $barcodeDPJP),
+            $this->pendukung($pendukung, ['surat rujukan']),
+            $this->pendukung($pendukung, ['usg']),
+            $this->genHasilLabPage($bSep, $regPeriksa, $pasien),
+            $this->genHasilRadiologiPage($regPeriksa, $pasien, $barcodeDPJP),
+            $this->pendukung($pendukung, ['laborat']),
+            $this->pendukung($pendukung, ['skl', 'surat rujukan', 'usg', 'laborat'], true),
             $this->genBillingPage($regPeriksa, $dpjp, $pasien),
-            // $this->genKwitansiNaikKelasPage($bSep, $regPeriksa, $pasien, $ttdPasien),
+            $this->genKwitansiNaikKelasPage($bSep, $regPeriksa, $pasien, $ttdPasien),
         ]);
 
 
@@ -139,6 +137,7 @@ class BerkasKlaimController2 extends Controller
     }
 
 
+    // ====================================================================================================
 
 
     /**
@@ -641,8 +640,24 @@ class BerkasKlaimController2 extends Controller
         return $billing;
     }
 
-    // ==========================================================
 
+    // ====================================================================================================
+
+
+    private function getDepartemen($kamarInap)
+    {
+        if ($kamarInap->isEmpty()) {
+            return null;
+        }
+
+        $filteredKeys = array_filter(array_keys($this->koorByDepartemen), function ($key) use ($kamarInap) {
+            return strpos($kamarInap[0]->kd_kamar, $key) !== false;
+        });
+
+        $values = array_values(array_intersect_key($this->koorByDepartemen, array_flip($filteredKeys)));
+
+        return $values[0] ?? null; // Return the first value or null if empty
+    }
 
     public function billingData(string $no_rawat, string $statusLanjut)
     {
