@@ -95,72 +95,72 @@ class BerkasKlaimController extends Controller
 
         // +==========+==========+==========+
 
-        // $pdfs = [
-        //     $this->genSep($bSep, $regPeriksa->diagnosaPasien, $regPeriksa->prosedurPasien),
-        //     $this->genTriaseUgd($regPeriksa, $bSep),
-        //     $this->genAsmedUgd($regPeriksa, $bSep),
-        // ];
+        $pdfs = [
+            $this->genSep($bSep, $regPeriksa->diagnosaPasien, $regPeriksa->prosedurPasien),
+            $this->genTriaseUgd($regPeriksa, $bSep),
+            $this->genAsmedUgd($regPeriksa, $bSep),
+        ];
 
-        // if ($resumePasienRanap) {
-        //     $pdfs[] = $this->genResumeMedis($bSep, $regPeriksa->pasien, $regPeriksa, $kamarInap, $resumePasienRanap, $ttdResume, $bSep->dokter->pegawai, $ttdPasien);
-        // }
+        if ($resumePasienRanap) {
+            $pdfs[] = $this->genResumeMedis($bSep, $regPeriksa->pasien, $regPeriksa, $kamarInap, $resumePasienRanap, $ttdResume, $bSep->dokter->pegawai, $ttdPasien);
+        }
 
-        // $pdfs[] = $this->genCppt($bSep, $regPeriksa);
+        $pdfs[] = $this->genCppt($bSep, $regPeriksa);
 
-        // if ($operasi) {
-        //     $pdfs = array_merge($pdfs, $this->genLaporanOperasi($regPeriksa, $operasi));
-        // }
+        if ($operasi) {
+            $pdfs = array_merge($pdfs, $this->genLaporanOperasi($regPeriksa, $operasi));
+        }
 
-        // $pdfs[] = $this->genSuratPerintahRawatInap($bSep, $regPeriksa->pasien);
+        $pdfs[] = $this->genSuratPerintahRawatInap($bSep, $regPeriksa->pasien);
 
-        // if ($bSep->surat_kontrol) {
-        //     $pdfs[] = $this->genSuratRencanaKontrol($bSep, $regPeriksa);
-        // }
+        if ($bSep->surat_kontrol) {
+            $pdfs[] = $this->genSuratRencanaKontrol($bSep, $regPeriksa);
+        }
 
-        // if ($berkasPendukung->where('kategori', 'skl')->first()) {
-        //     $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['skl'], $berkasPendukung));
-        // }
+        if ($berkasPendukung->where('kategori', 'skl')->first()) {
+            $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['skl'], $berkasPendukung));
+        }
 
-        // if ($regPeriksa->catatanPerawatan) {
-        //     $pdfs[] = $this->genHasilPemeriksaanUsg($bSep, $regPeriksa->pasien, $regPeriksa);
-        // }
+        if ($regPeriksa->catatanPerawatan) {
+            $pdfs[] = $this->genHasilPemeriksaanUsg($bSep, $regPeriksa->pasien, $regPeriksa);
+        }
 
-        // if ($berkasPendukung->where('kategori', 'surat rujukan')->first()) {
-        //     $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['surat rujukan'], $berkasPendukung));
-        // }
+        if ($berkasPendukung->where('kategori', 'surat rujukan')->first()) {
+            $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['surat rujukan'], $berkasPendukung));
+        }
 
-        // if ($berkasPendukung->where('kategori', 'usg')->first()) {
-        //     $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['usg'], $berkasPendukung));
-        // }
+        if ($berkasPendukung->where('kategori', 'usg')->first()) {
+            $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['usg'], $berkasPendukung));
+        }
 
-        // $hasilLab = $this->genHasilLab($bSep, $regPeriksa);
-        // if (!empty($hasilLab)) {
-        //     $pdfs = array_merge($pdfs, $this->genHasilLab($bSep, $regPeriksa));
-        // }
+        $hasilLab = $this->genHasilLab($bSep, $regPeriksa);
+        if (!empty($hasilLab)) {
+            $pdfs = array_merge($pdfs, $this->genHasilLab($bSep, $regPeriksa));
+        }
 
-        // $hasilRadiologi = $this->genHasilPeriksaRadiologi($regPeriksa, $radiologi);
-        // if (!empty($hasilRadiologi)) {
-        //     $pdfs = array_merge($pdfs, $hasilRadiologi);
-        // }
+        $hasilRadiologi = $this->genHasilPeriksaRadiologi($regPeriksa, $radiologi);
+        if (!empty($hasilRadiologi)) {
+            $pdfs = array_merge($pdfs, $hasilRadiologi);
+        }
 
-        // if ($berkasPendukung->where('kategori', 'laborat')->first()) {
-        //     $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['laborat'], $berkasPendukung));
-        // }
+        if ($berkasPendukung->where('kategori', 'laborat')->first()) {
+            $pdfs = array_merge($pdfs, $this->genBerkasPendukung(['laborat'], $berkasPendukung));
+        }
 
-        // if ($berkasPendukung->whereNotIn('kategori', ['skl', 'surat rujukan', 'usg', 'laborat'])->first()) {
-        //     $pdfs = array_merge($pdfs, $this->genBerkasPendukung($berkasPendukung->whereNotIn('kategori', ['skl', 'surat rujukan', 'usg', 'laborat'])->pluck('kategori')->toArray(), $berkasPendukung));
-        // }
+        if ($berkasPendukung->whereNotIn('kategori', ['skl', 'surat rujukan', 'usg', 'laborat'])->first()) {
+            $pdfs = array_merge($pdfs, $this->genBerkasPendukung($berkasPendukung->whereNotIn('kategori', ['skl', 'surat rujukan', 'usg', 'laborat'])->pluck('kategori')->toArray(), $berkasPendukung));
+        }
 
-        // $pdfs = array_merge($pdfs, $this->genDetailObat($obat, $regPeriksa));
+        $pdfs = array_merge($pdfs, $this->genDetailObat($obat, $regPeriksa));
 
         // Billing Detail
         $pdfs[] = $this->genBillingDetail($bSep->no_rawat, $regPeriksa);
 
-        // // INACBG's klaim report
-        // $pdfs[] = $this->genInacbgReport($sep);
+        // INACBG's klaim report
+        $pdfs[] = $this->genInacbgReport($sep);
 
-        // // Kwitansi naik kelas
-        // $pdfs[] = $this->genKwitansiNaikKelas($bSep, $kamarInap, $ttdPasien);
+        // Kwitansi naik kelas
+        $pdfs[] = $this->genKwitansiNaikKelas($bSep, $kamarInap, $ttdPasien);
 
         $pdf = PDFHelper::merge($pdfs);
 
@@ -215,16 +215,17 @@ class BerkasKlaimController extends Controller
         }
 
         $page = PDFHelper::generate('berkas-klaim.partials.billing', [
+            'billing'       => $billing,
             'regPeriksa'    => $regPeriksa,
             'dokters'       => $dokters,
-            'ruang'         => $ruang,
-            'billing'       => $billing,
             'nota'          => $nota,
+            'ruang'         => $ruang,
             'resepPulang'   => $resepPulang ?? null,
+            'kasir'         => $kasir,
+            
+            'returObat'     => $returObat,
             'tambahanBiaya' => $tambahanBiaya,
             'potonganBiaya' => $potonganBiaya,
-            'returObat'     => $returObat,
-            'kasir'         => $kasir,
             'asmenKeuangan' => $asmenKeuangan,
         ]);
 
