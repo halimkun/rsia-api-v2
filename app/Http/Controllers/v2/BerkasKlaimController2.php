@@ -160,7 +160,7 @@ class BerkasKlaimController2 extends Controller
      */
     public function genTriaseUgd($jenisPelayanan, $regPeriksa, $barcodeDPJP)
     {
-        if ($jenisPelayanan != 1) {
+        if ($jenisPelayanan == 1) {
             return null;
         }
 
