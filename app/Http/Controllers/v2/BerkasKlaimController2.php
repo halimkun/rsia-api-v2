@@ -4,8 +4,9 @@ namespace App\Http\Controllers\v2;
 
 
 use App\Helpers\PDFHelper;
-use Illuminate\Http\Request;
 use App\Helpers\SignHelper;
+use Illuminate\Support\Str;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
@@ -62,7 +63,7 @@ class BerkasKlaimController2 extends Controller
     public function print($sep, Request $request)
     {
         $bSep        = \App\Models\BridgingSep::where('no_sep', $sep)->first();
-        $regPeriksa  = \App\Models\RegPeriksa::with(['pasien'])->where('no_rawat', $bSep->no_rawat)->first();
+        $regPeriksa  = \App\Models\RegPeriksa::with(['pasien', 'caraBayar', 'poliklinik'])->where('no_rawat', $bSep->no_rawat)->first();
         $dpjp        = \App\Models\Dokter::with('pegawai')->where('kd_dokter', $regPeriksa->kd_dokter)->first();
 
         $pendukung   = \App\Models\RsiaUpload::where('no_rawat', $bSep->no_rawat)->get()->map(function ($item) {
@@ -70,6 +71,7 @@ class BerkasKlaimController2 extends Controller
             return $item;
         });
 
+        $ttdPasien   = \App\Models\RsiaVerifSep::where('no_sep', $bSep->no_sep)->first();
         $barcodeDPJP = SignHelper::rsia($dpjp->pegawai->nama, $dpjp->pegawai->id);
 
         $pasien      = $regPeriksa->pasien;
@@ -82,44 +84,53 @@ class BerkasKlaimController2 extends Controller
         // ✔ ----- Operasi
         // ✔ ----- SPRI
         // ✔ ----- Surat Rencana Kontrol
-        // ✔ ----- pendukung [skl]
-        // ✔ ----- catatan perawatan
-        // ✔ ----- pendukung [surat rujukan]
-        // ✔ ----- pendukung [usg]
-        // ...$this->genHasilLab($bSep, $regPeriksa),
-        // ✔ ----- hasil radiologi
-        // ✔ ----- pendukung [laborat]
-        // ✔ ----- pendukung selain [skl, surat rujukan, usg, lab]
-        // billing
-        // inacbg klaim 
-        // naik kelas
+        // ✔ ----- Pendukung [skl]
+        // ✔ ----- Catatan perawatan
+        // ✔ ----- Pendukung [surat rujukan]
+        // ✔ ----- Pendukung [usg]
+        // ✔ ----- Hasil Lab
+        // ✔ ----- Hasil radiologi
+        // ✔ ----- Pendukung [laborat]
+        // ✔ ----- Pendukung selain [skl, surat rujukan, usg, lab]
+        // Billing
+        // ✔ ----- Naik kelas
+        // ✔ ----- InaCBGs klaim
 
         $pages = collect([
-            $this->genSepPage($bSep, $regPeriksa, $pasien, $barcodeDPJP),
-            $this->genTriaseUgd($bSep->jnspelayanan, $regPeriksa, $barcodeDPJP),
-            $this->genAsmedUgdPage($bSep->jnspelayanan, $regPeriksa, $barcodeDPJP),
-            $this->genResumeMedisPage($bSep, $pasien, $regPeriksa, $barcodeDPJP),
-            $this->genCpptPage($bSep->jnspelayanan, $regPeriksa, $pasien),
-            $this->genOperasiPage($bSep->no_rawat, $regPeriksa, $barcodeDPJP),
-            $this->genSpriPage($bSep, $pasien, $barcodeDPJP),
-            $this->genRencanaKontrolPage($bSep, $regPeriksa, $pasien, $barcodeDPJP),
-            $this->pendukung($pendukung, ['skl']),
-            $this->genHasilPemeriksaanUsg($bSep, $regPeriksa, $pasien, $dpjp, $barcodeDPJP),
-            $this->pendukung($pendukung, ['surat rujukan']),
-            $this->pendukung($pendukung, ['usg']),
-            $this->genHasilRadiologiPage($regPeriksa, $pasien, $barcodeDPJP),
-            $this->pendukung($pendukung, ['laborat']),
-            $this->pendukung($pendukung, ['skl', 'surat rujukan', 'usg', 'laborat'], true),
+            // $this->genSepPage($bSep, $regPeriksa, $pasien, $barcodeDPJP),
+            // $this->genTriaseUgd($bSep->jnspelayanan, $regPeriksa, $barcodeDPJP),
+            // $this->genAsmedUgdPage($bSep->jnspelayanan, $regPeriksa, $barcodeDPJP),
+            // $this->genResumeMedisPage($bSep, $pasien, $regPeriksa, $barcodeDPJP, $ttdPasien),
+            // $this->genCpptPage($bSep->jnspelayanan, $regPeriksa, $pasien),
+            // $this->genOperasiPage($bSep->no_rawat, $regPeriksa, $barcodeDPJP),
+            // $this->genSpriPage($bSep, $pasien, $barcodeDPJP),
+            // $this->genRencanaKontrolPage($bSep, $regPeriksa, $pasien, $barcodeDPJP),
+            // $this->pendukung($pendukung, ['skl']),
+            // $this->genHasilPemeriksaanUsg($bSep, $regPeriksa, $pasien, $dpjp, $barcodeDPJP),
+            // $this->pendukung($pendukung, ['surat rujukan']),
+            // $this->pendukung($pendukung, ['usg']),
+            // $this->genHasilLabPage($bSep, $regPeriksa, $pasien),
+            // $this->genHasilRadiologiPage($regPeriksa, $pasien, $barcodeDPJP),
+            // $this->pendukung($pendukung, ['laborat']),
+            // $this->pendukung($pendukung, ['skl', 'surat rujukan', 'usg', 'laborat'], true),
+            $this->genBillingPage($regPeriksa, $dpjp, $pasien),
+            // $this->genKwitansiNaikKelasPage($bSep, $regPeriksa, $pasien, $ttdPasien),
         ]);
+
 
         // map pages where not null
         $pages = $pages->filter(function ($page) {
             return !empty($page);
         });
 
+        $inacbgReport = $this->genInacbgReportPage($sep);
         $html = PDFHelper::generate('berkas-klaim.layout', [
             'pages' => $pages
         ], false);
+
+        if ($inacbgReport) {
+            $html = PDFHelper::merge([$html, $inacbgReport]);
+        }
 
         return response($html->stream('berkas-klaim-' . $sep . '.pdf'), 200)
             ->header('Content-Type', 'application/pdf')
@@ -182,10 +193,9 @@ class BerkasKlaimController2 extends Controller
                 'triase'      => $triase,
                 'barcodeDPJP' => $barcodeDPJP->getDataUri(),
             ])->render();
-    
+
             return $triase;
         }
-
     }
 
     /**
@@ -210,7 +220,7 @@ class BerkasKlaimController2 extends Controller
                 'asmed'       => $asmed,
                 'barcodeDPJP' => $barcodeDPJP->getDataUri(),
             ])->render();
-    
+
             return $asmed;
         }
     }
@@ -224,7 +234,7 @@ class BerkasKlaimController2 extends Controller
      * @param \App\Models\BarcodeDPJP $barcodeDPJP The DPJP barcode model instance.
      * @return string|null The rendered resume medis page view or null if no resume data is found.
      */
-    public function genResumeMedisPage($sep, $pasien, $regPeriksa, $barcodeDPJP)
+    public function genResumeMedisPage($sep, $pasien, $regPeriksa, $barcodeDPJP, $ttdPasien)
     {
         $resume    = \App\Models\ResumePasienRanap::where('no_rawat', $sep->no_rawat)->first();
         if ($resume) {
@@ -233,7 +243,6 @@ class BerkasKlaimController2 extends Controller
                 return $q->where('nama', \Illuminate\Support\Str::upper($this->getDepartemen($kamarInap)));
             })->where('status_koor', '1')->first();
             $barcodeResume = SignHelper::rsia($koor->nama, $koor->id);
-            $ttdPasien     = \App\Models\RsiaVerifSep::where('no_sep', $sep->no_sep)->first();
 
             $resumeMedis = view('berkas-klaim.resume', [
                 'sep'         => $sep,
@@ -387,7 +396,7 @@ class BerkasKlaimController2 extends Controller
                 'dpjp'       => $dpjp,
                 'barcodeDPJP' => $barcodeDPJP->getDataUri(),
             ]);
-    
+
             return $catatan;
         }
     }
@@ -405,9 +414,10 @@ class BerkasKlaimController2 extends Controller
      */
     public function genHasilRadiologiPage($regPeriksa, $pasien)
     {
-        $radiologi = \App\Models\PeriksaRadiologi::with(['dokter', 'petugas', 'dokterPerujuk', 'hasilRadiologi', 'jenisPerawatan'])
-            ->where('no_rawat', $regPeriksa->no_rawat)->get();
-        
+        $radiologi = \App\Models\PeriksaRadiologi::where('no_rawat', $regPeriksa->no_rawat)
+            ->with(['dokter', 'petugas', 'dokterPerujuk', 'hasilRadiologi', 'jenisPerawatan'])
+            ->get();
+
         if ($radiologi) {
             $hasilRadiologi = view('berkas-klaim.radiologi', [
                 'regPeriksa'  => $regPeriksa,
@@ -450,30 +460,29 @@ class BerkasKlaimController2 extends Controller
         return $pendukung;
     }
 
-
-
-
-    public function genHasilLab($sep, $regPeriksa)
+    /**
+     * Generate the laboratory examination result for the claim document.
+     *
+     * @param \App\Models\BridgingSep $sep The SEP (Surat Eligibilitas Peserta) model instance.
+     * @param \App\Models\RegPeriksa $regPeriksa The registration check model instance.
+     * @param \App\Models\Pasien $pasien The patient model instance.
+     * 
+     * @return string|null The rendered laboratory examination result view, or null if no laboratory examination result is found.
+     */
+    public function genHasilLabPage($sep, $regPeriksa, $pasien)
     {
-        $labWih  = ['perujuk', 'jenisPerawatan', 'detailPeriksaLab.template'];
+        $labWih  = ['perujuk', 'jenisPerawatan', 'detailPeriksaLab.template', 'pegawai', 'dokter'];
         $labData = \App\Models\PeriksaLab::with($labWih)->whereIn('no_rawat', $this->getRegisterLabDouble($regPeriksa->kd_poli, $sep->no_rawat, $sep->nomr))->orderBy('tgl_periksa', 'DESC')->orderBy('jam', 'DESC')->get();
-        $lab     = $this->groupPeriksaLabData($labData);
+        $labs    = $this->groupPeriksaLabData($labData);
 
-        $hasilLab = [];
+        $html = view('berkas-klaim.hasil-lab', [
+            'sep'        => $sep,
+            'regPeriksa' => $regPeriksa,
+            'pasien'     => $pasien,
+            'labs'       => $labs,
+        ])->render();
 
-        foreach ($lab as $key => $value) {
-            if ($value->isEmpty()) {
-                continue;
-            }
-
-            $hasilLab[$key] = PDFHelper::generate('berkas-klaim.hasil-lab', [
-                'sep'        => $sep,
-                'regPeriksa' => $regPeriksa,
-                'lab'        => $value,
-            ]);
-        }
-
-        return $hasilLab;
+        return $html;
     }
 
     /**
@@ -516,5 +525,229 @@ class BerkasKlaimController2 extends Controller
         return $data->groupBy(function ($item) {
             return $item->tgl_periksa . ' ' . $item->jam;
         });
+    }
+
+    /**
+     * Generate INACBG report
+     *
+     * @param string $sep
+     * @return string
+     */
+    public function genInacbgReportPage($sep)
+    {
+        \Halim\EKlaim\Builders\BodyBuilder::setMetadata('claim_print');
+        \Halim\EKlaim\Builders\BodyBuilder::setData([
+            "nomor_sep" => $sep,
+        ]);
+
+        $response = \Halim\EKlaim\Services\EklaimService::send(\Halim\EKlaim\Builders\BodyBuilder::prepared());
+
+        if ($response->getStatusCode() == 200) {
+            $resp = $response->getData();
+
+            if (!$resp->data) {
+                \Illuminate\Support\Facades\Log::channel(config('eklaim.log_channel'))->error('Berkas Klaim Print - Failed to generate INACBG report', [
+                    'sep'      => $sep,
+                    'response' => $resp,
+                ]);
+
+                return null;
+            }
+
+            return base64_decode($resp->data);
+        }
+
+        \Illuminate\Support\Facades\Log::channel(config('eklaim.log_channel'))->error('Berkas Klaim Print - Failed to generate INACBG report', [
+            'sep'      => $sep,
+            'response' => $response->getData(),
+        ]);
+
+        return null;
+    }
+
+    /**
+     * Generate kwitansi naik kelas page
+     *
+     * @param \App\Models\BridgingSep $bSep
+     * @param \App\Models\RegPeriksa $regPeriksa
+     * @param \App\Models\Pasien $pasien
+     * @param \App\Models\RsiaVerifSep $ttdPasien
+     * @return string|null
+     */
+    public function genKwitansiNaikKelasPage($bSep, $regPeriksa, $pasien, $ttdPasien)
+    {
+        $naikKelas = \App\Models\RsiaNaikKelas::where('no_sep', $bSep->no_sep)->first();
+        if ($naikKelas) {
+            $kamarInap = \App\Models\KamarInap::with('kamar.bangsal')->where('no_rawat', $bSep->no_rawat)->where('stts_pulang', '<>', 'Pindah Kamar')->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
+            $kasir = \App\Helpers\JurnalHelper::determinePetugas($bSep->no_rawat);
+
+            $kwitansi = view('berkas-klaim.naik-kelas', [
+                'sep'        => $bSep,
+                'regPeriksa' => $regPeriksa,
+                'pasien'     => $pasien,
+                'naikKelas'  => $naikKelas,
+                'kamarInap'  => $kamarInap,
+                'ttdPasien'  => $ttdPasien,
+                'kasir'      => $kasir,
+            ]);
+
+            return $kwitansi->render();
+        }
+    }
+
+    public function genBillingPage($regPeriksa, $dpjp, $pasien)
+    {
+        $bData         = $this->billingData($regPeriksa->no_rawat, $regPeriksa->status_lanjut);
+        $kasir         = \App\Helpers\JurnalHelper::determinePetugas($regPeriksa->no_rawat);
+        $asmenKeuangan = \App\Models\Pegawai::select('id', 'nik', 'nama', 'jnj_jabatan')->where('jnj_jabatan', 'RS7')->first();
+
+        if (Str::lower($regPeriksa->status_lanjut) == 'ranap') {
+            $resepPulang = \App\Models\ResepPulang::with('obat')->where('no_rawat', $regPeriksa->no_rawat)->get()->groupBy('kode_brng');
+            $ruang       = \App\Models\KamarInap::with(['kamar.bangsal'])->where('no_rawat', $regPeriksa->no_rawat)->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
+        }
+
+        if (Str::lower($regPeriksa->status_lanjut) == 'ralan') {
+            $nota = \App\Models\NotaJalan::where('no_rawat', $regPeriksa->no_rawat)->first();
+        } else if (Str::lower($regPeriksa->status_lanjut) == 'ranap') {
+            $dokters = \App\Models\RawatInapDr::with('dokter.spesialis')->where('no_rawat', $regPeriksa->no_rawat)->get()->groupBy('kd_dokter');
+            $nota    = \App\Models\NotaInap::where('no_rawat', $regPeriksa->no_rawat)->first();
+        }
+
+        if (isset($dokters)) {
+            $dokters = $dokters->sortBy('dokter.nm_dokter');
+        }
+
+        $returObat     = \App\Models\DetReturJual::with('obat')->where('no_retur_jual', 'like', "%$regPeriksa->no_rawat%")->get()->groupBy("kode_brng");
+        $tambahanBiaya = \App\Models\TambahanBiaya::where('no_rawat', $regPeriksa->no_rawat)->orderBy('nama_biaya', 'desc')->get();
+        $potonganBiaya = \App\Models\PenguranganBiaya::where('no_rawat', $regPeriksa->no_rawat)->orderBy('nama_pengurangan', 'desc')->get();
+
+        $billing = view('berkas-klaim.billing', [
+            'dpjp'          => $dpjp,
+            'kasir'         => $kasir,
+            'billing'       => $bData,
+            'pasien'        => $pasien,
+            'regPeriksa'    => $regPeriksa,
+            'nota'          => $nota ?? null,
+            'ruang'         => $ruang ?? null,
+            'dokters'       => $dokters ?? null,
+            'resepPulang'   => $resepPulang ?? null,
+
+            'returObat'     => $returObat,
+            'tambahanBiaya' => $tambahanBiaya,
+            'potonganBiaya' => $potonganBiaya,
+            'asmenKeuangan' => $asmenKeuangan,
+        ])->render();
+
+        return $billing;
+    }
+
+    // ==========================================================
+
+
+    public function billingData(string $no_rawat, string $statusLanjut)
+    {
+        $tarif = [];
+        $cekGabung = \App\Models\RanapGabung::where('no_rawat', $no_rawat)->first();
+
+        $tarif[$no_rawat] = $this->getTarif($no_rawat, $statusLanjut);
+
+        if ($cekGabung) {
+            $sttsLanjut = \App\Models\RegPeriksa::select('status_lanjut')->where('no_rawat', $cekGabung->no_rawat2)->first();
+            $tarif[$cekGabung->no_rawat2] = $this->getTarif($cekGabung->no_rawat2, $sttsLanjut->status_lanjut);
+        }
+
+        return $tarif;
+    }
+
+    public function getTarif(string $no_rawat, string $statusLanjut)
+    {
+        // Define common query parameters
+        $baseQuery = [
+            'select' => ['no_rawat', 'kd_jenis_prw', 'biaya_rawat'],
+            'with' => [
+                'jenisPerawatan' => function ($q) {
+                    $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')
+                        ->with(['kategori' => function ($qq) {
+                            $qq->select('kd_kategori', 'nm_kategori');
+                        }]);
+                }
+            ],
+            'where' => ['no_rawat' => $no_rawat]
+        ];
+
+        // Define models to query
+        $models = [
+            \App\Models\RawatInapPr::class,
+            \App\Models\RawatInapDr::class,
+            \App\Models\RawatInapDrPr::class,
+            \App\Models\RawatJalanPr::class,
+            \App\Models\RawatJalanDr::class,
+            \App\Models\RawatJalanDrPr::class
+        ];
+
+        // Process all models in a single loop
+        $rawatData = collect($models)->map(function ($model) use ($baseQuery) {
+            return $model::select($baseQuery['select'])
+                ->with($baseQuery['with'])
+                ->where($baseQuery['where'])
+                ->get()
+                ->groupBy(function ($item) {
+                    return $item->jenisPerawatan->kategori->nm_kategori;
+                })
+                ->map(function ($group) {
+                    return $group->groupBy(function ($item) {
+                        return $item->jenisPerawatan->nm_perawatan;
+                    });
+                });
+        })->filter();
+
+        // Initialize base data
+        $mergedData = collect([
+            "Pemeriksaan Lab" => $this->getTarifPeriksaLab($no_rawat),
+            "Pemeriksaan Radiologi" => $this->getTarifPeriksaRadiologi($no_rawat),
+            "Obat dan BHP" => $this->getTarifObatDanBhp($no_rawat),
+            "Operasi" => Str::lower($statusLanjut) == 'ranap'
+                ? (new \App\Http\Resources\Pasien\Tarif\TarifOperasi($no_rawat))->toArray(new Request(), false)
+                : null
+        ]);
+
+        // Merge rawat data
+        foreach ($rawatData as $data) {
+            foreach ($data as $kategori => $items) {
+                if ($mergedData->has($kategori)) {
+                    $mergedData[$kategori] = $mergedData[$kategori]->mergeRecursive($items);
+                } else {
+                    $mergedData[$kategori] = $items;
+                }
+            }
+        }
+
+        return $mergedData->filter(function ($item) {
+            return $item && !$item->isEmpty();
+        })->sortKeys();
+    }
+
+    private function getTarifPeriksaLab(string $no_rawat)
+    {
+        return \App\Models\PeriksaLab::with('jenisPerawatan')
+            ->where('no_rawat', $no_rawat)
+            ->get()->groupBy('kd_jenis_prw');
+    }
+
+    private function getTarifPeriksaRadiologi(string $no_rawat)
+    {
+        return \App\Models\PeriksaRadiologi::with('jenisPerawatan')
+            ->where('no_rawat', $no_rawat)
+            ->get()->groupBy('kd_jenis_prw');
+    }
+
+    private function getTarifObatDanBhp(string $no_rawat)
+    {
+        return \App\Models\DetailPemberianObat::with('obat')
+            ->where('jml', '<>', 0)
+            ->where('no_rawat', $no_rawat)
+            ->get()->groupBy(function ($q) {
+                return $q->obat->nama_brng;
+            })->sortKeys();
     }
 }
