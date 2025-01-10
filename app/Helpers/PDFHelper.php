@@ -15,16 +15,19 @@ class PDFHelper
      * @param array $data
      * @return \Barryvdh\DomPDF\PDF
      */
-    public static function generate(string $view, array $data)
+    public static function generate(string $view, array $data, bool $raw = true)
     {
         $f4 = [0, 0, 609.448, 935.432];
         $orientation = 'portrait';
 
-        // Cache key using view name and hash of data
-        $cacheKey = 'pdf_' . md5($view . serialize($data));
-
         // Check if PDF already exists in cache
-        return Pdf::loadView($view, $data)->setPaper($f4, $orientation)->output();
+        $last = Pdf::loadView($view, $data)->setPaper($f4, $orientation);
+
+        if ($raw) {
+            return $last->output();
+        }
+
+        return $last;
     }
 
     /**

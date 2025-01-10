@@ -9,8 +9,9 @@ Route::middleware(['user-aes', 'detail-user', 'claim:role,pegawai|dokter'])->gro
     Route::get('/sep/download/{bulan}/{jenis}', [\App\Http\Controllers\v2\BerkasKlaimDownload::class, 'get']);
     Route::post('/sep/download', [\App\Http\Controllers\v2\BerkasKlaimDownload::class, 'download']);
     
-    Route::get('/sep/{no_sep}/print', [\App\Http\Controllers\v2\BerkasKlaimController::class, 'print']);
-    Route::get('/sep/{no_sep}/export', [\App\Http\Controllers\v2\BerkasKlaimController::class, 'export']);
+    Route::get('/sep/{no_sep}/print', [\App\Http\Controllers\v2\BerkasKlaimController2::class, 'print']);
+    Route::get('/sep/{no_sep}/export', [\App\Http\Controllers\v2\BerkasKlaimController2::class, 'export']);
+    // Route::get('/sep/{no_sep}/print2', [\App\Http\Controllers\v2\BerkasKlaimController2::class, 'print']);
     Route::get('/sep/{no_sep}/klaim/sync', [\App\Http\Controllers\v2\KlaimController::class, 'sync']);
     
     

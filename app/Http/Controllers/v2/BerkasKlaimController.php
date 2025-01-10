@@ -216,16 +216,17 @@ class BerkasKlaimController extends Controller
         }
 
         $page = PDFHelper::generate('berkas-klaim.partials.billing', [
+            'billing'       => $billing,
             'regPeriksa'    => $regPeriksa,
             'dokters'       => $dokters,
-            'ruang'         => $ruang,
-            'billing'       => $billing,
             'nota'          => $nota,
+            'ruang'         => $ruang,
             'resepPulang'   => $resepPulang ?? null,
+            'kasir'         => $kasir,
+            
+            'returObat'     => $returObat,
             'tambahanBiaya' => $tambahanBiaya,
             'potonganBiaya' => $potonganBiaya,
-            'returObat'     => $returObat,
-            'kasir'         => $kasir,
             'asmenKeuangan' => $asmenKeuangan,
         ]);
 
