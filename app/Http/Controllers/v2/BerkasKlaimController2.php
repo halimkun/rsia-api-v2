@@ -187,7 +187,7 @@ class BerkasKlaimController2 extends Controller
      */
     public function genAsmedUgdPage($jenisPelayanan, $regPeriksa, $barcodeDPJP)
     {
-        if ($jenisPelayanan == 2) {
+        if ($jenisPelayanan == 1) {
             return null;
         }
 
