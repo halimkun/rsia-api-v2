@@ -222,7 +222,12 @@ class BerkasKlaimController2 extends Controller
             $koor      = \App\Models\Pegawai::select('id', 'nik', 'nama', 'departemen')->whereHas('dep', function ($q) use ($kamarInap) {
                 return $q->where('nama', \Illuminate\Support\Str::upper($this->getDepartemen($kamarInap)));
             })->where('status_koor', '1')->first();
-            $barcodeResume = SignHelper::rsia($koor->nama, $koor->id);
+
+            if ($koor) {
+                $barcodeResume = SignHelper::rsia($koor->nama, $koor->id);
+            } else {
+                $barcodeResume = SignHelper::blankRsia();
+            }
 
             $resumeMedis = view('berkas-klaim.resume', [
                 'sep'         => $sep,
@@ -632,7 +637,7 @@ class BerkasKlaimController2 extends Controller
         }
 
         $filteredKeys = array_filter(array_keys($this->koorByDepartemen), function ($key) use ($kamarInap) {
-            return strpos($kamarInap[0]->kd_kamar, $key) !== false;
+            return strpos($kamarInap[0]->kd_kamar, $key) != false;
         });
 
         $values = array_values(array_intersect_key($this->koorByDepartemen, array_flip($filteredKeys)));

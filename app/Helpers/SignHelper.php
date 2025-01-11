@@ -30,6 +30,24 @@ class SignHelper
         return $qrCode;
     }
 
+    public static function blankRsia()
+    {
+        $text     = 'Dikeluarkan di RSIA Aisyiyah Pekajangan, Ditandatangani secara elektronik pada ' . date('Y-m-d H:i:s') . ' ID : ' . \Illuminate\Support\Facades\Hash::make(date('Y-m-d H:i:s'));
+        $logoPath = asset('assets/images/logo.png');
+
+        $qrCode = \Endroid\QrCode\Builder\Builder::create()
+            ->writer(new \Endroid\QrCode\Writer\PngWriter())
+            ->writerOptions([])
+            ->data($text)
+            ->logoPath($logoPath)
+            ->logoResizeToWidth(100)
+            ->encoding(new \Endroid\QrCode\Encoding\Encoding('ISO-8859-1'))
+            ->errorCorrectionLevel(new \Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevelHigh())
+            ->build();
+
+        return $qrCode;
+    } 
+
     public static function toQr($data)
     {
         $qrCode = \Endroid\QrCode\Builder\Builder::create()
