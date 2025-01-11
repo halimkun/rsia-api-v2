@@ -95,7 +95,6 @@ class BerkasKlaimController2 extends Controller
             $this->genKwitansiNaikKelasPage($bSep, $regPeriksa, $pasien, $ttdPasien),
         ]);
 
-
         // map pages where not null
         $pages = $pages->filter(function ($page) {
             return !empty($page);
@@ -103,6 +102,7 @@ class BerkasKlaimController2 extends Controller
 
         $inacbgReport = $this->genInacbgReportPage($sep);
         $pdf = PDFHelper::generate('berkas-klaim.layout', [
+            'title' => 'berkas-klaim-' . $sep,
             'pages' => $pages
         ], false);
 
@@ -223,7 +223,11 @@ class BerkasKlaimController2 extends Controller
                 return $q->where('nama', \Illuminate\Support\Str::upper($this->getDepartemen($kamarInap)));
             })->where('status_koor', '1')->first();
 
-            $barcodeResume = SignHelper::rsia($koor->nama, $koor->id);
+            if ($koor) {
+                $barcodeResume = SignHelper::rsia($koor->nama, $koor->id);
+            } else {
+                $barcodeResume = SignHelper::blankRsia();
+            }
 
             $resumeMedis = view('berkas-klaim.resume', [
                 'sep'         => $sep,
@@ -633,7 +637,7 @@ class BerkasKlaimController2 extends Controller
         }
 
         $filteredKeys = array_filter(array_keys($this->koorByDepartemen), function ($key) use ($kamarInap) {
-            return strpos($kamarInap[0]->kd_kamar, $key) !== false;
+            return strpos($kamarInap[0]->kd_kamar, $key) != false;
         });
 
         $values = array_values(array_intersect_key($this->koorByDepartemen, array_flip($filteredKeys)));
