@@ -95,7 +95,6 @@ class BerkasKlaimController2 extends Controller
             $this->genKwitansiNaikKelasPage($bSep, $regPeriksa, $pasien, $ttdPasien),
         ]);
 
-
         // map pages where not null
         $pages = $pages->filter(function ($page) {
             return !empty($page);
@@ -103,16 +102,16 @@ class BerkasKlaimController2 extends Controller
 
         $inacbgReport = $this->genInacbgReportPage($sep);
         $pdf = PDFHelper::generate('berkas-klaim.layout', [
+            'title' => 'berkas-klaim-' . $sep,
             'pages' => $pages
         ], false);
 
         if ($inacbgReport) {
             $pdf = PDFHelper::merge([$pdf, $inacbgReport]);
+            $pdf->setFileName('berkas-klaim-' . $sep . '.pdf');
         }
 
-        $pdf->setFileName('berkas-klaim-' . $sep . '.pdf');
-
-        return response($pdf->stream(), 200)
+        return response($pdf->stream('berkas-klaim-' . $sep . '.pdf'), 200)
             ->header('Content-Type', 'application/pdf')
             ->header('Pragma', 'no-cache')
             ->header('Expires', '0');
