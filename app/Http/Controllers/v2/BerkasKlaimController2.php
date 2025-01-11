@@ -108,11 +108,10 @@ class BerkasKlaimController2 extends Controller
 
         if ($inacbgReport) {
             $pdf = PDFHelper::merge([$pdf, $inacbgReport]);
+            $pdf->setFileName('berkas-klaim-' . $sep . '.pdf');
         }
 
-        $pdf->setFileName('berkas-klaim-' . $sep . '.pdf');
-
-        return response($pdf->stream(), 200)
+        return response($pdf->stream('berkas-klaim-' . $sep . '.pdf'), 200)
             ->header('Content-Type', 'application/pdf')
             ->header('Pragma', 'no-cache')
             ->header('Expires', '0');
