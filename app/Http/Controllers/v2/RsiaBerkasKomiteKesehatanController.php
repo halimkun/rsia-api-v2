@@ -156,8 +156,6 @@ class RsiaBerkasKomiteKesehatanController extends Controller
             'status'     => 'string|in:1,0',
         ]);
 
-        // dd($identifier, $request->all());
-
         if (!\Carbon\Carbon::createFromFormat('Y-m-d', $identifier[1])) {
             return \App\Helpers\ApiResponse::error("Invalid request : Format tanggal tidak valid (YYYY-MM-DD)", "invalid_request", null, 400);
         }

@@ -222,6 +222,7 @@ class BerkasKlaimController2 extends Controller
             $koor      = \App\Models\Pegawai::select('id', 'nik', 'nama', 'departemen')->whereHas('dep', function ($q) use ($kamarInap) {
                 return $q->where('nama', \Illuminate\Support\Str::upper($this->getDepartemen($kamarInap)));
             })->where('status_koor', '1')->first();
+
             $barcodeResume = SignHelper::rsia($koor->nama, $koor->id);
 
             $resumeMedis = view('berkas-klaim.resume', [
