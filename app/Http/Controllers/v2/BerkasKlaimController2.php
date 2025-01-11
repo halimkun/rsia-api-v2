@@ -102,15 +102,17 @@ class BerkasKlaimController2 extends Controller
         });
 
         $inacbgReport = $this->genInacbgReportPage($sep);
-        $html = PDFHelper::generate('berkas-klaim.layout', [
+        $pdf = PDFHelper::generate('berkas-klaim.layout', [
             'pages' => $pages
         ], false);
 
         if ($inacbgReport) {
-            $html = PDFHelper::merge([$html, $inacbgReport]);
+            $pdf = PDFHelper::merge([$pdf, $inacbgReport]);
         }
 
-        return response($html->stream('berkas-klaim-' . $sep . '.pdf'), 200)
+        $pdf->setFileName('berkas-klaim-' . $sep . '.pdf');
+
+        return response($pdf->stream(), 200)
             ->header('Content-Type', 'application/pdf')
             ->header('Pragma', 'no-cache')
             ->header('Expires', '0');
@@ -187,7 +189,7 @@ class BerkasKlaimController2 extends Controller
      */
     public function genAsmedUgdPage($jenisPelayanan, $regPeriksa, $barcodeDPJP)
     {
-        if ($jenisPelayanan == 1) {
+        if ($jenisPelayanan != 2) {
             return null;
         }
 
