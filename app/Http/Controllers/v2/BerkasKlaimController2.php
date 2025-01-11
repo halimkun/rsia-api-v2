@@ -74,6 +74,8 @@ class BerkasKlaimController2 extends Controller
 
         $pasien      = $regPeriksa->pasien;
 
+        // ==== Generate pages
+
         $pages = collect([
             $this->genSepPage($bSep, $regPeriksa, $pasien, $barcodeDPJP),
             $this->genTriaseUgd($bSep->jnspelayanan, $regPeriksa, $barcodeDPJP),
@@ -91,25 +93,53 @@ class BerkasKlaimController2 extends Controller
             $this->genHasilRadiologiPage($regPeriksa, $pasien, $barcodeDPJP),
             $this->pendukung($pendukung, ['laborat']),
             $this->pendukung($pendukung, ['skl', 'surat rujukan', 'usg', 'laborat'], true),
+        ]);
+
+        $obatPages = $this->genResepObatPage($regPeriksa, $dpjp, $pasien);
+
+        $pages2 = collect([
             $this->genBillingPage($regPeriksa, $dpjp, $pasien),
             $this->genKwitansiNaikKelasPage($bSep, $regPeriksa, $pasien, $ttdPasien),
         ]);
 
-        // map pages where not null
+        // ==== Filter pages
+
         $pages = $pages->filter(function ($page) {
             return !empty($page);
         });
 
-        $inacbgReport = $this->genInacbgReportPage($sep);
+        $pages2 = $pages2->filter(function ($page) {
+            return !empty($page);
+        });
+
+        // ==== Generate PDF
+
         $pdf = PDFHelper::generate('berkas-klaim.layout', [
             'title' => 'berkas-klaim-' . $sep,
             'pages' => $pages
         ], false);
 
-        if ($inacbgReport) {
-            $pdf = PDFHelper::merge([$pdf, $inacbgReport]);
-            $pdf->setFileName('berkas-klaim-' . $sep . '.pdf');
+        $pdf2 = PDFHelper::generate('berkas-klaim.layout', [
+            'title' => 'berkas-klaim-' . $sep,
+            'pages' => $pages2
+        ], false);
+
+        // ==== Merge PDF
+
+        $pagesFinal = [$pdf, $pdf2];
+        
+        if ($obatPages) {
+            array_splice($pagesFinal, 1, 0, [$obatPages]); // Menyisipkan di posisi ke-1 (setelah $pdf)
         }
+        
+        $inacbgReport = $this->genInacbgReportPage($sep);
+        if ($inacbgReport) {
+            $pagesFinal[] = $inacbgReport;
+        }
+
+        $pdf = PDFHelper::merge($pagesFinal);
+
+        // ==== Return PDF
 
         return response($pdf->stream('berkas-klaim-' . $sep . '.pdf'), 200)
             ->header('Content-Type', 'application/pdf')
@@ -580,6 +610,57 @@ class BerkasKlaimController2 extends Controller
         }
     }
 
+    public function genResepObatPage($regPeriksa, $dpjp, $pasien)
+    {
+        $detailObatHtml = [];
+
+        $mpdf = new \Mpdf\Mpdf([
+            'format'  => [215, 330],
+            'tempDir' => storage_path('app/public/mpdf'),
+        ]);
+
+        $obat = $this->groupDetailPemberianObat(\App\Models\DetailPemberianObat::select('tgl_perawatan', 'jam', 'no_rawat', 'kode_brng', 'jml')->with('obat')->whereIn('no_rawat', $this->cekGabung($regPeriksa->no_rawat))->get());
+        $regPeriksa = $regPeriksa->whereIn('no_rawat', array_keys($obat->toArray()))->get()->keyBy('no_rawat');
+
+        foreach ($obat as $key => $value) {
+            foreach ($value as $sk => $sv) {
+                // table obat
+                $detailObatHtml[$key] = view('berkas-klaim.partials.obat', [
+                    'obat' => $value,
+                ])->render();
+            }
+        }
+
+        foreach ($detailObatHtml as $key => $value) {
+            $registrasi = $regPeriksa->get($key);
+            $mpdf->SetColumns(1, 'J');
+
+            // html tag to head
+            $mpdf->WriteHTML(view('berkas-klaim.partials.header.obat-html', [
+                'regPeriksa' => $registrasi,
+            ])->render());
+
+            // header <header></header>
+            $mpdf->WriteHTML(view('berkas-klaim.partials.header.obat-header', [
+                'regPeriksa' => $registrasi,
+            ])->render());
+
+            $mpdf->SetColumns(2, 'J', 3);
+            $mpdf->WriteHTML($value);
+
+            if (count($mpdf->ColDetails) % 2 != 0) {
+                $mpdf->AddColumn();
+            }
+
+            // footer <footer></footer>
+            $mpdf->WriteHTML(view('berkas-klaim.partials.footer.obat-footer')->render());
+        }
+
+        $mpdf->SetColumns(1, 'J');
+
+        return $mpdf->Output('', 'S');
+    }
+
     public function genBillingPage($regPeriksa, $dpjp, $pasien)
     {
         $bData         = $this->billingData($regPeriksa->no_rawat, $regPeriksa->status_lanjut);
@@ -629,7 +710,53 @@ class BerkasKlaimController2 extends Controller
 
     // ====================================================================================================
 
+    /**
+     * Cek gabung
+     *
+     * Cek pasien rawat gabung atau tidak
+     *
+     * @param string $no_rawat
+     * @return array
+     */
+    private function cekGabung($no_rawat)
+    {
+        $ranapGabung = \App\Models\RanapGabung::where('no_rawat', $no_rawat)->first();
 
+        if ($ranapGabung) {
+            $ranapGabung = array_values($ranapGabung->toArray());
+            return $ranapGabung;
+        }
+
+        return [$no_rawat];
+    }
+
+    /**
+     * Group detail pemberian obat data
+     *
+     * Group the periksa lab data by tgl_perawatan and jam
+     *
+     * @param \Illuminate\Support\Collection $data
+     * @return \Illuminate\Support\Collection
+     */
+    private function groupDetailPemberianObat(Collection $data): Collection
+    {
+        return $data->groupBy('no_rawat')->map(function ($grouped) {
+            return $grouped->groupBy(function ($item) {
+                return $item->tgl_perawatan . ' ' . $item->jam;
+            });
+        });
+    }
+
+    /**
+     * Get the department based on the given room information.
+     *
+     * This method checks if the provided room information is empty. If not, it filters
+     * the keys of the $this->koorByDepartemen array to find a match with the room code.
+     * It then returns the corresponding department value.
+     *
+     * @param \App\Models\KamarInap $kamarInap An array of room information objects.
+     * @return mixed|null The department value if found, or null if not found or if the input is empty.
+     */
     private function getDepartemen($kamarInap)
     {
         if ($kamarInap->isEmpty()) {
