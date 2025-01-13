@@ -95,12 +95,16 @@
                 <td class="w-full text-center">
                     <p class="mb-1">Kasir</p>
                     @php
-                        $QRPetugas = \App\Helpers\SignHelper::rsia($kasir->nama, $kasir->id);
+                        if ($kasir) {
+                            $QRKasir = \App\Helpers\SignHelper::rsia($kasir->nama, $kasir->nip);
+                        } else {
+                            $QRKasir = \App\Helpers\SignHelper::blankRsia();
+                        }
                     @endphp
 
                     <img src="{{ $QRPetugas->getDataUri() }}" alt="QR Petugas Kasir" style="width: 150px; height: 150px;"/>
 
-                    <p class="mt-3">{{ $kasir->nama }}</p>
+                    <p class="mt-3">{{ $kasir ? $kasir->nama : '- null -' }}</p>
                 </td>
             </tr>
         </table>
