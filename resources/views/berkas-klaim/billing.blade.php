@@ -541,7 +541,11 @@
 
     @php
         $QRAsmenKeuangan = \App\Helpers\SignHelper::rsia($asmenKeuangan->nama, $asmenKeuangan->nik);
-        $QRKasir         = \App\Helpers\SignHelper::rsia($kasir->nama, $kasir->nip);
+        if ($kasir) {
+            $QRKasir = \App\Helpers\SignHelper::rsia($kasir->nama, $kasir->nip);
+        } else {
+            $QRKasir = \App\Helpers\SignHelper::blankRsia();
+        }
     @endphp
 
     <div class="my-4">
