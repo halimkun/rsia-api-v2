@@ -102,7 +102,7 @@
                         }
                     @endphp
 
-                    <img src="{{ $QRPetugas->getDataUri() }}" alt="QR Petugas Kasir" style="width: 150px; height: 150px;"/>
+                    <img src="{{ $QRKasir->getDataUri() }}" alt="QR Petugas Kasir" style="width: 150px; height: 150px;"/>
 
                     <p class="mt-3">{{ $kasir ? $kasir->nama : '- null -' }}</p>
                 </td>
