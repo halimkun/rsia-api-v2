@@ -74,7 +74,7 @@ class BerkasKlaimController2 extends Controller
 
         $pasien      = $regPeriksa->pasien;
         
-        $title = $bSep->no_sep . "_" . trim(\Str::upper($pasien->nm_pasien));
+        $title = $bSep->no_sep . "_" . trim(Str::upper($pasien->nm_pasien));
         $pdfTitle = Str::endsWith($title, '.') ? $title . 'pdf' : $title . '.pdf';
 
         // ==== Generate pages
