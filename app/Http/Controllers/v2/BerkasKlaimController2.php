@@ -621,6 +621,14 @@ class BerkasKlaimController2 extends Controller
             ])->render();
 
             $html .= $value;
+
+            if ($key != $regPeriksa->last()->no_rawat) {
+                $html .= "<div style='page-break-after: always;'></div>";
+            }
+
+            if ($key == $regPeriksa->last()->no_rawat) {
+                $html .= "</div>";
+            }
         }
 
         return $html;
