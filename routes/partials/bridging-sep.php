@@ -23,7 +23,7 @@ Route::middleware(['user-aes', 'detail-user', 'claim:role,pegawai|dokter'])->gro
 });
 
 Route::middleware(['user-aes', 'detail-user', 'claim:role,pegawai|dokter'])->prefix('sep')->group(function ($router) {
-    Orion::resource('grouping-stage', \App\Http\Controllers\Orion\GroupingStage12Controller::class)->only(['search'])->parameters(['sep' => 'no_sep']);
+    
 });
 
 Route::middleware(['user-aes', 'detail-user', 'claim:role,pegawai|dokter'])->group(function ($router) {

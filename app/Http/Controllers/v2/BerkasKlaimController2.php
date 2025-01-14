@@ -117,11 +117,11 @@ class BerkasKlaimController2 extends Controller
 
         // ==== Merge PDF
         
-        // $inacbgReport = $this->genInacbgReportPage($sep);
-        // if ($inacbgReport) {
-        //     $pdf = PDFHelper::merge([$pdf, $inacbgReport]);
-        //     $pdf->setFileName($pdfTitle);
-        // }
+        $inacbgReport = $this->genInacbgReportPage($sep);
+        if ($inacbgReport) {
+            $pdf = PDFHelper::merge([$pdf, $inacbgReport]);
+            $pdf->setFileName($pdfTitle);
+        }
 
         // ==== Return PDF
 
@@ -611,10 +611,12 @@ class BerkasKlaimController2 extends Controller
             }
         }
 
+        $html = "";
+
         foreach ($detailObatHtml as $key => $value) {
             $registrasi = $regPeriksa->get($key);
             
-            $html = view('berkas-klaim.partials.header.obat-header', [
+            $html .= view('berkas-klaim.partials.header.obat-header', [
                 'regPeriksa' => $registrasi,
             ])->render();
 
