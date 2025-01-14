@@ -48,13 +48,15 @@ class BridgingSepController extends \Orion\Http\Controllers\Controller
     public function sortableBy(): array
     {
         return [
-            'no_rawat',
             'tglsep',
+            'no_rawat',
             'tglrujukan',
             'nama_pasien',
+            'status_klaim.status',
             'reg_periksa.tgl_registrasi',
             'reg_periksa.jam_reg',
-            'status_klaim.status'
+            'kamar_inap.tgl_keluar',
+            'kamar_inap.jam_keluar',
         ];
     }
 
@@ -66,17 +68,20 @@ class BridgingSepController extends \Orion\Http\Controllers\Controller
     public function filterableBy(): array
     {
         return [
+            'nomr',
+            'tglsep',
             'no_sep',
             'no_rawat',
+            'no_kartu',
             'klsrawat',
             'nama_pasien',
-            'no_kartu',
-            'nomr',
             'jnspelayanan',
-            'reg_periksa.tgl_registrasi',
             'status_klaim.status',
+            'groupStage.code_cbg',
             'reg_periksa.kd_poli',
-            'groupStage.code_cbg'
+            'reg_periksa.tgl_registrasi',
+            'kamar_inap.tgl_keluar',
+            'kamar_inap.jam_keluar',
         ];
     }
 
@@ -88,12 +93,12 @@ class BridgingSepController extends \Orion\Http\Controllers\Controller
     public function searchableBy(): array
     {
         return [
+            'nomr',
             'no_sep',
             'no_rawat',
+            'no_kartu',
             'klsrawat',
             'nama_pasien',
-            'no_kartu',
-            'nomr',
             'dokter.nm_dokter',
             'poliklinik.nm_poli'
         ];
@@ -107,19 +112,20 @@ class BridgingSepController extends \Orion\Http\Controllers\Controller
     public function includes(): array
     {
         return [
-            'reg_periksa',
-            'reg_periksa.poliklinik',
-            'reg_periksa.dokter',
-            'reg_periksa.dokter.spesialis',
-            'kamar_inap',
             'chunk',
-            'tanggal_pulang',
-            'status_klaim',
-            'status_klaim.log',
-            'groupStage',
             'pasien',
+            'kamar_inap',
+            'groupStage',
+            'status_klaim',
+            'tanggal_pulang',
             'berkasPerawatan',
-            'terkirim_online'
+            'terkirim_online',
+            'status_klaim.log',
+
+            'reg_periksa',
+            'reg_periksa.dokter',
+            'reg_periksa.poliklinik',
+            'reg_periksa.dokter.spesialis',
         ];
     }
 }

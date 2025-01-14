@@ -23,6 +23,7 @@ Route::middleware(['user-aes', 'detail-user', 'claim:role,pegawai|dokter'])->gro
 });
 
 Route::middleware(['user-aes', 'detail-user', 'claim:role,pegawai|dokter'])->prefix('sep')->group(function ($router) {
+    
 });
 
 Route::middleware(['user-aes', 'detail-user', 'claim:role,pegawai|dokter'])->group(function ($router) {
