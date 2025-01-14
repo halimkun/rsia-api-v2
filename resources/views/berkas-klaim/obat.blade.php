@@ -1,24 +1,89 @@
-<table class="table w-full border-collapse" style="border-collapse: collapse;">
-    <thead>
-        <tr>
-            <th style="border-bottom: 1px solid #333; border-top: 1px solid #333; padding:8px; ">No.</th>
-            <th style="border-bottom: 1px solid #333; border-top: 1px solid #333; padding:8px; text-align: left">Obat</th>
-            <th style="border-bottom: 1px solid #333; border-top: 1px solid #333; padding:8px; ">Qty</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach ($obat as $key => $item)
-            <tr>
-                <th colspan="3" style="border-bottom: 1px solid #333; text-align: left; padding-top: 15px;">{{ $key }}</th>
-            </tr>
+    <table class="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
+        <tbody>
+            @php
+                $counter = 1; // Inisialisasi counter untuk penomoran global
+            @endphp
 
-            @foreach ($item as $sk => $sv)
-                <tr>
-                    <td style="text-align: right; padding-right: 8px;">{{ $loop->iteration }}.</td>
-                    <td style="text-align: left;">{{ $sv->obat->nama_brng }}</td>
-                    <td style="text-align: center;">{{ $sv->jml }}</td>
+            @foreach ($obat as $key => $item)
+                <tr class="bg-gray-200">
+                    <th class="text-left border border-gray-300 px-4 py-1" style="background-color: #f1f1f1" colspan="2">
+                        {{-- key is date time, convert it using carbon --}}
+                        {{ \Carbon\Carbon::parse($key)->translatedFormat('l, d F Y H:i') }}
+                    </th>
                 </tr>
+
+                <tr class="bg-gray-200">
+                    <th class="px-4 py-1" style="background-color: #f1f1f1">
+                        <table class="w-full table-auto">
+                            <tbody>
+                                <tr class="align-top">
+                                    <td class="text-left">
+                                        Nama Obat
+                                    </td>
+                                    <td class="text-right">
+                                        Qty
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </th>
+                    <th class="px-4 py-1" style="background-color: #f1f1f1">
+                        <table class="w-full table-auto">
+                            <tbody>
+                                <tr class="align-top">
+                                    <td class="text-left">
+                                        Nama Obat
+                                    </td>
+                                    <td class="text-right">
+                                        Qty
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </th>
+                </tr>
+
+                @php
+                    $chunks = $item->chunk(2); // Membagi item menjadi grup dengan maksimal 3 item
+                @endphp
+
+                @foreach ($chunks as $chunk)
+                    <tr>
+                        @foreach ($chunk as $sk => $sv)
+                            <td class="border border-gray-300 px-4 py-1">
+                                
+                                <table class="w-full table-auto">
+                                    <tbody>
+                                        <tr class="align-top">
+                                            <td class="text-left">
+                                                <p>{{ $sv->obat->nama_brng }}</p>
+                                            </td>
+                                            <td class="text-right">
+                                                {{ $sv->jml }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                            </td>
+                            @php
+                                $counter++;
+                            @endphp
+                        @endforeach
+
+                        @if ($chunk->count() < 2)
+                            @for ($i = 0; $i < 2 - $chunk->count(); $i++)
+                                <td class="border border-gray-300 px-4 py-1"></td>
+                            @endfor
+                        @endif
+                    </tr>
+                @endforeach
+
+                @php
+                    $counter = 1;
+                @endphp
             @endforeach
-        @endforeach
-    </tbody>
-</table>
+        </tbody>
+    </table>
+
+</div>
