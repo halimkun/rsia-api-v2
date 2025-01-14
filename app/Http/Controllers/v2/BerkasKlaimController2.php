@@ -73,6 +73,9 @@ class BerkasKlaimController2 extends Controller
         $barcodeDPJP = SignHelper::rsia($dpjp->pegawai->nama, $dpjp->pegawai->id);
 
         $pasien      = $regPeriksa->pasien;
+        
+        $title = $bSep->no_sep . "_" . trim(\Str::upper($pasien->nm_pasien));
+        $pdfTitle = Str::endsWith($title, '.') ? $title . 'pdf' : $title . '.pdf';
 
         // ==== Generate pages
 
@@ -93,14 +96,11 @@ class BerkasKlaimController2 extends Controller
             $this->genHasilRadiologiPage($regPeriksa, $pasien, $barcodeDPJP),
             $this->pendukung($pendukung, ['laborat']),
             $this->pendukung($pendukung, ['skl', 'surat rujukan', 'usg', 'laborat'], true),
-        ]);
-
-        $obatPages = $this->genResepObatPage($regPeriksa, $dpjp, $pasien);
-
-        $pages2 = collect([
+            $this->genResepObatPage($regPeriksa, $dpjp, $pasien),
             $this->genBillingPage($regPeriksa, $dpjp, $pasien),
             $this->genKwitansiNaikKelasPage($bSep, $regPeriksa, $pasien, $ttdPasien),
         ]);
+
 
         // ==== Filter pages
 
@@ -108,43 +108,28 @@ class BerkasKlaimController2 extends Controller
             return !empty($page);
         });
 
-        $pages2 = $pages2->filter(function ($page) {
-            return !empty($page);
-        });
-
         // ==== Generate PDF
 
         $pdf = PDFHelper::generate('berkas-klaim.layout', [
-            'title' => 'berkas-klaim-' . $sep,
+            'title' => $title,
             'pages' => $pages
         ], false);
 
-        $pdf2 = PDFHelper::generate('berkas-klaim.layout', [
-            'title' => 'berkas-klaim-' . $sep,
-            'pages' => $pages2
-        ], false);
-
         // ==== Merge PDF
-
-        $pagesFinal = [$pdf, $pdf2];
         
-        if ($obatPages) {
-            array_splice($pagesFinal, 1, 0, [$obatPages]); // Menyisipkan di posisi ke-1 (setelah $pdf)
-        }
-        
-        $inacbgReport = $this->genInacbgReportPage($sep);
-        if ($inacbgReport) {
-            $pagesFinal[] = $inacbgReport;
-        }
-
-        $pdf = PDFHelper::merge($pagesFinal);
+        // $inacbgReport = $this->genInacbgReportPage($sep);
+        // if ($inacbgReport) {
+        //     $pdf = PDFHelper::merge([$pdf, $inacbgReport]);
+        //     $pdf->setFileName($pdfTitle);
+        // }
 
         // ==== Return PDF
 
-        return response($pdf->stream('berkas-klaim-' . $sep . '.pdf'), 200)
+        return response($pdf->stream($pdfTitle), 200)
             ->header('Content-Type', 'application/pdf')
             ->header('Pragma', 'no-cache')
-            ->header('Expires', '0');
+            ->header('Expires', '0')
+            ->header('Content-Disposition', 'inline; filename="'. $pdfTitle .'"');
     }
 
 
@@ -613,19 +598,14 @@ class BerkasKlaimController2 extends Controller
     public function genResepObatPage($regPeriksa, $dpjp, $pasien)
     {
         $detailObatHtml = [];
-
-        $mpdf = new \Mpdf\Mpdf([
-            'format'  => [215, 330],
-            'tempDir' => storage_path('app/public/mpdf'),
-        ]);
-
+        $html = "";
+        
         $obat = $this->groupDetailPemberianObat(\App\Models\DetailPemberianObat::select('tgl_perawatan', 'jam', 'no_rawat', 'kode_brng', 'jml')->with('obat')->whereIn('no_rawat', $this->cekGabung($regPeriksa->no_rawat))->get());
         $regPeriksa = $regPeriksa->whereIn('no_rawat', array_keys($obat->toArray()))->get()->keyBy('no_rawat');
 
         foreach ($obat as $key => $value) {
             foreach ($value as $sk => $sv) {
-                // table obat
-                $detailObatHtml[$key] = view('berkas-klaim.partials.obat', [
+                $detailObatHtml[$key] = view('berkas-klaim.obat', [
                     'obat' => $value,
                 ])->render();
             }
@@ -633,32 +613,15 @@ class BerkasKlaimController2 extends Controller
 
         foreach ($detailObatHtml as $key => $value) {
             $registrasi = $regPeriksa->get($key);
-            $mpdf->SetColumns(1, 'J');
-
-            // html tag to head
-            $mpdf->WriteHTML(view('berkas-klaim.partials.header.obat-html', [
+            
+            $html = view('berkas-klaim.partials.header.obat-header', [
                 'regPeriksa' => $registrasi,
-            ])->render());
+            ])->render();
 
-            // header <header></header>
-            $mpdf->WriteHTML(view('berkas-klaim.partials.header.obat-header', [
-                'regPeriksa' => $registrasi,
-            ])->render());
-
-            $mpdf->SetColumns(2, 'J', 3);
-            $mpdf->WriteHTML($value);
-
-            if (count($mpdf->ColDetails) % 2 != 0) {
-                $mpdf->AddColumn();
-            }
-
-            // footer <footer></footer>
-            $mpdf->WriteHTML(view('berkas-klaim.partials.footer.obat-footer')->render());
+            $html .= $value;
         }
 
-        $mpdf->SetColumns(1, 'J');
-
-        return $mpdf->Output('', 'S');
+        return $html;
     }
 
     public function genBillingPage($regPeriksa, $dpjp, $pasien)

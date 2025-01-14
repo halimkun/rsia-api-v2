@@ -186,6 +186,15 @@ class BridgingSep extends Model
         return $query->whereDoesntHave('status_klaim');
     }
 
+    public function scopeSelectColumns($query, $columns = ['*'])
+    {
+        if (is_string($columns)) {
+            $columns = array_map('trim', explode(',', $columns));
+        }
+
+        return $query->select($columns);
+    }
+
     /**
      * Get the status_klaim that owns the BridgingSep
      * 
