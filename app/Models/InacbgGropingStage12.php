@@ -25,17 +25,71 @@ class InacbgGropingStage12 extends Model
 {
     use HasFactory;
 
+    /**
+     * The table associated with the model.
+     *
+     * @var string
+     */
     protected $table = 'inacbg_grouping_stage12';
 
+    /**
+     * The primary key associated with the table.
+     *
+     * @var string
+     */
     protected $guarded = [];
 
+    /**
+     * The primary key associated with the table.
+     *
+     * @var string
+     */
+    protected $primaryKey = 'no_sep';
+
+    /**
+     * The "type" of the auto-incrementing ID.
+     *
+     * @var string
+     */
     public $incrementing = false;
 
+    /**
+     * Indicates if the model should be timestamped.
+     *
+     * @var bool
+     */
     public $timestamps = false;
 
-    
+
+    public function scopeGetGrade3($query)
+    {
+        return $query->where('code_cbg', 'like', '%III');
+    }
+
+
+    /**
+     * Get the naikKelas that owns the InacbgGropingStage12
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function naikKelas()
     {
         return $this->belongsTo(RsiaNaikKelas::class, 'no_sep', 'no_sep');
+    }
+
+    /**
+     * Get the sep that owns the InacbgGropingStage12
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function sep()
+    {
+        return $this->belongsTo(BridgingSep::class, 'no_sep', 'no_sep')
+            ->select('no_sep', 'no_rawat', 'tglsep', 'jnspelayanan', 'diagawal', 'nmdiagnosaawal', 'klsrawat', 'klsnaik', 'nomr', 'no_kartu');
+    }
+
+    public function kamarInap()
+    {
+        return $this->hasMany(KamarInap::class, 'no_rawat', 'no_rawat');
     }
 }
