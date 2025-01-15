@@ -76,6 +76,7 @@ class BerkasKlaimController2 extends Controller
         
         $title = $bSep->no_sep . "_" . trim(Str::upper($pasien->nm_pasien));
         $pdfTitle = Str::endsWith($title, '.') ? $title . 'pdf' : $title . '.pdf';
+        $pdfNewTitle = $sep . '.pdf';
 
         // ==== Generate pages
 
@@ -120,16 +121,16 @@ class BerkasKlaimController2 extends Controller
         $inacbgReport = $this->genInacbgReportPage($sep);
         if ($inacbgReport) {
             $pdf = PDFHelper::merge([$pdf, $inacbgReport]);
-            $pdf->setFileName($pdfTitle);
+            $pdf->setFileName($pdfNewTitle);
         }
 
         // ==== Return PDF
 
-        return response($pdf->stream($pdfTitle), 200)
+        return response($pdf->stream($pdfNewTitle), 200)
             ->header('Content-Type', 'application/pdf')
             ->header('Pragma', 'no-cache')
             ->header('Expires', '0')
-            ->header('Content-Disposition', 'inline; filename="'. $pdfTitle .'"');
+            ->header('Content-Disposition', 'inline; filename="'. $pdfNewTitle .'"');
     }
 
 
