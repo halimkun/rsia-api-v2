@@ -8,6 +8,7 @@ use App\Helpers\SignHelper;
 use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use App\Http\Controllers\Controller;
 
@@ -73,7 +74,7 @@ class BerkasKlaimController2 extends Controller
         $barcodeDPJP = SignHelper::rsia($dpjp->pegawai->nama, $dpjp->pegawai->id);
 
         $pasien      = $regPeriksa->pasien;
-        
+
         $title = $bSep->no_sep . "_" . trim(Str::upper($pasien->nm_pasien));
         $pdfTitle = Str::endsWith($title, '.') ? $title . 'pdf' : $title . '.pdf';
         $pdfNewTitle = $sep . '.pdf';
@@ -117,7 +118,7 @@ class BerkasKlaimController2 extends Controller
         ], false);
 
         // ==== Merge PDF
-        
+
         $inacbgReport = $this->genInacbgReportPage($sep);
         if ($inacbgReport) {
             $pdf = PDFHelper::merge([$pdf, $inacbgReport]);
@@ -130,7 +131,7 @@ class BerkasKlaimController2 extends Controller
             ->header('Content-Type', 'application/pdf')
             ->header('Pragma', 'no-cache')
             ->header('Expires', '0')
-            ->header('Content-Disposition', 'inline; filename="'. $pdfNewTitle .'"');
+            ->header('Content-Disposition', 'inline; filename="' . $pdfNewTitle . '"');
     }
 
 
@@ -600,7 +601,7 @@ class BerkasKlaimController2 extends Controller
     {
         $detailObatHtml = [];
         $html = "";
-        
+
         $obat = $this->groupDetailPemberianObat(\App\Models\DetailPemberianObat::select('tgl_perawatan', 'jam', 'no_rawat', 'kode_brng', 'jml')->with('obat')->whereIn('no_rawat', $this->cekGabung($regPeriksa->no_rawat))->get());
         $regPeriksa = $regPeriksa->whereIn('no_rawat', array_keys($obat->toArray()))->get()->keyBy('no_rawat');
 
@@ -616,7 +617,7 @@ class BerkasKlaimController2 extends Controller
 
         foreach ($detailObatHtml as $key => $value) {
             $registrasi = $regPeriksa->get($key);
-            
+
             $html .= view('berkas-klaim.partials.header.obat-header', [
                 'regPeriksa' => $registrasi,
             ])->render();
@@ -768,10 +769,16 @@ class BerkasKlaimController2 extends Controller
             'select' => ['no_rawat', 'kd_jenis_prw', 'biaya_rawat'],
             'with' => [
                 'jenisPerawatan' => function ($q) {
-                    $q->select('kd_jenis_prw', 'nm_perawatan', 'kd_kategori')
-                        ->with(['kategori' => function ($qq) {
-                            $qq->select('kd_kategori', 'nm_kategori');
-                        }]);
+                    $q->select(
+                        DB::raw('TRIM(kd_jenis_prw) as kd_jenis_prw'), 
+                        DB::raw('TRIM(nm_perawatan) as nm_perawatan'), 
+                        DB::raw('TRIM(kd_kategori) as kd_kategori')
+                    )->with(['kategori' => function ($qq) {
+                        $qq->select(
+                            DB::raw('TRIM(kd_kategori) as kd_kategori'), 
+                            DB::raw('TRIM(nm_kategori) as nm_kategori')
+                        );
+                    }]);
                 }
             ],
             'where' => ['no_rawat' => $no_rawat]
@@ -789,7 +796,11 @@ class BerkasKlaimController2 extends Controller
 
         // Process all models in a single loop
         $rawatData = collect($models)->map(function ($model) use ($baseQuery) {
-            return $model::select($baseQuery['select'])
+            $mappedSelect = array_map(function ($item) {
+                return DB::raw("TRIM($item) as $item");
+            }, $baseQuery['select']);
+
+            return $model::select($mappedSelect)
                 ->with($baseQuery['with'])
                 ->where($baseQuery['where'])
                 ->get()
