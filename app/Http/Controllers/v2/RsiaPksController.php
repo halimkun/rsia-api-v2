@@ -69,14 +69,23 @@ class RsiaPksController extends Controller
             ->where('no_pks_internal', 'like', '%/' . $request->jenis . '/%')
             ->first();
 
-        $explodedLastNomor = explode('/', $lastNomor->no_pks_internal);
-
-        $buildedNomor = [
-            str_pad(($explodedLastNomor[0] + 1), 3, '0', STR_PAD_LEFT),
-            $request->jenis,
-            'PKS-RSIA',
-            \Carbon\Carbon::parse($request->tgl_terbit)->format('dmy'),
-        ];
+        if ($lastNomor) {
+            $explodedLastNomor = explode('/', $lastNomor->no_pks_internal);
+    
+            $buildedNomor = [
+                str_pad(($explodedLastNomor[0] + 1), 3, '0', STR_PAD_LEFT),
+                $request->jenis,
+                'PKS-RSIA',
+                \Carbon\Carbon::parse($request->tgl_terbit)->format('dmy'),
+            ];
+        } else {
+            $buildedNomor = [
+                '001',
+                $request->jenis,
+                'PKS-RSIA',
+                \Carbon\Carbon::parse($request->tgl_terbit)->format('dmy'),
+            ];
+        }
 
         $request->merge([
             'no_pks_internal' => implode('/', $buildedNomor),
@@ -90,7 +99,6 @@ class RsiaPksController extends Controller
 
             if ($file) {
                 $st = new \Illuminate\Support\Facades\Storage();
-                // if directory not exists create it
                 if (!$st::disk('sftp')->exists(env('DOCUMENT_PKS_SAVE_LOCATION'))) {
                     \App\Helpers\Logger\RSIALogger::berkas("DIRECTORY NOT FOUND :: CREATING : " . env('DOCUMENT_PKS_SAVE_LOCATION'), 'info');
                     $st::disk('sftp')->makeDirectory(env('DOCUMENT_PKS_SAVE_LOCATION'));
