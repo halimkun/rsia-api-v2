@@ -33,6 +33,7 @@ class BridgingSepController extends \Orion\Http\Controllers\Controller
     public function exposedScopes(): array
     {
         return [
+            'withLos',
             'hasBerkasPerawatan',
             'notHasBerkasPerawatan',
             'notHasStatusKlaim',
@@ -57,6 +58,7 @@ class BridgingSepController extends \Orion\Http\Controllers\Controller
             'reg_periksa.jam_reg',
             'kamar_inap.tgl_keluar',
             'kamar_inap.jam_keluar',
+            'tanggal_pulang.tgl_keluar'
         ];
     }
 
@@ -82,6 +84,8 @@ class BridgingSepController extends \Orion\Http\Controllers\Controller
             'reg_periksa.tgl_registrasi',
             'kamar_inap.tgl_keluar',
             'kamar_inap.jam_keluar',
+            'kamar_inap.stts_pulang',
+            'tanggal_pulang.tgl_keluar'
         ];
     }
 

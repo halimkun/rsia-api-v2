@@ -157,14 +157,10 @@ class BridgingSep extends Model
         'no_rawat' => 'string',
     ];
 
-    /**
-     * The attributes that are mass assignable
-     * 
-     * @var array
-     * */
-    public function scopeGetTanggalPulang($query, $noRawat)
+
+    public function scopeWithLos($query)
     {
-        return $query->where('no_rawat', $noRawat)->where('stts_pulang', '!=', 'Pindah Kamar')->first();
+        return $query->whereHas('tanggal_pulang');
     }
 
     public function scopeHasBerkasPerawatan($query, $kode = '009')
@@ -191,6 +187,10 @@ class BridgingSep extends Model
         if (is_string($columns)) {
             $columns = array_map('trim', explode(',', $columns));
         }
+        
+        $columns = array_map(function ($column) {
+            return 'bridging_sep.' . $column;
+        }, $columns);
 
         return $query->select($columns);
     }
@@ -247,7 +247,7 @@ class BridgingSep extends Model
      * */
     public function tanggal_pulang()
     {
-        return $this->hasOne(KamarInap::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'tgl_keluar', 'jam_keluar', 'lama')->where('stts_pulang', '<>', 'Pindah Kamar');
+        return $this->hasOne(KamarInap::class, 'no_rawat', 'no_rawat')->select('no_rawat', 'tgl_keluar', 'jam_keluar', 'lama', 'stts_pulang')->where('stts_pulang', '<>', 'Pindah Kamar');
     }
 
     /**
@@ -318,5 +318,15 @@ class BridgingSep extends Model
     public function terkirim_online()
     {
         return $this->hasOne(InacbgDataTerkirim::class, 'no_sep', 'no_sep');
+    }
+    
+    public function diagnosa()
+    {
+        return $this->hasMany(DiagnosaPasien::class, 'no_rawat', 'no_rawat')->orderBy('prioritas');
+    }
+
+    public function prosedur()
+    {
+        return $this->hasMany(ProsedurPasien::class, 'no_rawat', 'no_rawat')->orderBy('prioritas');
     }
 }
