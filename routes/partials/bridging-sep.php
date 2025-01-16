@@ -7,6 +7,7 @@ Route::middleware(['user-aes', 'detail-user', 'claim:role,pegawai|dokter'])->gro
     Orion::resource('sep', \App\Http\Controllers\Orion\BridgingSepController::class)->only(['search', 'show'])->parameters(['sep' => 'no_sep']);
 
     Route::get('/sep/download/{bulan}/{jenis}', [\App\Http\Controllers\v2\BerkasKlaimDownload::class, 'get']);
+    Route::get('/sep/grade-3/pdf', [\App\Http\Controllers\v2\PasienGradeIIIController::class, 'index']);
     Route::post('/sep/download', [\App\Http\Controllers\v2\BerkasKlaimDownload::class, 'download']);
 
     Route::get('/sep/{no_sep}/print', [\App\Http\Controllers\v2\BerkasKlaimController2::class, 'print']);
@@ -20,10 +21,6 @@ Route::middleware(['user-aes', 'detail-user', 'claim:role,pegawai|dokter'])->gro
     Route::post('/sep/klaim/status/search', [\App\Http\Controllers\v2\StatusKlaimSepController::class, 'search']);
 
     Route::resource('/sep/{no_sep}/klaim/latest', \App\Http\Controllers\v2\HasilGroupingController::class)->only(['index']);
-});
-
-Route::middleware(['user-aes', 'detail-user', 'claim:role,pegawai|dokter'])->prefix('sep')->group(function ($router) {
-    
 });
 
 Route::middleware(['user-aes', 'detail-user', 'claim:role,pegawai|dokter'])->group(function ($router) {
