@@ -76,7 +76,7 @@
                             <td rowspan="1" class="border text-center p-1" style="font-size: 10pt; border-color: #333;">{{ $pasien->diagnosa->get(1)->kd_penyakit ?? "-" }}</td>
                             <td rowspan="1" class="border p-1 whitespace-nowrap" style="font-size: 10pt; border-color: #333;">{{ $pasien->diagnosa->get(1)->penyakit->nm_penyakit ?? "-" }}</td>
                             <td rowspan="1" class="border text-center p-1" style="font-size: 10pt; border-color: #333;">{{ $pasien->prosedur->first()->kode ?? "-" }}</td>
-                            <td rowspan="{{ ($max + 1) }}" class="border text-center p-1" style="font-size: 10pt; border-color: #333;">{{ $pasien->groupStage->code_cbg }}</td>
+                            <td rowspan="{{ ($max + 1) }}" class="border text-center p-1 whitespace-nowrap" style="font-size: 10pt; border-color: #333;">{{ $pasien->groupStage->code_cbg }}</td>
                             <td rowspan="{{ ($max + 1) }}" class="border text-center p-1" style="font-size: 10pt; border-color: #333;">{{number_format($pasien->groupStage->tarif, 0, ',', '.') }}</td>
                         </tr>
 
