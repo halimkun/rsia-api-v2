@@ -670,12 +670,19 @@ class BerkasKlaimController2 extends Controller
 
     public function genBillingPage($regPeriksa, $dpjp, $pasien)
     {
+        $noRawatGabung = $this->cekGabung($regPeriksa->no_rawat);
+
         $bData         = $this->billingData($regPeriksa->no_rawat, $regPeriksa->status_lanjut);
         $kasir         = \App\Helpers\JurnalHelper::determinePetugas($regPeriksa->no_rawat);
         $asmenKeuangan = \App\Models\Pegawai::select('id', 'nik', 'nama', 'jnj_jabatan')->where('jnj_jabatan', 'RS7')->first();
 
         if (Str::lower($regPeriksa->status_lanjut) == 'ranap') {
-            $resepPulang = \App\Models\ResepPulang::with('obat')->where('no_rawat', $regPeriksa->no_rawat)->get()->groupBy('kode_brng');
+            // $resepPulang = \App\Models\ResepPulang::with('obat')->where('no_rawat', $regPeriksa->no_rawat)->get()->groupBy('kode_brng');
+            $resepPulang = \App\Models\ResepPulang::with('obat')->whereIn('no_rawat', $noRawatGabung)->get()->groupBy('no_rawat');
+            $resepPulang = $resepPulang->map(function ($grouped) {
+                return $grouped->groupBy('kode_brng');
+            });
+
             $ruang       = \App\Models\KamarInap::with(['kamar.bangsal'])->where('no_rawat', $regPeriksa->no_rawat)->orderBy('tgl_masuk', 'desc')->orderBy('jam_masuk', 'desc')->get();
         }
 
